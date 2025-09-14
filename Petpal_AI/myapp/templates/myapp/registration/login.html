@@ -1,0 +1,109 @@
+{% load static %}
+<!doctype html>
+<html lang="th" x-data="{}">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>เข้าสู่ระบบ • Petpal AI</title>
+
+  <!-- Tailwind -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Alpine (ไม่จำเป็นมากสำหรับหน้านี้) -->
+  <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <style>
+    html,body{font-family:"Noto Sans Thai",system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial}
+  </style>
+</head>
+<body class="min-h-screen bg-neutral-900 text-neutral-900">
+
+  {% include "myapp/partials/navbar.html" %}
+
+  <!-- พื้นหลัง -->
+  <div class="relative min-h-[calc(100vh-4rem)]">
+    <img src="{% static 'images/login-bg.jpg' %}"
+         alt="พื้นไม้และแมวนอนหลับ"
+         class="absolute inset-0 w-full h-full object-cover" />
+    <div class="absolute inset-0 bg-white/70"></div>
+
+    <!-- คอนเทนต์กึ่งกลาง -->
+    <div class="relative mx-auto max-w-3xl px-4 py-12 sm:py-16">
+
+      <!-- โลโก้เล็กด้านบน -->
+      <div class="w-full flex justify-center mb-6">
+        <div class="">
+          <img src="{% static 'images/logo.png' %}" alt="Petpal AI" class="h-30 w-30">
+        </div>
+      </div>
+
+      <!-- ฟอร์ม -->
+      <div class="mx-auto max-w-2xl">
+        {% if messages %}
+          <ul class="mb-4">
+            {% for m in messages %}
+              <li class="rounded-md bg-red-50 text-red-700 px-4 py-2 text-sm">{{ m }}</li>
+            {% endfor %}
+          </ul>
+        {% endif %}
+
+        <form method="post" class="space-y-4">
+          {% csrf_token %}
+
+          {# ถ้ามี next จาก query string ก็ใช้, ถ้าไม่มีให้ส่งไป landing เป็นค่าเริ่มต้น #}
+          {% if next %}
+            <input type="hidden" name="next" value="{{ next }}">
+          {% else %}
+            <input type="hidden" name="next" value="{% url 'landing' %}">
+          {% endif %}
+
+          <!-- USERNAME -->
+          {% if form.username.errors %}
+            <p class="text-sm text-red-600 mb-1">{{ form.username.errors|join:", " }}</p>
+          {% endif %}
+          <input name="username" value="{{ form.username.value|default_if_none:'' }}"
+                 placeholder="Username"
+                 class="w-full rounded-full bg-white px-6 py-4 text-base shadow ring-1 ring-black/10 focus:outline-none focus:ring-2 focus:ring-orange-400"
+                 required />
+
+          <!-- PASSWORD -->
+          {% if form.password.errors %}
+            <p class="text-sm text-red-600 mb-1">{{ form.password.errors|join:", " }}</p>
+          {% endif %}
+          <input type="password" name="password"
+                 placeholder="Password"
+                 class="w-full rounded-full bg-white px-6 py-4 text-base shadow ring-1 ring-black/10 focus:outline-none focus:ring-2 focus:ring-orange-400"
+                 required />
+
+          <div class="flex items-center justify-between">
+            <label class="inline-flex items-center gap-2 text-sm text-neutral-700">
+              <input type="checkbox" name="remember" class="h-4 w-4 rounded border-neutral-300 text-orange-500 focus:ring-orange-400">
+              จดจำฉัน
+            </label>
+            <a href="{% url 'password_reset' %}" class="text-sm text-neutral-700 hover:underline">ลืมรหัสผ่าน</a>
+          </div>
+        
+          <!-- NON FIELD ERRORS -->
+          {% if form.non_field_errors %}
+            <div class="rounded-md bg-red-50 text-red-700 px-4 py-3 text-sm">
+              {{ form.non_field_errors }}
+            </div>
+          {% endif %}
+          
+          <div class="pt-2 grid gap-3">
+            <button type="submit"
+                    class="mx-auto w-64 rounded-full bg-neutral-900 px-6 py-3 text-white font-medium shadow hover:opacity-90">
+              Login
+            </button>
+            <a href="{% url 'register' %}"
+               class="mx-auto w-64 text-center rounded-full bg-white px-6 py-3 text-neutral-900 font-medium shadow ring-1 ring-black/10 hover:bg-neutral-50">
+              Sign up
+            </a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

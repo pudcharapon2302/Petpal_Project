@@ -1,0 +1,109 @@
+{% load static %}
+<!doctype html>
+<html lang="th" x-data="{}">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>สมัครสมาชิก • Petpal AI</title>
+
+  <!-- Tailwind -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Alpine (ใช้สำหรับโชว์/ซ่อนรหัสผ่านเล็กน้อย) -->
+  <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <!-- HTMX (ถ้าจะต่อยอดตรวจชื่อผู้ใช้/อีเมลแบบสด) -->
+  <script src="https://unpkg.com/htmx.org@1.9.12"></script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <style>
+    html,body{font-family:"Noto Sans Thai",system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial}
+    .soft { box-shadow: 0 10px 25px -12px rgba(0,0,0,.25); }
+  </style>
+</head>
+<body class="min-h-screen bg-neutral-900 text-neutral-900">
+  {% include "myapp/partials/navbar.html" %}
+
+  <!-- พื้นหลัง + เลเยอร์โปร่ง -->
+  <section class="relative min-h-[calc(100vh-4rem)]">
+    <img src="{% static 'images/login-bg.jpg' %}" alt="" class="absolute inset-0 w-full h-full object-cover">
+    <div class="absolute inset-0 bg-white/70"></div>
+
+    <!-- ฟอร์ม -->
+    <div class="relative mx-auto max-w-3xl px-4 py-12 sm:py-16">
+      <!-- โลโก้กลม -->
+      <div class="w-full flex justify-center mb-6">
+        <div>
+          <img src="{% static 'images/logo.png' %}" alt="Petpal AI" class="h-30 w-30">
+        </div>
+      </div>
+
+      {% if messages %}
+      <ul class="mx-auto max-w-2xl mb-4 space-y-2">
+        {% for m in messages %}
+        <li class="rounded-md bg-green-50 text-green-700 px-4 py-2 text-sm">{{ m }}</li>
+        {% endfor %}
+      </ul>
+      {% endif %}
+
+      <form method="post" class="mx-auto max-w-2xl space-y-4">
+        {% csrf_token %}
+
+        <!-- Username -->
+        <input name="username" value="{{ form.username.value|default_if_none:'' }}"
+               placeholder="Username"
+               class="w-full rounded-full bg-white px-6 py-4 text-base soft ring-1 ring-black/10 focus:outline-none focus:ring-2 focus:ring-orange-400" required>
+
+        <!-- Password -->
+        <div x-data="{show:false}">
+          <div class="relative">
+            <input :type="show ? 'text' : 'password'" name="password1"
+                   placeholder="Password"
+                   class="w-full rounded-full bg-white px-6 py-4 text-base soft ring-1 ring-black/10 focus:outline-none focus:ring-2 focus:ring-orange-400" required>
+            <button type="button" @click="show=!show"
+                    class="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-neutral-500 hover:text-neutral-700">
+              <span x-show="!show">แสดง</span><span x-show="show" x-cloak>ซ่อน</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Confirm Password -->
+        <input type="password" name="password2"
+               placeholder="Confirm Password"
+               class="w-full rounded-full bg-white px-6 py-4 text-base soft ring-1 ring-black/10 focus:outline-none focus:ring-2 focus:ring-orange-400" required>
+
+        <!-- Email -->
+        <input type="email" name="email" value="{{ form.email.value|default_if_none:'' }}"
+               placeholder="Email"
+               class="w-full rounded-full bg-white px-6 py-4 text-base soft ring-1 ring-black/10 focus:outline-none focus:ring-2 focus:ring-orange-400" required>
+
+        <!-- Address -->
+        <input name="address" value="{{ form.address.value|default_if_none:'' }}"
+               placeholder="Address"
+               class="w-full rounded-full bg-white px-6 py-4 text-base soft ring-1 ring-black/10 focus:outline-none focus:ring-2 focus:ring-orange-400">
+
+        <!-- Phone -->
+        <input name="phone" value="{{ form.phone.value|default_if_none:'' }}"
+               placeholder="Phone"
+               class="w-full rounded-full bg-white px-6 py-4 text-base soft ring-1 ring-black/10 focus:outline-none focus:ring-2 focus:ring-orange-400">
+
+        {% if form.errors %}
+        <div class="rounded-md bg-red-50 text-red-700 px-4 py-3 text-sm">
+          {{ form.errors }}
+        </div>
+        {% endif %}
+
+        <div class="pt-2">
+          <button type="submit"
+                  class="mx-auto block w-64 rounded-full bg-neutral-900 px-6 py-3 text-white font-medium shadow hover:opacity-90">
+            Confirm
+          </button>
+        </div>
+
+        <p class="text-center text-sm text-neutral-700 pt-2">
+          มีบัญชีอยู่แล้ว? <a href="{% url 'login' %}" class="underline">เข้าสู่ระบบ</a>
+        </p>
+      </form>
+    </div>
+  </section>
+</body>
+</html>

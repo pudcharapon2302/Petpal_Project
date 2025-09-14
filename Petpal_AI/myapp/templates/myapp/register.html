@@ -1,0 +1,24 @@
+<h2>สมัครสมาชิก</h2>
+{% if messages %}
+  <ul>
+    {% for m in messages %}<li>{{ m }}</li>{% endfor %}
+  </ul>
+{% endif %}
+
+<form method="post" novalidate>
+  {% csrf_token %}
+
+  {{ form.non_field_errors }}
+  {% for field in form %}
+    <div style="margin-bottom:8px">
+      {{ field.label_tag }} {{ field }}
+      {% if field.errors %}
+        <div style="color:red">{{ field.errors|striptags }}</div>
+      {% endif %}
+    </div>
+  {% endfor %}
+
+  <button type="submit">Confirm</button>
+</form>
+
+<p>มีบัญชีอยู่แล้ว? <a href="{% url 'login' %}">เข้าสู่ระบบ</a></p>

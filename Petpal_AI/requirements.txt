@@ -1,0 +1,11 @@
+# ---- Django & DB ----
+Django==5.2.6
+mysqlclient==2.2.4
+
+# ---- Vector DB ----
+chromadb>=0.5.23
+
+# ---- Useful dev tools (optional) ----
+python-dotenv==1.0.1
+
+pymysql==1.1.1

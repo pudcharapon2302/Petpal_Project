@@ -1,0 +1,89 @@
+{% load static %}
+<nav x-data="{open:false}" class="sticky top-0 z-50 shadow-md" aria-label="Primary">
+  <div class="bg-gradient-to-r from-orange-400 to-orange-500">
+    <div class="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+
+      <!-- ซ้าย: โลโก้ -->
+      <a href="{% url 'landing' %}" class="flex items-center gap-3">
+        <img src="{% static 'images/logo.png' %}" alt="Petpal AI" class="h-14 w-14 rounded p-1">
+        <span class="hidden sm:block font-semibold text-white tracking-wide">Petpal AI</span>
+      </a>
+
+      <!-- ขวา: เมนูหลัก + บล็อกเข้าสู่ระบบ/โปรไฟล์ -->
+      <div class="hidden md:flex items-center gap-6">
+        <a href="{% url 'landing' %}" class="text-white/90 hover:text-white hover:underline underline-offset-4">home</a>
+        <a href="/adopt"   class="text-white/90 hover:text-white hover:underline underline-offset-4">สัตว์หาบ้าน</a>
+        <a href="/lost"    class="text-white/90 hover:text-white hover:underline underline-offset-4">สัตว์หาย</a>
+        <a href="/contact" class="text-white/90 hover:text-white hover:underline underline-offset-4">ติดต่อ</a>
+
+        {% if request.user.is_authenticated %}
+          <!-- โปรไฟล์ + เมนูเล็ก -->
+          <div x-data="{dd:false}" class="relative">
+            <button @click="dd=!dd" class="inline-flex items-center gap-2 rounded-full bg-white/15 px-2 py-1 hover:bg-white/25 text-white">
+              <span class="h-8 w-8 rounded-full bg-white text-neutral-800 grid place-items-center font-semibold">
+                {{ request.user.username|first|upper }}
+              </span>
+              <span class="hidden sm:block">{{ request.user.username }}</span>
+              <svg class="h-4 w-4 opacity-80" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.11l3.71-3.88a.75.75 0 111.08 1.04l-4.24 4.43a.75.75 0 01-1.08 0L5.21 8.27a.75.75 0 01.02-1.06z" clip-rule="evenodd"/>
+              </svg>
+            </button>
+
+            <!-- Dropdown -->
+            <div x-show="dd" x-transition x-cloak @click.outside="dd=false"
+                 class="absolute right-0 mt-2 w-48 rounded-md bg-white shadow-lg ring-1 ring-black/5 overflow-hidden">
+              <a href="/accounts/profile/" class="block px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-100">โปรไฟล์ของฉัน</a>
+              <!-- ส่ง next=landing เพื่อให้ logout แล้วกลับหน้า Landing -->
+              <form method="post" action="{% url 'logout' %}?next={% url 'landing' %}">
+                {% csrf_token %}
+                <button type="submit"
+                  class="block w-full text-left px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-100">
+                  ออกจากระบบ
+                </button>
+              </form>
+            </div>
+          </div>
+        {% else %}
+          <a href="{% url 'login' %}"
+             class="inline-flex items-center rounded-md bg-black/80 px-4 py-2 text-sm font-medium text-white hover:bg-black">
+            Login
+          </a>
+        {% endif %}
+      </div>
+
+      <!-- ปุ่ม hamburger (มือถือ) -->
+      <button @click="open = !open"
+              class="md:hidden inline-flex items-center justify-center rounded-md bg-black/10 px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-white/60"
+              aria-controls="mobile-menu" :aria-expanded="open">
+        <svg x-show="!open" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none"
+             viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+             d="M4 6h16M4 12h16M4 18h16"/></svg>
+        <svg x-show="open" x-cloak xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none"
+             viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+             d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- เมนูมือถือ -->
+  <div id="mobile-menu" x-show="open" x-transition.origin.top x-cloak class="md:hidden bg-white">
+    <div class="space-y-1 px-4 py-3">
+      <a href="{% url 'landing' %}" class="block rounded-md px-3 py-2 text-neutral-800 hover:bg-neutral-100" @click="open=false">home</a>
+      <a href="/adopt"   class="block rounded-md px-3 py-2 text-neutral-800 hover:bg-neutral-100" @click="open=false">สัตว์หาบ้าน</a>
+      <a href="/lost"    class="block rounded-md px-3 py-2 text-neutral-800 hover:bg-neutral-100" @click="open=false">สัตว์หาย</a>
+      <a href="/contact" class="block rounded-md px-3 py-2 text-neutral-800 hover:bg-neutral-100" @click="open=false">ติดต่อ</a>
+
+      <div class="border-t pt-3 mt-2">
+        {% if request.user.is_authenticated %}
+          <a href="/accounts/profile/" class="block rounded-md px-3 py-2 text-neutral-800 hover:bg-neutral-100" @click="open=false">โปรไฟล์ของฉัน</a>
+          <!-- มือถือก็ส่ง next เช่นกัน -->
+          <a href="{% url 'logout' %}?next={% url 'landing' %}"
+             class="block rounded-md px-3 py-2 text-neutral-800 hover:bg-neutral-100" @click="open=false">ออกจากระบบ</a>
+        {% else %}
+          <a href="{% url 'login' %}"
+             class="block rounded-md bg-neutral-900 px-3 py-2 text-center text-white hover:opacity-90" @click="open=false">Login</a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</nav>

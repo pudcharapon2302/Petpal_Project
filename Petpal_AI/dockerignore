@@ -1,0 +1,21 @@
+# project junk / large
+.git
+**/__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.sqlite3
+.env
+.env.*
+
+# large dirs
+venv/
+.venv/
+node_modules/
+data/
+media/
+staticfiles/
+
+# IDE
+.vscode/
+.idea/
