@@ -6,9 +6,11 @@ Hardened for Docker usage and configurable via environment variables.
 
 from pathlib import Path
 import os
+from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+load_dotenv(BASE_DIR / ".env")
 
 # === Security / Core ===
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "!!-dev-only-fallback-change-me-!!")

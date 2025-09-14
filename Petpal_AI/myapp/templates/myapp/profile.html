@@ -1,217 +1,201 @@
 {% load static %}
-<!doctype html>
-<html lang="th" x-data>
+<!DOCTYPE html>
+<html lang="th">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Profile • Petpal AI</title>
-
-  <!-- Tailwind -->
+  <title>Profile</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Alpine -->
   <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
-
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;600;700&display=swap" rel="stylesheet">
-  <style>
-    html,body{font-family:"Noto Sans Thai",system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial}
-    .soft{box-shadow:0 12px 28px -12px rgba(0,0,0,.25)}
-  </style>
 </head>
-<body class="bg-neutral-50 text-neutral-900">
+<body class="min-h-screen bg-gray-100">
 
+  <!-- Navbar -->
   {% include "myapp/partials/navbar.html" %}
 
-  <main class="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-8">
-    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+  <main class="max-w-6xl mx-auto px-4 py-8 grid md:grid-cols-3 gap-6"
+        x-data="{ showEdit:false, showAddPet:false }">
 
-      <!-- ============ LEFT: Profile card ============ -->
-      <section
-        x-data="profileEditor({
-          avatarInitial: '{{ profile.avatar_url|default:static("images/default-avatar.jpg") }}',
-          nameInitial  : '{{ user.get_full_name|default:user.username }}',
-          phoneInitial : '{{ profile.phone|default:"" }}',
-          addressInitial: `{{ profile.address|default:"" }}`
-        })"
-        class="lg:col-span-4"
-      >
-        <div class="rounded-2xl soft overflow-hidden bg-gradient-to-b from-neutral-700 via-neutral-700 to-neutral-400 text-white">
-          <div class="p-6 sm:p-8">
-            <!-- Avatar -->
-            <div class="w-full flex justify-center">
-              <label class="relative block">
-                <img :src="avatar" alt="" class="h-44 w-44 rounded-full ring-4 ring-white/40 object-cover" />
-                <!-- upload overlay (visible only in edit mode) -->
-                <template x-if="edit">
-                  <span class="absolute inset-0 flex items-end justify-center rounded-full ring-4 ring-transparent hover:ring-white/60 cursor-pointer">
-                    <span class="mb-3 rounded-full bg-black/50 px-3 py-1 text-xs">เปลี่ยนรูป</span>
-                  </span>
-                </template>
-                <input x-show="edit" x-cloak class="absolute inset-0 opacity-0 cursor-pointer"
-                       type="file" accept="image/*" @change="onPick">
-              </label>
-            </div>
-
-            <!-- Name -->
-            <div class="mt-6 text-center">
-              <template x-if="!edit">
-                <h2 class="text-xl sm:text-2xl font-semibold" x-text="name"></h2>
-              </template>
-              <template x-if="edit">
-                <input x-model="name" class="mx-auto block w-72 max-w-full rounded-xl bg-white/90 text-neutral-900 px-4 py-2"
-                       placeholder="ชื่อ-นามสกุล" />
-              </template>
-            </div>
-
-            <!-- Action: Edit / Save -->
-            <div class="mt-4 flex justify-center">
-              <button x-show="!edit" @click="edit=true"
-                      class="rounded-full bg-white/90 px-5 py-2 text-neutral-900 font-medium hover:opacity-90">
-                Edit Profile
-              </button>
-              <button x-show="edit" x-cloak @click="$refs.form.submit()"
-                      class="rounded-full bg-emerald-500 px-5 py-2 text-white font-medium hover:opacity-90">
-                Save
-              </button>
-            </div>
-
-            <!-- FORM (hidden submit) -->
-            <form x-ref="form" class="hidden" method="post" enctype="multipart/form-data" action="{% url 'profile_update' %}">
-              {% csrf_token %}
-              <input type="hidden" name="full_name" :value="name">
-              <input type="hidden" name="phone" :value="phone">
-              <input type="hidden" name="address" :value="address">
-              <input type="hidden" name="avatar_data_url" :value="avatar">
-              <!-- หมายเหตุ: ในโปรดักชันควรอัปโหลดไฟล์จริง (field ชื่อ avatar) 
-                   แล้วแปลงใน view; ตัวอย่างนี้ส่ง dataURL ได้ถ้าต้องการลองแบบง่าย -->
-            </form>
-
-            <!-- fields -->
-            <div class="mt-6 space-y-4">
-              <!-- Phone -->
-              <div>
-                <div class="text-sm/5 opacity-90 mb-1">Phone</div>
-                <template x-if="!edit">
-                  <div class="rounded-xl bg-white/10 px-4 py-3"> {{ profile.phone|default:"—" }} </div>
-                </template>
-                <template x-if="edit">
-                  <input x-model="phone" class="w-full rounded-xl bg-white/90 text-neutral-900 px-4 py-3"
-                         placeholder="เบอร์โทร" />
-                </template>
-              </div>
-              <!-- Address -->
-              <div>
-                <div class="text-sm/5 opacity-90 mb-1">Address</div>
-                <template x-if="!edit">
-                  <div class="rounded-xl bg-white/10 px-4 py-3"> {{ profile.address|default:"—" }} </div>
-                </template>
-                <template x-if="edit">
-                  <input x-model="address" class="w-full rounded-xl bg-white/90 text-neutral-900 px-4 py-3"
-                         placeholder="ที่อยู่" />
-                </template>
-              </div>
-            </div>
-
-            <!-- footer buttons -->
-            <div class="mt-6 flex items-center gap-3">
-              <div class="flex-1 rounded-xl bg-white/90 text-neutral-900 px-4 py-3 flex items-center justify-between">
-                <span>Request</span>
-                <span class="relative">
-                  <span class="inline-block h-2.5 w-2.5 rounded-full bg-red-500"></span>
-                </span>
-              </div>
-
-              <!-- Sign out (POST) -->
-              <form method="post" action="{% url 'logout' %}?next={% url 'landing' %}">
-                {% csrf_token %}
-                <button type="submit" class="rounded-xl bg-red-600 px-5 py-3 text-white hover:bg-red-700">
-                  Sign out
-                </button>
-              </form>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- ============ RIGHT: My pets ============ -->
-      <section class="lg:col-span-8">
-        <div class="rounded-2xl bg-white soft">
-          <div class="flex items-center justify-between px-6 py-4 border-b">
-            <h3 class="text-2xl font-bold">My pets</h3>
-
-            <!-- Add Pet (Alpine modal demo) -->
-            <div x-data="{open:false}">
-              <button @click="open=true"
-                      class="rounded-full bg-neutral-900 text-white text-sm px-3 py-1.5 hover:opacity-90">
-                + Add
-              </button>
-
-              <!-- Modal -->
-              <div x-show="open" x-cloak
-                   class="fixed inset-0 z-50 grid place-items-center bg-black/40 p-4">
-                <div @click.outside="open=false" class="w-full max-w-md rounded-2xl bg-white p-5 space-y-3">
-                  <h4 class="text-lg font-semibold">Add pet</h4>
-                  <form method="post" action="{% url 'pet_create' %}" enctype="multipart/form-data" class="space-y-3">
-                    {% csrf_token %}
-                    <input name="name" class="w-full rounded-lg border px-3 py-2" placeholder="Pet name" required>
-                    <input type="date" name="birth_date" class="w-full rounded-lg border px-3 py-2" required>
-                    <input type="file" name="image" accept="image/*" class="w-full rounded-lg border px-3 py-2">
-                    <div class="flex justify-end gap-2 pt-1">
-                      <button type="button" @click="open=false" class="px-4 py-2 rounded-lg bg-neutral-100">Cancel</button>
-                      <button class="px-4 py-2 rounded-lg bg-neutral-900 text-white">Save</button>
-                    </div>
-                  </form>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Pet cards -->
-          <div class="p-6">
-            {% if pets %}
-              <div class="grid sm:grid-cols-2 gap-6">
-                {% for pet in pets %}
-                  <article class="rounded-xl overflow-hidden border bg-white">
-                    <img src="{{ pet.image_url }}" alt="{{ pet.name }}" class="h-48 w-full object-cover">
-                    <div class="p-4">
-                      <div class="flex items-center gap-3">
-                        <img src="{{ profile.avatar_url|default:static('images/default-avatar.jpg') }}" class="h-9 w-9 rounded-full object-cover" alt="">
-                        <div class="font-semibold">{{ pet.name }}</div>
-                      </div>
-                      <p class="text-sm text-neutral-600 mt-2">
-                        Birth Day : {{ pet.birth_date|date:"d/m/Y" }}
-                      </p>
-                    </div>
-                  </article>
-                {% endfor %}
-              </div>
+    <!-- Left: Profile card -->
+    <section class="md:col-span-1">
+      <div class="rounded-2xl p-6 bg-gradient-to-b from-gray-800 to-gray-700 text-white shadow-lg">
+        <div class="flex flex-col items-center">
+          <div class="relative">
+            {% if profile.avatar %}
+              <img src="{{ profile.avatar.url }}" alt="avatar"
+                   class="w-40 h-40 object-cover rounded-full ring-4 ring-white/20" />
             {% else %}
-              <p class="text-neutral-600">ยังไม่มีสัตว์เลี้ยงที่บันทึกไว้</p>
+              <img src="{% static 'img/default-avatar.jpg' %}" alt="avatar"
+                   class="w-40 h-40 object-cover rounded-full ring-4 ring-white/20" />
             {% endif %}
           </div>
+          <h2 class="mt-5 text-xl font-semibold">
+            {% if request.user.first_name %}{{ request.user.first_name }}{% else %}{{ request.user.username }}{% endif %}
+          </h2>
+          <button @click="showEdit=true"
+                  class="mt-4 px-4 py-2 bg-white text-gray-800 rounded-xl shadow hover:shadow-md">
+            Edit Profile
+          </button>
         </div>
-      </section>
-    </div>
-  </main>
 
-  <!-- Alpine logic -->
-  <script>
-    function profileEditor({avatarInitial, nameInitial, phoneInitial, addressInitial}) {
-      return {
-        edit: false,
-        avatar: avatarInitial,
-        name: nameInitial,
-        phone: phoneInitial,
-        address: addressInitial,
-        onPick(e) {
-          const f = e.target.files?.[0];
-          if (!f) return;
-          const reader = new FileReader();
-          reader.onload = (ev) => { this.avatar = ev.target.result; };
-          reader.readAsDataURL(f);
-        },
-      }
-    }
-  </script>
+        <div class="mt-6 space-y-4">
+          <div>
+            <label class="block text-sm text-white/70">Phone</label>
+            <div class="mt-1 bg-white/10 rounded-xl px-4 py-2">{{ request.user.phone|default:"-" }}</div>
+          </div>
+          <div>
+            <label class="block text-sm text-white/70">Address</label>
+            <div class="mt-1 bg-white/10 rounded-xl px-4 py-2 whitespace-pre-line">
+              {{ request.user.address|default:"-" }}
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-6 flex items-center gap-3">
+          <button class="flex-1 px-4 py-2 rounded-xl bg-white/10">Request</button>
+          <a href="{% url 'logout' %}" class="flex-1 text-center px-4 py-2 rounded-xl bg-red-500">Sign out</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Right: Pets list -->
+    <section class="md:col-span-2">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-2xl font-semibold">My pets</h3>
+        <button @click="showAddPet=true"
+                class="text-sm px-3 py-1 rounded-full bg-gray-900 text-white">
+          + Add
+        </button>
+      </div>
+
+      <div class="grid sm:grid-cols-2 gap-6">
+        {% for pet in pets %}
+          <article class="bg-white rounded-2xl shadow overflow-hidden">
+            <div class="h-40 w-full overflow-hidden">
+              {% if pet.image %}
+                <img src="{{ pet.image.url }}" class="w-full h-40 object-cover" />
+              {% else %}
+                <img src="{% static 'img/pet-placeholder.jpg' %}" class="w-full h-40 object-cover" />
+              {% endif %}
+            </div>
+            <div class="p-4">
+              <div class="flex items-center gap-2">
+                {% if profile.avatar %}
+                  <img src="{{ profile.avatar.url }}" class="w-8 h-8 rounded-full object-cover" />
+                {% else %}
+                  <img src="{% static 'img/default-avatar.jpg' %}" class="w-8 h-8 rounded-full object-cover" />
+                {% endif %}
+                <h4 class="font-semibold">{{ pet.name }}</h4>
+              </div>
+              <p class="text-sm text-gray-600 mt-2">
+                Birth Day : {{ pet.birth_date|date:"d/m/Y" }}
+              </p>
+            </div>
+          </article>
+        {% empty %}
+          <div class="text-gray-500">ยังไม่มีสัตว์เลี้ยง ลองกด “Add” ที่มุมขวา</div>
+        {% endfor %}
+      </div>
+    </section>
+
+    <!-- Modal: Edit Profile (ดีไซน์ใหม่ + avatar preview) -->
+    <div x-show="showEdit" x-cloak
+         class="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
+      <form method="post" action="{% url 'profile_update' %}" enctype="multipart/form-data"
+            x-data="{
+              avatarName: '',
+              avatarUrl: '{% if profile.avatar %}{{ profile.avatar.url|escapejs }}{% else %}{% static 'img/default-avatar.jpg' %}{% endif %}',
+              pickFile(e){ const f=e.target.files?.[0]; if(!f) return; this.avatarName=f.name; this.avatarUrl=URL.createObjectURL(f); }
+            }"
+            class="w-full max-w-2xl">
+        {% csrf_token %}
+
+        <div class="rounded-2xl overflow-hidden shadow-2xl">
+          <div class="bg-gradient-to-r from-neutral-900 to-neutral-800 text-white px-6 py-4 flex items-center justify-between">
+            <h3 class="text-xl font-semibold">Edit Profile</h3>
+            <button type="button" @click="showEdit=false" class="rounded-md bg-white/10 px-3 py-1.5 hover:bg-white/20">✕</button>
+          </div>
+
+          <div class="bg-white px-6 py-6">
+            <div class="grid grid-cols-1 md:grid-cols-[140px,1fr] gap-6 items-center mb-6">
+              <div class="flex md:block justify-center">
+                <img :src="avatarUrl || '{% static 'img/default-avatar.jpg' %}'"
+                     alt="avatar preview"
+                     class="h-28 w-28 rounded-full object-cover ring-4 ring-neutral-100 shadow" />
+              </div>
+
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <label class="block">
+                  <span class="text-sm text-neutral-600">Full name</span>
+                  <input name="full_name" type="text" value="{{ request.user.first_name }}"
+                         placeholder="ชื่อที่จะแสดงในโปรไฟล์"
+                         class="mt-1 w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 focus:outline-none focus:ring-4 focus:ring-neutral-900/10 focus:border-neutral-900" />
+                </label>
+
+                <label class="block">
+                  <span class="text-sm text-neutral-600">Avatar</span>
+                  <input name="avatar" type="file" accept="image/*" @change="pickFile"
+                         class="mt-1 block w-full text-sm file:mr-4 file:rounded-lg file:border-0 file:bg-neutral-900 file:px-4 file:py-2 file:text-white hover:file:opacity-90 cursor-pointer" />
+                  <p class="mt-1 text-xs text-neutral-500 truncate" x-text="avatarName"></p>
+                </label>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <label class="block">
+                <span class="text-sm text-neutral-600">Phone</span>
+                <input name="phone" type="text" value="{{ request.user.phone }}"
+                       placeholder="เช่น 08xxxxxxxx"
+                       class="mt-1 w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 focus:outline-none focus:ring-4 focus:ring-neutral-900/10 focus:border-neutral-900" />
+              </label>
+
+              <label class="block md:col-span-2">
+                <span class="text-sm text-neutral-600">Address</span>
+                <textarea name="address" rows="3" placeholder="ที่อยู่สำหรับติดต่อ/จัดส่ง"
+                          class="mt-1 w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 focus:outline-none focus:ring-4 focus:ring-neutral-900/10 focus:border-neutral-900">{{ request.user.address }}</textarea>
+              </label>
+            </div>
+          </div>
+
+          <div class="bg-neutral-50 px-6 py-4 flex items-center justify-end gap-3">
+            <button type="button" @click="showEdit=false" class="rounded-xl px-4 py-2 bg-neutral-200 hover:bg-neutral-300">Cancel</button>
+            <button class="rounded-xl px-5 py-2.5 bg-neutral-900 text-white hover:opacity-90 shadow">Save</button>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <!-- Modal: Add Pet -->
+    <div x-show="showAddPet" x-cloak
+         class="fixed inset-0 bg-black/40 flex items-center justify-center p-4">
+      <form method="post" action="{% url 'pet_create' %}" enctype="multipart/form-data"
+            class="bg-white rounded-2xl w-full max-w-lg p-6 space-y-4">
+        {% csrf_token %}
+        <h3 class="text-xl font-semibold">Add Pet</h3>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm text-gray-600">Name</label>
+            <input name="name" type="text" class="mt-1 w-full rounded-xl border-gray-300" required />
+          </div>
+          <div>
+            <label class="block text-sm text-gray-600">Birth date</label>
+            <input name="birth_date" type="date" class="mt-1 w-full rounded-xl border-gray-300" />
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-sm text-gray-600">Photo</label>
+          <input name="image" type="file" accept="image/*" class="mt-1 w-full rounded-xl border-gray-300" />
+        </div>
+
+        <div class="flex justify-end gap-2 pt-2">
+          <button type="button" @click="showAddPet=false" class="px-4 py-2 rounded-xl bg-gray-200">Cancel</button>
+          <button class="px-4 py-2 rounded-xl bg-gray-900 text-white">Save</button>
+        </div>
+      </form>
+    </div>
+
+  </main>
 </body>
 </html>

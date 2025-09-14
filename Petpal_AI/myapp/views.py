@@ -81,21 +81,24 @@ def logout_view(request):
 
 @login_required
 def profile_page(request):
-    profile = Profile.objects.get(user=request.user)
+    profile, _ = Profile.objects.get_or_create(user=request.user)
     pets = Pet.objects.filter(owner=request.user).order_by("-id")
     return render(request, "myapp/profile.html", {"profile": profile, "pets": pets})
 
 @login_required
 def profile_update(request):
     if request.method == "POST":
-        p = Profile.objects.get(user=request.user)
-        request.user.first_name, *rest = (request.POST.get("full_name",""),)
+        profile, _ = Profile.objects.get_or_create(user=request.user)
+        # ชื่อเต็มโชว์ที่ UI: เก็บลง first_name (หรือจะแยกก็ได้)
+        request.user.first_name = request.POST.get("full_name", "").strip()
+        request.user.phone = request.POST.get("phone", "").strip()
+        request.user.address = request.POST.get("address", "").strip()
         request.user.save()
-        p.phone   = request.POST.get("phone","")
-        p.address = request.POST.get("address","")
-        # ถ้าใช้ dataURL อาจต้อง decode เก็บไฟล์จริง; 
-        # ถ้ามี input ชื่อ avatar จริง ๆ ให้ใช้ request.FILES["avatar"]
-        p.save()
+
+        if "avatar" in request.FILES:
+            profile.avatar = request.FILES["avatar"]
+        profile.save()
+
     return redirect("profile")
 
 @login_required
@@ -103,8 +106,8 @@ def pet_create(request):
     if request.method == "POST":
         Pet.objects.create(
             owner=request.user,
-            name=request.POST["name"],
-            birth_date=request.POST["birth_date"],
-            image=request.FILES.get("image"),  # สมมติ field เป็น ImageField
+            name=request.POST.get("name", "").strip(),
+            birth_date=request.POST.get("birth_date") or None,
+            image=request.FILES.get("image"),
         )
     return redirect("profile")
