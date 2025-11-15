@@ -1957,6 +1957,9 @@
   .right-6 {
     right: calc(var(--spacing) * 6);
   }
+  .bottom-4 {
+    bottom: calc(var(--spacing) * 4);
+  }
   .bottom-6 {
     bottom: calc(var(--spacing) * 6);
   }
@@ -2497,6 +2500,9 @@
   .h-16 {
     height: calc(var(--spacing) * 16);
   }
+  .h-24 {
+    height: calc(var(--spacing) * 24);
+  }
   .h-28 {
     height: calc(var(--spacing) * 28);
   }
@@ -2511,6 +2517,9 @@
   }
   .h-64 {
     height: calc(var(--spacing) * 64);
+  }
+  .h-96 {
+    height: calc(var(--spacing) * 96);
   }
   .h-\[320px\] {
     height: 320px;
@@ -2559,6 +2568,9 @@
   }
   .w-20 {
     width: calc(var(--spacing) * 20);
+  }
+  .w-24 {
+    width: calc(var(--spacing) * 24);
   }
   .w-28 {
     width: calc(var(--spacing) * 28);
@@ -2913,6 +2925,9 @@
     --tw-gradient-to: var(--color-orange-500);
     --tw-gradient-stops: var(--tw-gradient-via-stops, var(--tw-gradient-position), var(--tw-gradient-from) var(--tw-gradient-from-position), var(--tw-gradient-to) var(--tw-gradient-to-position));
   }
+  .object-contain {
+    object-fit: contain;
+  }
   .object-cover {
     object-fit: cover;
   }
@@ -2991,11 +3006,20 @@
   .pr-3 {
     padding-right: calc(var(--spacing) * 3);
   }
+  .pr-6 {
+    padding-right: calc(var(--spacing) * 6);
+  }
+  .pb-24 {
+    padding-bottom: calc(var(--spacing) * 24);
+  }
   .pl-1 {
     padding-left: calc(var(--spacing) * 1);
   }
   .pl-3 {
     padding-left: calc(var(--spacing) * 3);
+  }
+  .pl-5 {
+    padding-left: calc(var(--spacing) * 5);
   }
   .pl-6 {
     padding-left: calc(var(--spacing) * 6);
@@ -3514,6 +3538,16 @@
     }
   }
   @media (width >= 40rem) {
+    .sm\:w-1\/4 {
+      width: calc(1/4 * 100%);
+    }
+  }
+  @media (width >= 40rem) {
+    .sm\:w-3\/4 {
+      width: calc(3/4 * 100%);
+    }
+  }
+  @media (width >= 40rem) {
     .sm\:grid-cols-2 {
       grid-template-columns: repeat(2, minmax(0, 1fr));
     }
@@ -3536,6 +3570,18 @@
   @media (width >= 40rem) {
     .sm\:justify-between {
       justify-content: space-between;
+    }
+  }
+  @media (width >= 40rem) {
+    .sm\:border-t-0 {
+      border-top-style: var(--tw-border-style);
+      border-top-width: 0px;
+    }
+  }
+  @media (width >= 40rem) {
+    .sm\:border-l {
+      border-left-style: var(--tw-border-style);
+      border-left-width: 1px;
     }
   }
   @media (width >= 40rem) {

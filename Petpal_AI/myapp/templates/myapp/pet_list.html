@@ -67,6 +67,7 @@
       <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         
         {% for post in cat_posts %}
+        <a href="{% url 'post_detail' pk=post.pk %}" class="block hover:shadow-lg transition">
         <article class="rounded-xl overflow-hidden bg-white soft-card">
           {% if post.pet.image %}
             <img src="{{ post.pet.image.url }}" alt="{{ post.pet.name }}" class="h-64 w-full object-cover" loading="lazy">
@@ -97,6 +98,7 @@
             </dl>
           </div>
         </article>
+        </a>
         {% empty %}
         <div class="lg:col-span-3 text-center text-neutral-500 py-10">
           <p>ยังไม่มีข้อมูลน้องแมวในหมวดหมู่นี้</p>
@@ -119,6 +121,7 @@
       <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         
         {% for post in dog_posts %}
+        <a href="{% url 'post_detail' pk=post.pk %}" class="block hover:shadow-lg transition">
         <article class="rounded-xl overflow-hidden bg-white soft-card">
           {% if post.pet.image %}
             <img src="{{ post.pet.image.url }}" alt="{{ post.pet.name }}" class="h-64 w-full object-cover" loading="lazy">
@@ -149,6 +152,7 @@
             </dl>
           </div>
         </article>
+        </a>
         {% empty %}
         <div class="lg:col-span-3 text-center text-neutral-500 py-10">
           <p>ยังไม่มีข้อมูลน้องหมาในหมวดหมู่นี้</p>

@@ -1,0 +1,112 @@
+{% load static %}
+{% load tailwind_tags %}
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{{ post.pet.name }} — Petpal AI</title>
+
+  {% tailwind_css %}
+  <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <style>
+    html { scroll-behavior: smooth; } 
+    body { font-family: "Noto Sans Thai", system_ui; }
+    .soft-card { box-shadow: 0 10px 20px -10px rgba(0,0,0,.15); }
+  </style>
+</head>
+<body class="bg-gray-50 text-neutral-900"> {% include "myapp/partials/navbar.html" %}
+
+  <main class="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-10 pb-24">
+
+    <header class="mb-8 space-y-4">
+      <div class="flex justify-between items-center gap-4">
+        <h1 class="text-4xl sm:text-5xl font-extrabold tracking-tight">
+          รายละเอียดโพสต์
+        </h1>
+        <button onclick="history.back()"
+           class="rounded-md shadow-sm text-sm font-medium px-4 py-2 border border-gray-300 bg-white text-gray-700 hover:bg-gray-50">
+          Back
+        </button>
+      </div>
+    </header>
+    
+    <article class="max-w-2xl mx-auto rounded-xl overflow-hidden bg-white shadow-lg border border-gray-200">
+      
+      {% if post.pet.image %}
+        <img src="{{ post.pet.image.url }}" alt="{{ post.pet.name }}" class="h-96 w-full object-cover">
+      {% else %}
+        <div class="h-96 w-full bg-gray-100 flex items-center justify-center">
+          <span class="text-gray-400">(No Image)</span>
+        </div>
+      {% endif %}
+           
+      <div class="p-6 space-y-4">
+        
+        <div class="space-y-2">
+          <h2 class="text-3xl font-bold">{{ post.pet.name }}</h2>
+          <dl class="text-sm text-neutral-600 space-y-1">
+            <div class="flex"><dt class="w-20 shrink-0 font-medium">พันธุ์ :</dt>
+              <dd>{{ post.pet.animal.breed|default:"—" }}</dd>
+            </div>
+            <div class="flex"><dt class="w-20 shrink-0 font-medium">เพศ :</dt>
+              <dd>{{ post.pet.get_gender_display|default:"—" }}</dd>
+            </div>
+            <div class="flex"><dt class="w-20 shrink-0 font-medium">วันเกิด :</dt>
+              <dd>{{ post.pet.birth_date|date:"j M Y"|default:"—" }}</dd>
+            </div>
+          </dl>
+        </div>
+
+        <hr/>
+        
+        <div class="space-y-2">
+          <h3 class="text-lg font-semibold">รายละเอียด</h3>
+          <p class="text-neutral-700">
+            {{ post.description|default:"(ไม่มีคำอธิบาย)"|linebreaksbr }}
+          </p>
+        </div>
+
+        {% if post.post_type == 'LOST' %}
+        <div class_space-y-2">
+          <h3 class="text-lg font-semibold text-red-600">ข้อมูลการหาย</h3>
+          <dl class="text-sm text-neutral-600 space-y-1">
+            <div class="flex"><dt class="w-24 shrink-0 font-medium">วันที่หาย :</dt>
+              <dd>{{ post.lost_date|date:"j M Y"|default:"—" }}</dd>
+            </div>
+            <div class="flex"><dt class="w-24 shrink-0 font-medium">หายจาก (สถานที่) :</dt>
+              <dd>{{ post.lost_location|default:"—" }}</dd>
+            </div>
+          </dl>
+        </div>
+        {% endif %}
+
+        <hr/>
+        
+        <div class="space-y-2" id="contact-section">
+          <h3 class="text-lg font-semibold">ข้อมูลติดต่อ (จากผู้โพสต์)</h3>
+          <dl class="text-sm text-neutral-600 space-y-1">
+            <div class="flex"><dt class="w-24 shrink-0 font-medium">เบอร์ติดต่อ :</dt>
+              <dd>{{ post.contact_phone|default:"—" }}</dd>
+            </div>
+            <div class="flex"><dt class="w-24 shrink-0 font-medium">Social :</dt>
+              <dd>{{ post.contact_social|default:"—"|linebreaksbr }}</dd>
+            </div>
+          </dl>
+        </div>
+        
+      </div>
+    </article>
+
+  </main>
+
+  <footer class="fixed bottom-4 right-4 z-50">
+    <a href="#contact-section"
+       class="flex items-center gap-2 rounded-full bg-orange-500 pl-5 pr-6 py-3 text-lg font-semibold text-white shadow-lg hover:bg-orange-600 transition">
+      <span class="text-2xl">🐾</span> รับเลี้ยงฉัน
+    </a>
+  </footer>
+
+</body>
+</html>
