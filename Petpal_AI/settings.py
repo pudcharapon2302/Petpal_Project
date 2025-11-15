@@ -4,7 +4,7 @@ DATABASES = {
         'NAME': 'petpal_db',
         'USER': 'root',
         'PASSWORD': 'my-secret-pw',
-        'HOST': '127.0.0.1',
+        'HOST': 'mysql_db',
         'PORT': '3306',
     }
 }

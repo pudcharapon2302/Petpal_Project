@@ -1,0 +1,325 @@
+{% load static %}
+{% load tailwind_tags %}  <!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Edit Pet</title>
+  {% tailwind_css %} <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+</head>
+<body class="bg-gray-100">
+  {% include "myapp/partials/navbar.html" %}
+
+  <main class="max-w-6xl mx-auto px-4 py-8">
+    <h1 class="text-3xl font-bold mb-4">Edit pet</h1>
+
+    <div class="bg-white rounded-2xl shadow overflow-hidden">
+      <form id="petForm" method="post" enctype="multipart/form-data" class="contents">
+        {% csrf_token %}
+
+        <!-- HERO: cover image -->
+        <div id="hero_zone"
+             class="group relative h-56 md:h-64 w-full overflow-hidden cursor-pointer
+                    bg-[repeating-linear-gradient(45deg,#f3f4f6,#f3f4f6_10px,#e5e7eb_10px,#e5e7eb_20px)]">
+          {% if pet.cover_image %}
+            <img id="hero_preview" src="{{ pet.cover_image.url }}" class="absolute inset-0 w-full h-full object-cover">
+          {% else %}
+            <img id="hero_preview" src="" class="absolute inset-0 w-full h-full object-cover hidden">
+          {% endif %}
+
+          <!-- กล่องคำแนะนำ จัดกึ่งกลาง -->
+          <div class="absolute inset-0 z-10 flex flex-col items-center justify-center pointer-events-none">
+            <div class="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/80 text-gray-800 shadow">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                      d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14M8 7h.01M7 20h10a2 2 0 002-2V8a2 2 0 00-2-2h-3l-2-2H9L7 6H6a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+              </svg>
+              <span class="font-medium">Click or Drop cover image here</span>
+            </div>
+            <p class="mt-2 text-xs text-gray-100 drop-shadow">รองรับ JPG/PNG</p>
+          </div>
+
+          {{ form.cover_image }}
+        </div>
+
+        <div class="p-6 grid md:grid-cols-2 gap-6">
+          <!-- Header: avatar + ปุ่มอัปโหลด -->
+          <div class="md:col-span-2 flex items-center gap-3">
+            <img id="thumb_preview"
+                 src="{% if pet.image %}{{ pet.image.url }}{% else %}{% static 'img/pet-placeholder.jpg' %}{% endif %}"
+                 class="w-10 h-10 rounded-full object-cover ring-2 ring-white shadow" alt="">
+            <div>
+              <div class="text-lg font-semibold">Name</div>
+              <div class="text-sm text-gray-500">แก้ไขข้อมูลด้านล่าง</div>
+            </div>
+
+            <button type="button"
+                    onclick="document.getElementById('id_avatar_image').click()"
+                    class="ml-auto inline-flex items-center gap-2 px-4 py-2 rounded-xl border cursor-pointer">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                      d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14M8 7h.01M7 20h10a2 2 0 002-2V8a2 2 0 00-2-2h-3l-2-2H9L7 6H6a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+              </svg>
+              <span>Upload photo</span>
+            </button>
+            <span id="file_name" class="ml-3 text-sm text-gray-500"></span>
+
+            {{ form.image }}
+          </div>
+
+          <div>
+            <label class="block text-sm text-gray-600">Type / Breed</label>
+            {{ form.animal }}
+          </div>
+          <div>
+            <label class="block text-sm text-gray-600">Name</label>
+            {{ form.name }}
+          </div>
+          <div>
+            <label class="block text-sm text-gray-600">Date of Birth</label>
+            {{ form.birth_date }}
+          </div>
+          <div>
+            <label class="block text-sm text-gray-600">Weight (kg)</label>
+            {{ form.weight }}
+          </div>
+
+          <!-- =================== Vaccination History =================== -->
+          <div class="md:col-span-2">
+            <div class="flex items-center justify-between mb-2">
+              <h3 class="font-semibold">Vaccination History</h3>
+              <button type="button" id="add_vaccine"
+                      class="text-sm px-3 py-1 rounded-full bg-neutral-800 text-white hover:opacity-90">+ Add row</button>
+            </div>
+
+            {{ vaccines.management_form }}
+            <div id="vaccines_forms" class="space-y-3">
+              {% for f in vaccines.forms %}
+                <div class="form-row relative grid md:grid-cols-4 gap-3 items-end p-3 rounded-xl border bg-white">
+                  <!-- ปุ่มลบทันที -->
+                  <button type="button" class="row-remove absolute -top-3 -right-3 h-7 w-7 rounded-full bg-red-500 text-white shadow flex items-center justify-center hover:bg-red-600" title="Remove row" aria-label="Remove row">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M9 13h6m2 8H7a2 2 0 01-2-2V7h14v12a2 2 0 01-2 2zM10 7V5a2 2 0 012-2h0a2 2 0 012 2v2m-8 0h12"/>
+                    </svg>
+                  </button>
+
+                  {{ f.id }}  <!-- สำคัญสำหรับแถวเดิม -->
+                  <div>
+                    <label class="block text-xs text-gray-600">Vaccine name</label>
+                    {{ f.vaccine_name }}
+                  </div>
+                  <div>
+                    <label class="block text-xs text-gray-600">Vaccinated on</label>
+                    {{ f.vaccinated_on }}
+                  </div>
+                  <div>
+                    <label class="block text-xs text-gray-600">Next due date</label>
+                    {{ f.next_due_date }}
+                  </div>
+                  <div class="grid grid-cols-1 gap-2">
+                    <div>
+                      <label class="block text-xs text-gray-600">Hospital</label>
+                      {{ f.hospital_name }}
+                    </div>
+                    {% if vaccines.can_delete %}
+                      <label class="hidden">{{ f.DELETE }} Remove</label>
+                    {% endif %}
+                  </div>
+                </div>
+              {% endfor %}
+            </div>
+
+            <!-- template วัคซีน -->
+            <template id="vaccine_empty">
+              <div class="form-row relative grid md:grid-cols-4 gap-3 items-end p-3 rounded-xl border bg-white">
+                <button type="button" class="row-remove absolute -top-3 -right-3 h-7 w-7 rounded-full bg-red-500 text-white shadow flex items-center justify-center hover:bg-red-600" title="Remove row" aria-label="Remove row">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 13h6m2 8H7a2 2 0 01-2-2V7h14v12a2 2 0 01-2 2zM10 7V5a2 2 0 012-2h0a2 2 0 012 2v2m-8 0h12"/>
+                  </svg>
+                </button>
+
+                <div>
+                  <label class="block text-xs text-gray-600">Vaccine name</label>
+                  {{ vaccines.empty_form.vaccine_name }}
+                </div>
+                <div>
+                  <label class="block text-xs text-gray-600">Vaccinated on</label>
+                  {{ vaccines.empty_form.vaccinated_on }}
+                </div>
+                <div>
+                  <label class="block text-xs text-gray-600">Next due date</label>
+                  {{ vaccines.empty_form.next_due_date }}
+                </div>
+                <div>
+                  <label class="block text-xs text-gray-600">Hospital</label>
+                  {{ vaccines.empty_form.hospital_name }}
+                </div>
+              </div>
+            </template>
+          </div>
+
+          <!-- =================== Allergy History =================== -->
+          <div class="md:col-span-2 mt-2">
+            <div class="flex items-center justify-between mb-2">
+              <h3 class="font-semibold">Allergy History</h3>
+              <button type="button" id="add_allergy"
+                      class="text-sm px-3 py-1 rounded-full bg-neutral-800 text-white hover:opacity-90">+ Add row</button>
+            </div>
+
+            {{ allergies.management_form }}
+            <div id="allergies_forms" class="space-y-3">
+              {% for f in allergies.forms %}
+                <div class="form-row relative grid md:grid-cols-3 gap-3 items-end p-3 rounded-xl border bg-white">
+                  <button type="button" class="row-remove absolute -top-3 -right-3 h-7 w-7 rounded-full bg-red-500 text-white shadow flex items-center justify-center hover:bg-red-600" title="Remove row" aria-label="Remove row">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M9 13h6m2 8H7a2 2 0 01-2-2V7h14v12a2 2 0 01-2 2zM10 7V5a2 2 0 012-2h0a2 2 0 012 2v2m-8 0h12"/>
+                    </svg>
+                  </button>
+
+                  {{ f.id }}
+                  <div>
+                    <label class="block text-xs text-gray-600">Allergy</label>
+                    {{ f.allergy_name }}
+                  </div>
+                  <div>
+                    <label class="block text-xs text-gray-600">Severity</label>
+                    {{ f.severity }}
+                  </div>
+                  <div class="grid grid-cols-1 gap-2">
+                    <div>
+                      <label class="block text-xs text-gray-600">Noted on</label>
+                      {{ f.noted_on }}
+                    </div>
+                    {% if allergies.can_delete %}
+                      <label class="hidden">{{ f.DELETE }} Remove</label>
+                    {% endif %}
+                  </div>
+                </div>
+              {% endfor %}
+            </div>
+
+            <!-- template แพ้ -->
+            <template id="allergy_empty">
+              <div class="form-row relative grid md:grid-cols-3 gap-3 items-end p-3 rounded-xl border bg-white">
+                <button type="button" class="row-remove absolute -top-3 -right-3 h-7 w-7 rounded-full bg-red-500 text-white shadow flex items-center justify-center hover:bg-red-600" title="Remove row" aria-label="Remove row">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 13h6m2 8H7a2 2 0 01-2-2V7h14v12a2 2 0 01-2 2zM10 7V5a2 2 0 012-2h0a2 2 0 012 2v2m-8 0h12"/>
+                  </svg>
+                </button>
+
+                <div>
+                  <label class="block text-xs text-gray-600">Allergy</label>
+                  {{ allergies.empty_form.allergy_name }}
+                </div>
+                <div>
+                  <label class="block text-xs text-gray-600">Severity</label>
+                  {{ allergies.empty_form.severity }}
+                </div>
+                <div>
+                  <label class="block text-xs text-gray-600">Noted on</label>
+                  {{ allergies.empty_form.noted_on }}
+                </div>
+              </div>
+            </template>
+          </div>
+
+          <!-- Footer -->
+          <div class="md:col-span-2 flex items-center justify-between mt-3">
+            <a href="{% url 'pet_detail' pet.pk %}" class="px-6 py-2 rounded-2xl bg-gray-200">Back to detail</a>
+            <button class="px-6 py-2 rounded-2xl bg-green-400 text-black font-medium">Save</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </main>
+
+  <script>
+    // ===== cover (hero) =====
+    const heroZone    = document.getElementById('hero_zone');
+    const heroPreview = document.getElementById('hero_preview');
+    const coverInput  = document.getElementById('id_cover_image');
+
+    heroZone.addEventListener('click', () => coverInput && coverInput.click());
+    ['dragenter','dragover'].forEach(ev =>
+      heroZone.addEventListener(ev, e => { e.preventDefault(); heroZone.classList.add('ring-2','ring-gray-400'); })
+    );
+    ['dragleave','drop'].forEach(ev =>
+      heroZone.addEventListener(ev, e => { e.preventDefault(); heroZone.classList.remove('ring-2','ring-gray-400'); })
+    );
+    heroZone.addEventListener('drop', e => {
+      const f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+      if (!f) return; setCover(f, true);
+    });
+    coverInput && coverInput.addEventListener('change', e => {
+      const f = e.target.files && e.target.files[0];
+      if (!f) return; setCover(f, false);
+    });
+    function setCover(f, fromDrop){
+      const url = URL.createObjectURL(f);
+      heroPreview.src = url;
+      heroPreview.classList.remove('hidden');
+      if (fromDrop && coverInput){
+        const dt = new DataTransfer(); dt.items.add(f); coverInput.files = dt.files;
+      }
+    }
+
+    // ===== avatar (profile) =====
+    const avatarInput = document.getElementById('id_avatar_image');
+    const thumbPrev   = document.getElementById('thumb_preview');
+    const fileNameEl  = document.getElementById('file_name');
+    avatarInput && avatarInput.addEventListener('change', e => {
+      const f = e.target.files && e.target.files[0];
+      if (!f) return;
+      if (fileNameEl) fileNameEl.textContent = f.name;
+      try { const url = URL.createObjectURL(f); thumbPrev.src = url; } catch(e){}
+    });
+
+    // ===== add form row (vaccines/allergies) =====
+    function addForm(containerId, tmplId, totalName){
+      const container = document.getElementById(containerId);
+      const tmplFrag  = document.getElementById(tmplId).content.cloneNode(true);
+      const totalInput = document.querySelector(`[name='${totalName}']`);
+      const index = parseInt(totalInput.value, 10);
+
+      // แทน __prefix__ เป็น index
+      tmplFrag.querySelectorAll('input, select, textarea, label').forEach(el=>{
+        ['name','id','for'].forEach(attr=>{
+          const v = el.getAttribute(attr);
+          if(v && v.includes('__prefix__')){
+            el.setAttribute(attr, v.replace(/__prefix__/g, index));
+          }
+        });
+      });
+
+      totalInput.value = index + 1;
+      container.appendChild(tmplFrag);
+    }
+    document.getElementById('add_vaccine')
+      .addEventListener('click', ()=>addForm('vaccines_forms','vaccine_empty','vaccines-TOTAL_FORMS'));
+    document.getElementById('add_allergy')
+      .addEventListener('click', ()=>addForm('allergies_forms','allergy_empty','allergies-TOTAL_FORMS'));
+
+    // ===== instant remove row (ปุ่มถังขยะ) =====
+    document.addEventListener('click', (e)=>{
+      const btn = e.target.closest('.row-remove');
+      if(!btn) return;
+
+      const row = btn.closest('.form-row');
+      if(!row) return;
+
+      // ถ้ามี checkbox DELETE (แถวเดิม) ให้เช็คไว้
+      const del = row.querySelector('input[type="checkbox"][name$="-DELETE"]');
+      if (del) { del.checked = true; del.disabled = false; }
+
+      // ปิดการส่งของ field ทั้งแถว (ยกเว้น DELETE)
+      row.querySelectorAll('input, select, textarea').forEach(el=>{
+        if (del && el === del) return;
+        el.disabled = true;
+      });
+
+      // ซ่อนแถวทันที
+      row.style.display = 'none';
+    });
+  </script>
+</body>
+</html>

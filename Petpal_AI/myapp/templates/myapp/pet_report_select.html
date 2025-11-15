@@ -1,0 +1,48 @@
+{% load static %}
+{% load tailwind_tags %}
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>เลือกประเภทประกาศ — Petpal AI</title>
+  {% tailwind_css %}
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <style> html, body { font-family: "Noto Sans Thai", system_ui; } </style>
+</head>
+<body class="bg-white text-neutral-900">
+  {% include "myapp/partials/navbar.html" %}
+
+  <main class="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-10">
+  <header class="mb-8">
+
+  <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+    <h1 class="text-4xl sm:text-5xl font-extrabold tracking-tight">เลือกประเภทประกาศ</h1>
+
+    <button onclick="history.back()"
+            class="rounded-md shadow-sm text-sm font-medium px-4 py-2 border border-gray-300 bg-white text-gray-700 hover:bg-gray-50">
+      Back
+    </button>
+    </div>
+  <p class="mt-3 text-neutral-600">คุณต้องการโพสต์ประกาศประเภทใด?</p>
+  </header>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+      <a href="{% url 'pet_report_create' post_type='ADOPTION' %}" 
+         class="block rounded-lg border border-gray-300 p-6 hover:border-orange-500 hover:shadow-lg transition">
+        <h2 class="text-2xl font-semibold">ประกาศหาบ้าน</h2>
+        <p class="mt-2 text-gray-600">สำหรับโพสต์หาสัตว์เลี้ยงที่ต้องการบ้านใหม่, สัตว์จร, หรือลูกสัตว์ที่ต้องการผู้อุปถัมภ์</p>
+      </a>
+      
+      <a href="{% url 'pet_report_create' post_type='LOST' %}"
+         class="block rounded-lg border border-gray-300 p-6 hover:border-orange-500 hover:shadow-lg transition">
+        <h2 class="text-2xl font-semibold">ประกาศตามหา</h2>
+        <p class="mt-2 text-gray-600">สำหรับโพสต์ตามหาสัตว์เลี้ยงที่สูญหาย, พลัดหลง, หรือหลุดออกจากบ้าน</p>
+      </a>
+
+    </div>
+  </main>
+
+</body>
+</html>

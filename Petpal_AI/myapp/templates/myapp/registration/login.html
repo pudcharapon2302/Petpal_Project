@@ -1,15 +1,13 @@
 {% load static %}
-<!doctype html>
+{% load tailwind_tags %}  <!doctype html>
 <html lang="th" x-data="{}">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>เข้าสู่ระบบ • Petpal AI</title>
 
-  <!-- Tailwind -->
-  <script src="https://cdn.tailwindcss.com"></script>
   <!-- Alpine (ไม่จำเป็นมากสำหรับหน้านี้) -->
-  <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  {% tailwind_css %} <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;600;700&display=swap" rel="stylesheet">

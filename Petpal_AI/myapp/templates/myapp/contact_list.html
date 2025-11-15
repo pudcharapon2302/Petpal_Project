@@ -1,0 +1,93 @@
+{% load static %}
+{% load tailwind_tags %}
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{{ page_title|default:"ติดต่อ" }} — Petpal AI</title>
+  {% tailwind_css %}
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <style>
+    html, body { font-family: "Noto Sans Thai", system_ui; }
+    .soft-card { box-shadow: 0 10px 20px -10px rgba(0,0,0,.15); }
+  </style>
+</head>
+<body class="bg-gray-50 text-neutral-900"> {% include "myapp/partials/navbar.html" %}
+
+  <main class="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-10">
+
+    <header class="mb-8 space-y-4">
+      <div class="relative">
+        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+          <svg class="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 3.5a5.5 5.5 0 100 11 5.5 5.5 0 000-11zM2 9a7 7 0 1112.452 4.391l3.328 3.329a.75.75 0 11-1.06 1.06l-3.329-3.328A7 7 0 012 9z" clip-rule="evenodd" /></svg>
+        </div>
+        <input type="search" name="q" id="search"
+               class="block w-full pl-10 pr-3 py-2 border border-neutral-300 rounded-md leading-5 bg-white placeholder-neutral-500 focus:outline-none focus:ring-orange-500 focus:border-orange-500 sm:text-sm shadow-sm"
+               placeholder="search">
+      </div>
+      <div class="flex justify-end">
+        <button class="rounded-md shadow-sm text-sm font-medium px-4 py-2 border border-gray-300 bg-white text-gray-700 hover:bg-gray-50">
+          ปุ่มเช็คจังหวัด
+        </button>
+      </div>
+    </header>
+
+    <div class="space-y-6">
+
+      {% for f in foundations %}
+      <article class="rounded-xl overflow-hidden bg-white shadow-md border border-gray-200">
+        <div class="flex flex-col sm:flex-row">
+          
+          <div class="sm:w-1/4 p-4 flex justify-center items-center">
+            {% if f.logo %}
+              <img src="{{ f.logo.url }}" alt="{{ f.name }} logo"
+                   class="h-24 w-24 object-contain rounded-full border border-gray-200 p-1">
+            {% else %}
+              <span class="h-24 w-24 rounded-full bg-gray-100 text-gray-400 flex items-center justify-center">
+                (No Logo)
+              </span>
+            {% endif %}
+          </div>
+
+          <div class="sm:w-3/4 p-4 border-t sm:border-t-0 sm:border-l border-gray-200">
+            <h2 class="text-xl font-semibold">{{ f.name }}</h2>
+            
+            <dl class="mt-2 text-sm text-neutral-600 space-y-1">
+              <div class="flex"><dt class="w-20 shrink-0 font-medium">ที่อยู่:</dt>
+                <dd>{{ f.address|default:"-"|linebreaksbr }}</dd>
+              </div>
+              <div class="flex"><dt class="w-20 shrink-0 font-medium">เบอร์ติดต่อ:</dt>
+                <dd>{{ f.phone|default:"-" }}</dd>
+              </div>
+              <div class="flex"><dt class="w-20 shrink-0 font-medium">เว็บไซต์:</dt>
+                <dd>
+                  {% if f.website_url %}
+                    <a href="{{ f.website_url }}" target="_blank" rel="noopener" class="text-blue-600 hover:underline">{{ f.website_url }}</a>
+                  {% else %} - {% endif %}
+                </dd>
+              </div>
+              <div class="flex"><dt class="w-20 shrink-0 font-medium">Facebook:</dt>
+                <dd>
+                  {% if f.facebook_url %}
+                    <a href="{{ f.facebook_url }}" target="_blank" rel="noopener" class="text-blue-600 hover:underline">ไปที่ Facebook</a>
+                  {% else %} - {% endif %}
+                </dd>
+              </div>
+            </dl>
+            
+          </div>
+        </div>
+      </article>
+
+      {% empty %}
+      <div class="text-center text-neutral-500 py-10">
+        <p>ยังไม่มีข้อมูลหน่วยงาน/มูลนิธิในขณะนี้</p>
+      </div>
+      {% endfor %}
+
+    </div>
+  </main>
+
+</body>
+</html>

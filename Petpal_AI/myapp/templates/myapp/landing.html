@@ -1,19 +1,17 @@
 {% load static %}
-<!doctype html>
+{% load tailwind_tags %}  <!doctype html>
 <html lang="th" x-data="{ }">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Petpal AI — ผู้ช่วยอัจฉริยะเพื่อสัตว์เลี้ยงของคุณ</title>
 
-  <!-- Tailwind CSS (CDN) -->
-  <script src="https://cdn.tailwindcss.com"></script>
   <!-- Alpine.js (CDN) -->
-  <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  {% tailwind_css %} <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
   <!-- HTMX (CDN) -->
   <script src="https://unpkg.com/htmx.org@1.9.12"></script>
 
-  <!-- ตัวเลือกฟอนต์ไทยอ่านสบาย -->
+  <!-- ตัวเลือกฟอนต์ไทย -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;600;700&display=swap" rel="stylesheet">
   <style>
@@ -53,103 +51,116 @@
 
     <!-- น้องๆที่อยากได้บ้านใหม่ -->
     <section class="mb-16">
-      <h2 class="text-2xl sm:text-3xl font-extrabold mb-6">น้องๆที่อยากได้บ้านใหม่</h2>
+      <div class="flex justify-between items-center mb-6">
+        <h2 class="text-2xl sm:text-3xl font-extrabold">น้องๆที่อยากได้บ้านใหม่</h2>
+        <a href="{% url 'adoption_list' %}" class="text-blue-600 hover:underline font-semibold">
+          ดูทั้งหมด
+        </a>
+      </div>
 
       <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        <!-- Card 1 -->
+        
+        {% for post in posts_for_adoption %}
+        
         <article class="rounded-xl overflow-hidden bg-white soft-card">
-          <img src="{% static 'images/cat1.jpg' %}"
-               alt="แมวสองสีสุดน่ารัก" class="h-64 w-full object-cover" loading="lazy">
+          
+          {% if post.pet.image %}
+            <img src="{{ post.pet.image.url }}" alt="{{ post.pet.name }}" class="h-64 w-full object-cover" loading="lazy">
+          {% else %}
+            <img src="{% static 'images/cat1.jpg' %}" alt="รูปตัวอย่าง" class="h-64 w-full object-cover" loading="lazy">
+          {% endif %}
+               
           <div class="p-4">
-            <h3 class="font-semibold">ชื่อแมว/หมา</h3>
+            <h3 class="font-semibold">{{ post.pet.name }}</h3> 
+            
             <dl class="mt-2 text-sm text-neutral-600 space-y-1">
-              <div class="flex gap-2"><dt class="w-16 shrink-0">พันธุ์ :</dt><dd>—</dd></div>
-              <div class="flex gap-2"><dt class="w-16 shrink-0">เพศ :</dt><dd>—</dd></div>
-              <div class="flex gap-2"><dt class="w-16 shrink-0">วันเกิด :</dt><dd>—</dd></div>
+              
+              <div class="flex gap-2">
+                <dt class="w-16 shrink-0">พันธุ์ :</dt>
+                <dd>{{ post.pet.animal.breed|default:"—" }}</dd>
+              </div>
+
+              <div class="flex gap-2">
+                <dt class="w-16 shrink-0">เพศ :</dt>
+                <dd>{{ post.pet.get_gender_display|default:"—" }}</dd>
+              </div>
+              
+              <div class="flex gap-2">
+                <dt class="w-16 shrink-0">วันเกิด :</dt>
+                <dd>{{ post.pet.birth_date|date:"j M Y"|default:"—" }}</dd>
+              </div>
+
             </dl>
           </div>
         </article>
 
-        <!-- Card 2 -->
-        <article class="rounded-xl overflow-hidden bg-white soft-card">
-          <img src="{% static 'images/dog1.jpg' %}"
-               alt="น้องหมาพักสายตา" class="h-64 w-full object-cover" loading="lazy">
-          <div class="p-4">
-            <h3 class="font-semibold">ชื่อแมว/หมา</h3>
-            <dl class="mt-2 text-sm text-neutral-600 space-y-1">
-              <div class="flex gap-2"><dt class="w-16 shrink-0">พันธุ์ :</dt><dd>—</dd></div>
-              <div class="flex gap-2"><dt class="w-16 shrink-0">เพศ :</dt><dd>—</dd></div>
-              <div class="flex gap-2"><dt class="w-16 shrink-0">วันเกิด :</dt><dd>—</dd></div>
-            </dl>
-          </div>
-        </article>
+        {% empty %}
+        
+        <div class="lg:col-span-3 text-center text-neutral-500 py-10">
+          <p>ยังไม่มีข้อมูลน้องๆ ที่รอการอุปถัมภ์ในขณะนี้</p>
+        </div>
 
-        <!-- Card 3 -->
-        <article class="rounded-xl overflow-hidden bg-white soft-card">
-          <img src="{% static 'images/cat2.jpg' %}"
-               alt="แมวตาสีฟ้า" class="h-64 w-full object-cover" loading="lazy">
-          <div class="p-4">
-            <h3 class="font-semibold">ชื่อแมว/หมา</h3>
-            <dl class="mt-2 text-sm text-neutral-600 space-y-1">
-              <div class="flex gap-2"><dt class="w-16 shrink-0">พันธุ์ :</dt><dd>—</dd></div>
-              <div class="flex gap-2"><dt class="w-16 shrink-0">เพศ :</dt><dd>—</dd></div>
-              <div class="flex gap-2"><dt class="w-16 shrink-0">วันเกิด :</dt><dd>—</dd></div>
-            </dl>
-          </div>
-        </article>
-      </div>
+        {% endfor %}
+        </div>
     </section>
 
     <!-- สัตว์เลี้ยงหาย -->
     <section class="mb-16">
-      <h2 class="text-2xl sm:text-3xl font-extrabold mb-6">สัตว์เลี้ยงหาย</h2>
+      <div class="flex justify-between items-center mb-6">
+        <h2 class="text-2xl sm:text-3xl font-extrabold">สัตว์เลี้ยงหาย</h2>
+        <a href="{% url 'lost_list' %}" class="text-blue-600 hover:underline font-semibold">
+          ดูทั้งหมด
+        </a>
+      </div>
 
       <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        <!-- Lost card 1 -->
+
+        {% for post in lost_posts %}
+        
         <article class="rounded-xl overflow-hidden bg-white soft-card">
-          <img src="{% static 'images/cat3.jpg' %}"
-               alt="แมวส้มกำลังยืดตัว" class="h-64 w-full object-cover" loading="lazy">
+          
+          {% if post.pet.image %}
+            <img src="{{ post.pet.image.url }}" alt="{{ post.pet.name }}" class="h-64 w-full object-cover" loading="lazy">
+          {% else %}
+            <img src="{% static 'images/cat3.jpg' %}" alt="รูปตัวอย่าง" class="h-64 w-full object-cover" loading="lazy">
+          {% endif %}
+               
           <div class="p-4">
-            <h3 class="font-semibold">ชื่อแมว/หมา</h3>
+            <h3 class="font-semibold">{{ post.pet.name }}</h3>
             <dl class="mt-2 text-sm text-neutral-600 space-y-1">
-              <div class="flex gap-2"><dt class="w-20 shrink-0">พันธุ์ :</dt><dd>—</dd></div>
-              <div class="flex gap-2"><dt class="w-20 shrink-0">เพศ :</dt><dd>—</dd></div>
-              <div class="flex gap-2"><dt class="w-20 shrink-0">วันเกิด :</dt><dd>—</dd></div>
-              <div class="flex gap-2"><dt class="w-20 shrink-0">เบอร์ติดต่อ :</dt><dd>—</dd></div>
+              
+              <div class="flex gap-2">
+                <dt class="w-20 shrink-0">พันธุ์ :</dt>
+                <dd>{{ post.pet.animal.breed|default:"—" }}</dd>
+              </div>
+              
+              <div class="flex gap-2">
+                <dt class="w-20 shrink-0">เพศ :</dt>
+                <dd>{{ post.pet.get_gender_display|default:"—" }}</dd> 
+              </div>
+              
+              <div class="flex gap-2">
+                <dt class="w-20 shrink-0">วันเกิด :</dt>
+                <dd>{{ post.pet.birth_date|date:"j M Y"|default:"—" }}</dd>
+              </div>
+              
+              <div class="flex gap-2">
+                <dt class="w-20 shrink-0">เบอร์ติดต่อ :</dt>
+                <dd>{{ post.contact_phone|default:"—" }}</dd>
+              </div>
+
             </dl>
           </div>
         </article>
 
-        <!-- Lost card 2 -->
-        <article class="rounded-xl overflow-hidden bg-white soft-card">
-          <img src="{% static 'images/cat4.jpg' %}"
-               alt="ลูกแมวกำลังกระโดดเล่น" class="h-64 w-full object-cover" loading="lazy">
-          <div class="p-4">
-            <h3 class="font-semibold">ชื่อแมว/หมา</h3>
-            <dl class="mt-2 text-sm text-neutral-600 space-y-1">
-              <div class="flex gap-2"><dt class="w-20 shrink-0">พันธุ์ :</dt><dd>—</dd></div>
-              <div class="flex gap-2"><dt class="w-20 shrink-0">เพศ :</dt><dd>—</dd></div>
-              <div class="flex gap-2"><dt class="w-20 shrink-0">วันเกิด :</dt><dd>—</dd></div>
-              <div class="flex gap-2"><dt class="w-20 shrink-0">เบอร์ติดต่อ :</dt><dd>—</dd></div>
-            </dl>
-          </div>
-        </article>
+        {% empty %}
+        
+        <div class="lg:col-span-3 text-center text-neutral-500 py-10">
+          <p>ยังไม่มีรายงานสัตว์เลี้ยงหายในขณะนี้</p>
+        </div>
 
-        <!-- Lost card 3 -->
-        <article class="rounded-xl overflow-hidden bg-white soft-card">
-          <img src="{% static 'images/cat5.jpg' %}"
-               alt="แมวลายสามสี" class="h-64 w-full object-cover" loading="lazy">
-          <div class="p-4">
-            <h3 class="font-semibold">ชื่อแมว/หมา</h3>
-            <dl class="mt-2 text-sm text-neutral-600 space-y-1">
-              <div class="flex gap-2"><dt class="w-20 shrink-0">พันธุ์ :</dt><dd>—</dd></div>
-              <div class="flex gap-2"><dt class="w-20 shrink-0">เพศ :</dt><dd>—</dd></div>
-              <div class="flex gap-2"><dt class="w-20 shrink-0">วันเกิด :</dt><dd>—</dd></div>
-              <div class="flex gap-2"><dt class="w-20 shrink-0">เบอร์ติดต่อ :</dt><dd>—</dd></div>
-            </dl>
-          </div>
-        </article>
-      </div>
+        {% endfor %}
+        </div>
     </section>
 
     <!-- หน่วยงานช่วยเหลือ/มูลนิธิ -->

@@ -29,6 +29,13 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'myapp',
+    'tailwind',
+    'theme',
+]
+
+TAILWIND_APP_NAME = 'theme'
+INTERNAL_IPS = [
+    "127.0.0.1",
 ]
 
 MIDDLEWARE = [
@@ -106,6 +113,7 @@ LOGIN_URL = "login"
 LOGIN_REDIRECT_URL = "landing"           # เข้าสำเร็จกลับหน้าแรก
 LOGOUT_REDIRECT_URL = "landing"          # ออกจากระบบกลับหน้าแรก
 
+NPM_BIN_PATH = "/usr/bin/npm"  # Windows path to npm
 
 # For reverse proxies (e.g., Nginx) you might set:
 # SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')

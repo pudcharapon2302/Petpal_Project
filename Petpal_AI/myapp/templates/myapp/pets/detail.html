@@ -1,0 +1,98 @@
+{% load static %}
+{% load tailwind_tags %}  <!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Pet profile</title>
+  
+  {% tailwind_css %} <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+</head>
+<body class="bg-gray-100">
+  {% include "myapp/partials/navbar.html" %}
+
+  <main class="max-w-6xl mx-auto px-4 py-8">
+    <h1 class="text-3xl font-bold mb-4">My pets</h1>
+
+    <div class="bg-white rounded-2xl shadow overflow-hidden relative">
+      <!-- ปุ่มแก้ไข/ลบ -->
+      <div class="absolute right-4 top-4 z-10 flex gap-2">
+        <a href="{% url 'pet_edit' pet.pk %}"
+           class="px-3 py-1.5 rounded-lg bg-neutral-800 text-white text-sm hover:opacity-90 shadow">
+          Edit
+        </a>
+        <form method="post" action="{% url 'pet_delete' pet.pk %}"
+              onsubmit="return confirm('ต้องการลบ {{ pet.name }} จริงหรือไม่? การลบนี้ไม่สามารถย้อนกลับได้');">
+          {% csrf_token %}
+          <button class="px-3 py-1.5 rounded-lg bg-red-500 text-white text-sm hover:bg-red-600 shadow">
+            Delete
+          </button>
+        </form>
+      </div>
+
+      <!-- Hero image: cover > image > placeholder -->
+      <div class="h-64 w-full overflow-hidden">
+        {% if pet.cover_image %}
+          <img src="{{ pet.cover_image.url }}" class="w-full h-64 object-cover" alt="{{ pet.name }}">
+        {% elif pet.image %}
+          <img src="{{ pet.image.url }}" class="w-full h-64 object-cover" alt="{{ pet.name }}">
+        {% else %}
+          <img src="{% static 'img/pet-placeholder.jpg' %}" class="w-full h-64 object-cover" alt="">
+        {% endif %}
+      </div>
+
+      <div class="p-6">
+        <div class="flex items-center gap-3 mb-4">
+          {% if pet.image %}
+            <img src="{{ pet.image.url }}" class="w-10 h-10 rounded-full object-cover ring-2 ring-white shadow" alt="">
+          {% else %}
+            <img src="{% static 'img/default-avatar.jpg' %}" class="w-10 h-10 rounded-full object-cover" alt="">
+          {% endif %}
+          <h2 class="text-xl font-semibold">{{ pet.name }}</h2>
+        </div>
+
+        <div class="space-y-1 text-gray-800">
+          <p><span class="font-semibold">Type:</span> {{ pet.animal.get_species_display|default:pet.animal.species }}</p>
+          <p><span class="font-semibold">Breed:</span> {{ pet.animal.breed|default:"-" }}</p>
+          <p><span class="font-semibold">Date of Birth:</span> {{ pet.birth_date|date:"F d, Y"|default:"-" }}</p>
+          <p><span class="font-semibold">Weight:</span> {{ pet.weight|default:"-" }}</p>
+        </div>
+
+        <div class="mt-4">
+          <p class="font-semibold">Vaccination History:</p>
+          {% if vaccines %}
+            <ul class="list-disc pl-6">
+              {% for v in vaccines %}
+                <li>
+                  {{ v.vaccinated_on|date:"F d, Y" }}: {{ v.vaccine_name }}
+                  {% if v.hospital_name %} — {{ v.hospital_name }}{% endif %}
+                  {% if v.next_due_date %} (next: {{ v.next_due_date|date:"F d, Y" }}){% endif %}
+                </li>
+              {% endfor %}
+            </ul>
+          {% else %}
+            <p class="text-gray-500">No record</p>
+          {% endif %}
+        </div>
+
+        <div class="mt-4">
+          <p class="font-semibold">Allergy History:</p>
+          {% if allergies %}
+            <ul class="list-disc pl-6">
+              {% for a in allergies %}
+                <li>{{ a.allergy_name }} — {{ a.severity }} (noted {{ a.noted_on|date:"F d, Y" }})</li>
+              {% endfor %}
+            </ul>
+          {% else %}
+            <p class="text-gray-500">No information</p>
+          {% endif %}
+        </div>
+
+        <div class="mt-6">
+          <a href="{% url 'profile' %}" class="px-6 py-2 rounded-2xl bg-gray-200">Back</a>
+        </div>
+      </div>
+    </div>
+  </main>
+</body>
+</html>

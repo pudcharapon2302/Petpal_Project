@@ -1,0 +1,163 @@
+{% load static %}
+{% load tailwind_tags %}
+<!doctype html>
+<html lang="th" x-data="{ }">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{{ page_title }} — Petpal AI</title>
+
+  {% tailwind_css %}
+  <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <style>
+    html, body { font-family: "Noto Sans Thai", system_ui; }
+    .soft-card { box-shadow: 0 10px 20px -10px rgba(0,0,0,.15); }
+  </style>
+</head>
+<body class="bg-white text-neutral-900">
+
+    {% include "myapp/partials/navbar.html" %}
+
+  <main class="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-10">
+
+    <header class="mb-8 space-y-4">
+      <div class="relative">
+        <input type="search" name="q" id="search"
+               class="block w-full pl-10 pr-3 py-2 border border-neutral-300 rounded-md leading-5 bg-white placeholder-neutral-500 focus:outline-none focus:ring-orange-500 focus:border-orange-500 sm:text-sm shadow-sm"
+               placeholder="search">
+      </div>
+      <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+        <h1 class="text-4xl sm:text-5xl font-extrabold tracking-tight">
+          {{ page_title }}
+        </h1>
+        <div class="flex items-center gap-2 flex-wrap">
+          <a href="{% url 'report_select_category' %}"
+             class="rounded-md shadow-sm text-sm font-medium px-4 py-2 border border-transparent bg-orange-500 text-white hover:bg-orange-600">
+            เพิ่มข้อมูลเพื่อตามหา
+          </a>
+          {% if page_type == 'cats_only' or page_type == 'dogs_only' %}
+            <a href="{% url 'adoption_list' %}"
+               class="rounded-md shadow-sm text-sm font-medium px-4 py-2 border border-gray-300 bg-white text-gray-700 hover:bg-gray-50">
+              Back
+            </a>
+          {% else %}
+            <a href="{% url 'landing' %}"
+               class="rounded-md shadow-sm text-sm font-medium px-4 py-2 border border-gray-300 bg-white text-gray-700 hover:bg-gray-50">
+              Back
+            </a>
+          {% endif %}
+          <button class="rounded-md shadow-sm text-sm font-medium px-4 py-2 border border-gray-300 bg-white text-gray-700 hover:bg-gray-50">
+            ตัวกรอง
+          </button>
+        </div>
+      </div>
+    </header>
+    
+    {% if page_type == 'adoption_all' or page_type == 'lost_all' or page_type == 'cats_only' %}
+    <section class="mb-16">
+      <div class="flex justify-between items-center mb-6">
+        <h2 class="text-2xl sm:text-3xl font-extrabold">น้องแมว 🐱</h2>
+        {% if page_type == 'adoption_all' or page_type == 'lost_all' %}
+          <a href="{% url 'cat_list' %}" class="text-blue-600 hover:underline font-semibold">
+            ดูทั้งหมด
+          </a>
+        {% endif %}
+      </div>
+      <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        
+        {% for post in cat_posts %}
+        <article class="rounded-xl overflow-hidden bg-white soft-card">
+          {% if post.pet.image %}
+            <img src="{{ post.pet.image.url }}" alt="{{ post.pet.name }}" class="h-64 w-full object-cover" loading="lazy">
+          {% else %}
+            <img src="{% static 'images/cat1.jpg' %}" alt="รูปตัวอย่าง" class="h-64 w-full object-cover" loading="lazy">
+          {% endif %}
+          <div class="p-4">
+            <h3 class="font-semibold">{{ post.pet.name }}</h3>
+            <dl class="mt-2 text-sm text-neutral-600 space-y-1">
+              <div class="flex gap-2">
+                <dt class="w-20 shrink-0">พันธุ์ :</dt>
+                <dd>{{ post.pet.animal.breed|default:"—" }}</dd>
+              </div>
+              <div class="flex gap-2">
+                <dt class="w-20 shrink-0">เพศ :</dt>
+                <dd>{{ post.pet.get_gender_display|default:"—" }}</dd> 
+              </div>
+              <div class="flex gap-2">
+                <dt class="w-20 shrink-0">วันเกิด :</dt>
+                <dd>{{ post.pet.birth_date|date:"j M Y"|default:"—" }}</dd>
+              </div>
+              {% if page_title == "สัตว์เลี้ยงหาย" %}
+              <div class="flex gap-2">
+                <dt class="w-20 shrink-0">เบอร์ติดต่อ :</dt>
+                <dd>{{ post.contact_phone|default:"—" }}</dd>
+              </div>
+              {% endif %}
+            </dl>
+          </div>
+        </article>
+        {% empty %}
+        <div class="lg:col-span-3 text-center text-neutral-500 py-10">
+          <p>ยังไม่มีข้อมูลน้องแมวในหมวดหมู่นี้</p>
+        </div>
+        {% endfor %}
+      </div>
+    </section>
+    {% endif %}
+
+    {% if page_type == 'adoption_all' or page_type == 'lost_all' or page_type == 'dogs_only' %}
+    <section class="mb-16">
+      <div class="flex justify-between items-center mb-6">
+        <h2 class="text-2xl sm:text-3xl font-extrabold">น้องหมา 🐶</h2>
+        {% if page_type == 'adoption_all' or page_type == 'lost_all' %}
+          <a href="{% url 'dog_list' %}" class="text-blue-600 hover:underline font-semibold">
+            ดูทั้งหมด
+          </a>
+        {% endif %}
+      </div>
+      <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        
+        {% for post in dog_posts %}
+        <article class="rounded-xl overflow-hidden bg-white soft-card">
+          {% if post.pet.image %}
+            <img src="{{ post.pet.image.url }}" alt="{{ post.pet.name }}" class="h-64 w-full object-cover" loading="lazy">
+          {% else %}
+            <img src="{% static 'images/dog1.jpg' %}" alt="รูปตัวอย่าง" class="h-64 w-full object-cover" loading="lazy">
+          {% endif %}
+          <div class="p-4">
+            <h3 class="font-semibold">{{ post.pet.name }}</h3>
+            <dl class="mt-2 text-sm text-neutral-600 space-y-1">
+              <div class="flex gap-2">
+                <dt class="w-20 shrink-0">พันธุ์ :</dt>
+                <dd>{{ post.pet.animal.breed|default:"—" }}</dd>
+              </div>
+              <div class="flex gap-2">
+                <dt class="w-20 shrink-0">เพศ :</dt>
+                <dd>{{ post.pet.get_gender_display|default:"—" }}</dd> 
+              </div>
+              <div class="flex gap-2">
+                <dt class="w-20 shrink-0">วันเกิด :</dt>
+                <dd>{{ post.pet.birth_date|date:"j M Y"|default:"—" }}</dd>
+              </div>
+              {% if page_title == "สัตว์เลี้ยงหาย" %}
+              <div class="flex gap-2">
+                <dt class="w-20 shrink-0">เบอร์ติดต่อ :</dt>
+                <dd>{{ post.contact_phone|default:"—" }}</dd>
+              </div>
+              {% endif %}
+            </dl>
+          </div>
+        </article>
+        {% empty %}
+        <div class="lg:col-span-3 text-center text-neutral-500 py-10">
+          <p>ยังไม่มีข้อมูลน้องหมาในหมวดหมู่นี้</p>
+        </div>
+        {% endfor %}
+      </div>
+    </section>
+    {% endif %}
+    </main>
+
+</body>
+</html>
