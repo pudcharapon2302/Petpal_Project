@@ -1,0 +1,177 @@
+{% load static %}
+{% load tailwind_tags %}
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>กล่องข้อความ — Petpal AI</title>
+  {% tailwind_css %}
+  <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style> html, body { font-family: "Noto Sans Thai", system_ui; } </style>
+</head>
+<body class="bg-gray-50 text-neutral-900">
+
+  {% include "myapp/partials/navbar.html" %}
+
+  <main class="mx-auto max-w-6xl px-4 py-10 space-y-12">
+    
+    <div class="flex items-center justify-between border-b border-gray-200 pb-6">
+      <div>
+        <h1 class="text-3xl font-extrabold text-gray-900 flex items-center gap-3">
+          <span class="bg-orange-100 text-orange-600 p-2 rounded-xl">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-8 h-8">
+              <path d="M1.5 8.67v8.58a3 3 0 003 3h15a3 3 0 003-3V8.67l-8.928 5.493a3 3 0 01-3.144 0L1.5 8.67z" />
+              <path d="M22.5 6.908V6.75a3 3 0 00-3-3h-15a3 3 0 00-3 3v.158l9.714 5.978a1.5 1.5 0 001.572 0L22.5 6.908z" />
+            </svg>
+          </span>
+          กล่องข้อความ
+        </h1>
+        <p class="text-gray-500 mt-1 text-sm">จัดการคำขอรับเลี้ยงและการติดต่อสื่อสารทั้งหมดของคุณ</p>
+      </div>
+      <a href="{% url 'profile' %}" class="text-sm font-medium text-gray-500 hover:text-orange-600 transition flex items-center gap-1">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4"><path fill-rule="evenodd" d="M17 10a.75.75 0 01-.75.75H5.612l4.158 3.96a.75.75 0 11-1.04 1.08l-5.5-5.25a.75.75 0 010-1.08l5.5-5.25a.75.75 0 111.04 1.08L5.612 9.25H16.25A.75.75 0 0117 10z" clip-rule="evenodd" /></svg>
+        กลับไปโปรไฟล์
+      </a>
+    </div>
+
+    <section>
+      <div class="flex items-center justify-between mb-6">
+        <h2 class="text-xl font-bold text-gray-800 flex items-center gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6 text-orange-500">
+            <path d="M11.645 20.91l-.007-.003-.022-.012a15.247 15.247 0 01-.383-.218 25.18 25.18 0 01-4.244-3.17C4.688 15.36 2.25 12.174 2.25 8.25 2.25 5.322 4.714 3 7.75 3c1.995 0 3.529 1.548 4.25 2.843C12.72 4.548 14.255 3 16.25 3c3.036 0 5.5 2.322 5.5 5.25 0 3.925-2.438 7.111-4.739 9.256a25.175 25.175 0 01-4.244 3.17 15.247 15.247 0 01-.383.219l-.022.012-.007.004-.003.001a.752.752 0 01-.704 0l-.003-.001z" />
+          </svg>
+          คำขอที่ได้รับ (สำหรับสัตว์เลี้ยงของคุณ)
+        </h2>
+        {% if received_requests.count > 0 %}
+          <span class="bg-red-100 text-red-700 text-xs font-bold px-2.5 py-1 rounded-full shadow-sm">{{ received_requests.count }} รายการ</span>
+        {% endif %}
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {% for req in received_requests %}
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition group">
+          <div class="p-5 flex gap-5">
+            <div class="shrink-0 relative">
+              {% if req.post.pet.image %}
+                <img src="{{ req.post.pet.image.url }}" class="h-24 w-24 rounded-xl object-cover shadow-sm">
+              {% else %}
+                <div class="h-24 w-24 rounded-xl bg-gray-100 flex items-center justify-center text-gray-400 text-xs">No Pic</div>
+              {% endif %}
+              <span class="absolute -top-2 -right-2 w-4 h-4 rounded-full border-2 border-white
+                {% if req.status == 'APPROVED' %} bg-green-500
+                {% elif req.status == 'REJECTED' %} bg-red-500
+                {% else %} bg-yellow-400 animate-pulse {% endif %}">
+              </span>
+            </div>
+
+            <div class="flex-1 min-w-0">
+              <div class="flex justify-between items-start">
+                <div>
+                  <h3 class="font-bold text-gray-900 truncate text-lg">
+                    น้อง {{ req.post.pet.name }}
+                  </h3>
+                  <p class="text-sm text-gray-600 mt-1">
+                    จากคุณ <span class="text-orange-600 font-medium">{{ req.requester.username }}</span>
+                  </p>
+                </div>
+                <span class="text-xs text-gray-400 whitespace-nowrap">{{ req.created_at|date:"d M" }}</span>
+              </div>
+
+              <div class="mt-3 flex items-center gap-2">
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-medium
+                  {% if req.status == 'APPROVED' %} bg-green-100 text-green-800
+                  {% elif req.status == 'REJECTED' %} bg-red-100 text-red-800
+                  {% else %} bg-yellow-100 text-yellow-800 {% endif %}">
+                  {{ req.get_status_display }}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-gray-50 px-5 py-3 border-t border-gray-100 flex justify-end">
+            <a href="{% url 'chat_room' req.id %}" 
+               class="inline-flex items-center gap-2 text-sm font-semibold text-orange-600 hover:text-orange-700 transition group-hover:translate-x-1 duration-200">
+               พูดคุยและตรวจสอบ &rarr;
+            </a>
+          </div>
+        </div>
+        {% empty %}
+          <div class="col-span-full flex flex-col items-center justify-center py-16 bg-white rounded-2xl border-2 border-dashed border-gray-200">
+            <div class="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center text-3xl mb-3">📭</div>
+            <p class="text-gray-500 font-medium">ยังไม่มีคำขอใหม่เข้ามา</p>
+            <p class="text-sm text-gray-400">เมื่อมีคนสนใจสัตว์เลี้ยงของคุณ จะปรากฏที่นี่</p>
+          </div>
+        {% endfor %}
+      </div>
+    </section>
+
+    <section>
+      <div class="flex items-center justify-between mb-6">
+        <h2 class="text-xl font-bold text-gray-800 flex items-center gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6 text-blue-500">
+            <path d="M3.478 2.405a.75.75 0 00-.926.941l2.432 7.905H13.5a.75.75 0 010 1.5H4.984l-2.432 7.905a.75.75 0 00.926.94 60.519 60.519 0 0018.445-8.986.75.75 0 000-1.218A60.517 60.517 0 003.478 2.405z" />
+          </svg>
+          รายการที่คุณส่งคำขอไป (สัตว์ที่คุณสนใจ)
+        </h2>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {% for req in sent_requests %}
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition group">
+          <div class="p-5 flex gap-5">
+            <div class="shrink-0">
+              {% if req.post.pet.image %}
+                <img src="{{ req.post.pet.image.url }}" class="h-24 w-24 rounded-xl object-cover shadow-sm">
+              {% else %}
+                <div class="h-24 w-24 rounded-xl bg-gray-100 flex items-center justify-center text-gray-400 text-xs">No Pic</div>
+              {% endif %}
+            </div>
+
+            <div class="flex-1 min-w-0">
+              <div class="flex justify-between items-start">
+                <div>
+                  <h3 class="font-bold text-gray-900 truncate text-lg">
+                    น้อง {{ req.post.pet.name }}
+                  </h3>
+                  <p class="text-sm text-gray-600 mt-1">
+                    เจ้าของ: <span class="font-medium text-gray-800">{{ req.post.user.username }}</span>
+                  </p>
+                </div>
+                <span class="text-xs text-gray-400 whitespace-nowrap">{{ req.created_at|date:"d M" }}</span>
+              </div>
+
+              <div class="mt-3">
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-medium
+                  {% if req.status == 'APPROVED' %} bg-green-100 text-green-800
+                  {% elif req.status == 'REJECTED' %} bg-red-100 text-red-800
+                  {% else %} bg-blue-50 text-blue-700 {% endif %}">
+                  สถานะ: {{ req.get_status_display }}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-gray-50 px-5 py-3 border-t border-gray-100 flex justify-between items-center">
+            <a href="{% url 'post_detail' req.post.id %}" class="text-xs text-gray-500 hover:underline">ดูประกาศเดิม</a>
+            <a href="{% url 'chat_room' req.id %}" 
+               class="inline-flex items-center gap-2 text-sm font-semibold text-blue-600 hover:text-blue-700 transition group-hover:translate-x-1 duration-200">
+               ทักแชทเจ้าของ &rarr;
+            </a>
+          </div>
+        </div>
+        {% empty %}
+          <div class="col-span-full flex flex-col items-center justify-center py-16 bg-white rounded-2xl border-2 border-dashed border-gray-200">
+            <div class="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center text-3xl mb-3">🔍</div>
+            <p class="text-gray-500 font-medium">คุณยังไม่ได้ส่งคำขอรับเลี้ยง</p>
+            <a href="{% url 'adoption_list' %}" class="mt-2 text-sm text-orange-600 hover:underline">ไปดูน้องๆ ที่หาบ้าน</a>
+          </div>
+        {% endfor %}
+      </div>
+    </section>
+
+  </main>
+
+</body>
+</html>

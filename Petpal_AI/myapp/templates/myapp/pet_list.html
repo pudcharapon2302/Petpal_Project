@@ -68,36 +68,47 @@
         
         {% for post in cat_posts %}
         <a href="{% url 'post_detail' pk=post.pk %}" class="block hover:shadow-lg transition">
-        <article class="rounded-xl overflow-hidden bg-white soft-card">
-          {% if post.pet.image %}
-            <img src="{{ post.pet.image.url }}" alt="{{ post.pet.name }}" class="h-64 w-full object-cover" loading="lazy">
-          {% else %}
-            <img src="{% static 'images/cat1.jpg' %}" alt="รูปตัวอย่าง" class="h-64 w-full object-cover" loading="lazy">
-          {% endif %}
-          <div class="p-4">
-            <h3 class="font-semibold">{{ post.pet.name }}</h3>
-            <dl class="mt-2 text-sm text-neutral-600 space-y-1">
-              <div class="flex gap-2">
-                <dt class="w-20 shrink-0">พันธุ์ :</dt>
-                <dd>{{ post.pet.animal.breed|default:"—" }}</dd>
-              </div>
-              <div class="flex gap-2">
-                <dt class="w-20 shrink-0">เพศ :</dt>
-                <dd>{{ post.pet.get_gender_display|default:"—" }}</dd> 
-              </div>
-              <div class="flex gap-2">
-                <dt class="w-20 shrink-0">วันเกิด :</dt>
-                <dd>{{ post.pet.birth_date|date:"j M Y"|default:"—" }}</dd>
-              </div>
-              {% if page_title == "สัตว์เลี้ยงหาย" %}
-              <div class="flex gap-2">
-                <dt class="w-20 shrink-0">เบอร์ติดต่อ :</dt>
-                <dd>{{ post.contact_phone|default:"—" }}</dd>
-              </div>
-              {% endif %}
-            </dl>
-          </div>
-        </article>
+          <article class="rounded-xl overflow-hidden bg-white soft-card">
+            
+            <div class="relative">
+                {% if post.pet.image %}
+                  <img src="{{ post.pet.image.url }}" alt="{{ post.pet.name }}" class="h-64 w-full object-cover" loading="lazy">
+                {% else %}
+                  <img src="{% static 'images/cat1.jpg' %}" alt="รูปตัวอย่าง" class="h-64 w-full object-cover" loading="lazy">
+                {% endif %}
+    
+                {% if post.adopted_at %}
+                <div class="absolute inset-0 bg-black/50 flex items-center justify-center z-10">
+                   <div class="bg-green-500 text-white px-4 py-2 rounded-full font-bold border-2 border-white shadow-lg transform -rotate-6">
+                     🎉 มีคนรับเลี้ยงแล้ว
+                   </div>
+                </div>
+                {% endif %}
+            </div>
+            <div class="p-4">
+              <h3 class="font-semibold">{{ post.pet.name }}</h3>
+              <dl class="mt-2 text-sm text-neutral-600 space-y-1">
+                <div class="flex gap-2">
+                  <dt class="w-20 shrink-0">พันธุ์ :</dt>
+                  <dd>{{ post.pet.animal.breed|default:"—" }}</dd>
+                </div>
+                <div class="flex gap-2">
+                  <dt class="w-20 shrink-0">เพศ :</dt>
+                  <dd>{{ post.pet.get_gender_display|default:"—" }}</dd> 
+                </div>
+                <div class="flex gap-2">
+                  <dt class="w-20 shrink-0">วันเกิด :</dt>
+                  <dd>{{ post.pet.birth_date|date:"j M Y"|default:"—" }}</dd>
+                </div>
+                {% if page_title == "สัตว์เลี้ยงหาย" %}
+                <div class="flex gap-2">
+                  <dt class="w-20 shrink-0">เบอร์ติดต่อ :</dt>
+                  <dd>{{ post.contact_phone|default:"—" }}</dd>
+                </div>
+                {% endif %}
+              </dl>
+            </div>
+          </article>
         </a>
         {% empty %}
         <div class="lg:col-span-3 text-center text-neutral-500 py-10">
@@ -122,36 +133,47 @@
         
         {% for post in dog_posts %}
         <a href="{% url 'post_detail' pk=post.pk %}" class="block hover:shadow-lg transition">
-        <article class="rounded-xl overflow-hidden bg-white soft-card">
-          {% if post.pet.image %}
-            <img src="{{ post.pet.image.url }}" alt="{{ post.pet.name }}" class="h-64 w-full object-cover" loading="lazy">
-          {% else %}
-            <img src="{% static 'images/dog1.jpg' %}" alt="รูปตัวอย่าง" class="h-64 w-full object-cover" loading="lazy">
-          {% endif %}
-          <div class="p-4">
-            <h3 class="font-semibold">{{ post.pet.name }}</h3>
-            <dl class="mt-2 text-sm text-neutral-600 space-y-1">
-              <div class="flex gap-2">
-                <dt class="w-20 shrink-0">พันธุ์ :</dt>
-                <dd>{{ post.pet.animal.breed|default:"—" }}</dd>
-              </div>
-              <div class="flex gap-2">
-                <dt class="w-20 shrink-0">เพศ :</dt>
-                <dd>{{ post.pet.get_gender_display|default:"—" }}</dd> 
-              </div>
-              <div class="flex gap-2">
-                <dt class="w-20 shrink-0">วันเกิด :</dt>
-                <dd>{{ post.pet.birth_date|date:"j M Y"|default:"—" }}</dd>
-              </div>
-              {% if page_title == "สัตว์เลี้ยงหาย" %}
-              <div class="flex gap-2">
-                <dt class="w-20 shrink-0">เบอร์ติดต่อ :</dt>
-                <dd>{{ post.contact_phone|default:"—" }}</dd>
-              </div>
-              {% endif %}
-            </dl>
-          </div>
-        </article>
+          <article class="rounded-xl overflow-hidden bg-white soft-card">
+            
+            <div class="relative">
+                {% if post.pet.image %}
+                  <img src="{{ post.pet.image.url }}" alt="{{ post.pet.name }}" class="h-64 w-full object-cover" loading="lazy">
+                {% else %}
+                  <img src="{% static 'images/dog1.jpg' %}" alt="รูปตัวอย่าง" class="h-64 w-full object-cover" loading="lazy">
+                {% endif %}
+    
+                {% if post.adopted_at %}
+                <div class="absolute inset-0 bg-black/50 flex items-center justify-center z-10">
+                   <div class="bg-green-500 text-white px-4 py-2 rounded-full font-bold border-2 border-white shadow-lg transform -rotate-6">
+                     🎉 มีคนรับเลี้ยงแล้ว
+                   </div>
+                </div>
+                {% endif %}
+            </div>
+            <div class="p-4">
+              <h3 class="font-semibold">{{ post.pet.name }}</h3>
+              <dl class="mt-2 text-sm text-neutral-600 space-y-1">
+                <div class="flex gap-2">
+                  <dt class="w-20 shrink-0">พันธุ์ :</dt>
+                  <dd>{{ post.pet.animal.breed|default:"—" }}</dd>
+                </div>
+                <div class="flex gap-2">
+                  <dt class="w-20 shrink-0">เพศ :</dt>
+                  <dd>{{ post.pet.get_gender_display|default:"—" }}</dd> 
+                </div>
+                <div class="flex gap-2">
+                  <dt class="w-20 shrink-0">วันเกิด :</dt>
+                  <dd>{{ post.pet.birth_date|date:"j M Y"|default:"—" }}</dd>
+                </div>
+                {% if page_title == "สัตว์เลี้ยงหาย" %}
+                <div class="flex gap-2">
+                  <dt class="w-20 shrink-0">เบอร์ติดต่อ :</dt>
+                  <dd>{{ post.contact_phone|default:"—" }}</dd>
+                </div>
+                {% endif %}
+              </dl>
+            </div>
+          </article>
         </a>
         {% empty %}
         <div class="lg:col-span-3 text-center text-neutral-500 py-10">

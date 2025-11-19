@@ -1,6 +1,6 @@
 from django.urls import path
 from django.contrib.auth.views import LoginView, LogoutView
-from .views import Landing_Page, account_delete, pet_add, pet_create, pet_delete, pet_detail, pet_edit, profile_page, profile_update, register , adoption_list_view, lost_list_view, pet_report_create , report_select_category , foundation_list_view , cat_list_view, dog_list_view, post_detail_view
+from .views import Landing_Page, account_delete, adoption_requests_list, pet_add, pet_create, pet_delete, pet_detail, pet_edit, profile_page, profile_update, register , adoption_list_view, lost_list_view, pet_report_create , report_select_category , foundation_list_view , cat_list_view, dog_list_view, post_detail_view, send_adoption_request, chat_room, update_adoption_status 
 
 urlpatterns = [
     path('', Landing_Page, name='landing'),
@@ -39,4 +39,14 @@ urlpatterns = [
     path('pets/cats/', cat_list_view, name='cat_list'),
     path('pets/dogs/', dog_list_view, name='dog_list'),
     path('post/<int:pk>/', post_detail_view, name='post_detail'),
+
+    # Send adoption request
+    path('post/<int:pk>/adopt/', send_adoption_request, name='send_adoption_request'),
+    path('notifications/requests/', adoption_requests_list, name='adoption_requests_list'),
+
+    # Chat messages
+    path('chat/<int:request_id>/', chat_room, name='chat_room'),
+    path('chat/<int:request_id>/action/<str:action>/', update_adoption_status, name='update_adoption_status'),
+
+    
 ]

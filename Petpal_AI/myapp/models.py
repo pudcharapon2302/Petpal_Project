@@ -3,6 +3,8 @@ from django.db import models
 from django.conf import settings
 from django.dispatch import receiver
 from django.db.models.signals import post_save
+from django.utils import timezone
+from datetime import timedelta
 
 class User(AbstractUser):
     USER_STATUS_CHOICES = [
@@ -159,7 +161,16 @@ class Post(models.Model):
     contact_social = models.TextField(blank=True)
     
     created_at = models.DateTimeField(auto_now_add=True)
-    is_active = models.BooleanField(default=True) # เอาไว้ปิดโพสต์
+    is_active = models.BooleanField(default=True)
+
+    expiry_date = models.DateField(blank=True, null=True, verbose_name="วันหมดอายุ")
+    
+    adopted_at = models.DateTimeField(blank=True, null=True, verbose_name="เวลาที่ปิดเคส/รับเลี้ยงแล้ว")
+    
+    def save(self, *args, **kwargs):
+        if not self.id and not self.expiry_date:
+            self.expiry_date = timezone.now().date() + timedelta(days=30)
+        super().save(*args, **kwargs)
 
 class Foundation(models.Model):
     """
@@ -213,3 +224,45 @@ class Foundation(models.Model):
 
     def __str__(self):
         return self.name
+    
+class AdoptionRequest(models.Model):
+    
+    class Status(models.TextChoices):
+        PENDING = 'PENDING', 'รอการตอบรับ'
+        APPROVED = 'APPROVED', 'อนุมัติให้รับเลี้ยง'
+        REJECTED = 'REJECTED', 'ปฏิเสธ'
+
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name="adoption_requests")
+    requester = models.ForeignKey(User, on_delete=models.CASCADE, related_name="my_requests")
+    message = models.TextField(blank=True, null=True) 
+    
+    status = models.CharField(
+        max_length=10, 
+        choices=Status.choices, 
+        default=Status.PENDING
+    )
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True) # เก็บเวลาแก้ไขล่าสุด
+
+    class Meta:
+        unique_together = ('post', 'requester')
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.requester.username} สนใจ {self.post.pet.name} ({self.get_status_display()})"
+
+class ChatMessage(models.Model):
+    # เชื่อมกับ AdoptionRequest (1 คำขอ = 1 ห้องแชท)
+    request = models.ForeignKey(AdoptionRequest, on_delete=models.CASCADE, related_name="messages")
+    
+    sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name="sent_messages")
+    content = models.TextField(verbose_name="ข้อความ")
+    timestamp = models.DateTimeField(auto_now_add=True)
+    is_read = models.BooleanField(default=False)
+
+    class Meta:
+        ordering = ['timestamp'] # เรียงตามเวลา (เก่า -> ใหม่)
+
+    def __str__(self):
+        return f"ข้อความจาก {self.sender.username} ({self.timestamp.strftime('%d/%m/%Y %H:%M')})"

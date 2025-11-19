@@ -9,13 +9,11 @@
 </head>
 <body class="min-h-screen bg-gray-100">
 
-  <!-- Navbar -->
   {% include "myapp/partials/navbar.html" %}
 
   <main class="max-w-6xl mx-auto px-4 py-8 grid md:grid-cols-3 gap-6"
         x-data="{ showEdit:false, showDelete:false, delInput:'' }">
 
-    <!-- Left: Profile card -->
     <section class="md:col-span-1">
       <div class="rounded-2xl p-6 bg-gradient-to-b from-gray-800 to-gray-700 text-white shadow-lg">
         <div class="flex flex-col items-center">
@@ -52,7 +50,6 @@
 
         <div class="mt-6 grid grid sm:grid-cols-3 gap-3">
           <button class="px-4 py-2 items-center rounded-xl bg-white/10">Request</button>
-          <!-- ปุ่มลบบัญชี -->
           <button type="button" @click="showDelete=true"
                   class="px-4 py-2 rounded-xl border border-red-300 bg-red-50 text-red-600 hover:bg-red-100">
             Delete account
@@ -61,8 +58,39 @@
       </div>
     </section>
 
-    <!-- Right: Pets list -->
     <section class="md:col-span-2">
+
+      <div class="mb-8">
+        <a href="{% url 'adoption_requests_list' %}" 
+           class="group block bg-white rounded-xl shadow-sm border border-gray-200 p-5 hover:border-orange-300 hover:shadow-md transition duration-200">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-4">
+              <div class="h-12 w-12 rounded-full bg-orange-100 flex items-center justify-center text-2xl shrink-0">
+                📬 </div>
+              <div>
+                <h3 class="text-lg font-bold text-neutral-900 group-hover:text-orange-600 transition">
+                  กล่องจดหมายคำขอ
+                </h3>
+                <p class="text-sm text-gray-600 mt-0.5">
+                  ติดตามสถานะคำขอรับเลี้ยง และจัดการคำขอที่ส่งเข้ามา
+                </p>
+              </div>
+            </div>
+            
+            <div class="flex items-center gap-3">
+              {% if adoption_notifications.count > 0 %}
+                <span class="bg-red-500 text-white text-sm font-bold px-3 py-1 rounded-full shadow-sm shrink-0">
+                  {{ adoption_notifications.count }} ใหม่
+                </span>
+              {% else %}
+                <span class="text-gray-400 text-sm shrink-0">ไม่มีรายการใหม่</span>
+              {% endif %}
+              <svg class="w-5 h-5 text-gray-400 group-hover:text-orange-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+            </div>
+          </div>
+        </a>
+      </div>
+
       <div class="flex items-center justify-between mb-4">
         <h3 class="text-2xl font-semibold">My pets</h3>
         <a href="{% url 'pet_add' %}"
@@ -71,10 +99,8 @@
 
       <div class="grid sm:grid-cols-2 gap-6">
         {% for pet in pets %}
-          <!-- ครอบการ์ดทั้งใบด้วยลิงก์ ไปหน้า detail -->
           <a href="{% url 'pet_detail' pet.pk %}"
              class="block bg-white rounded-2xl shadow overflow-hidden hover:ring-2 hover:ring-gray-200">
-            <!-- รูปด้านบน: ใช้ cover ก่อน > image > placeholder -->
             <div class="h-40 w-full overflow-hidden">
               {% if pet.cover_image %}
                 <img src="{{ pet.cover_image.url }}" class="w-full h-40 object-cover" alt="{{ pet.name }}">
@@ -107,7 +133,6 @@
       </div>
     </section>
 
-    <!-- Modal: Edit Profile -->
     <div x-show="showEdit" x-cloak
          class="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
       <form method="post" action="{% url 'profile_update' %}" enctype="multipart/form-data"
@@ -174,13 +199,11 @@
       </form>
     </div>
 
-    <!-- Modal: Delete Account -->
     {% url 'account_delete' as account_delete_url %}
     <div x-show="showDelete" x-cloak
          class="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
 
       {% if account_delete_url %}
-      <!-- กรณีมี route account_delete แล้ว -->
       <form method="post" action="{{ account_delete_url }}" class="w-full max-w-lg"
             @submit="if(delInput !== '{{ request.user.username }}'){ $event.preventDefault(); }">
         {% csrf_token %}
@@ -219,28 +242,6 @@
           </div>
         </div>
       </form>
-
-      {% else %}
-      <!-- กรณียังไม่มี route account_delete: ป้องกัน error และบอกวิธีเปิดใช้ -->
-      <div class="w-full max-w-lg">
-        <div class="rounded-2xl overflow-hidden shadow-2xl">
-          <div class="bg-red-600 text-white px-6 py-4 flex items-center justify-between">
-            <h3 class="text-xl font-semibold">Delete account</h3>
-            <button type="button" @click="showDelete=false" class="rounded-md bg-white/20 px-3 py-1.5 hover:bg-white/30">✕</button>
-          </div>
-          <div class="bg-white px-6 py-6 space-y-4">
-            <p class="text-sm text-red-700 bg-red-50 border border-red-200 p-3 rounded-lg">
-              ยังไม่ได้กำหนดเส้นทาง <code>account_delete</code> ใน <b>urls.py</b> จึงไม่สามารถลบบัญชีได้ตอนนี้<br>
-              โปรดเพิ่ม
-              <code class="bg-neutral-100 px-2 py-0.5 rounded">path("accounts/delete/", views.account_delete, name="account_delete")</code>
-              และ view <code>account_delete</code> แล้วกลับมาลองใหม่อีกครั้ง
-            </p>
-            <div class="text-right">
-              <button type="button" @click="showDelete=false" class="rounded-xl px-4 py-2 bg-neutral-200 hover:bg-neutral-300">Close</button>
-            </div>
-          </div>
-        </div>
-      </div>
       {% endif %}
 
     </div>

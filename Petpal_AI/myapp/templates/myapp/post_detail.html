@@ -16,9 +16,25 @@
     .soft-card { box-shadow: 0 10px 20px -10px rgba(0,0,0,.15); }
   </style>
 </head>
-<body class="bg-gray-50 text-neutral-900"> {% include "myapp/partials/navbar.html" %}
+<body class="bg-gray-50 text-neutral-900">
+
+  {% include "myapp/partials/navbar.html" %}
 
   <main class="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-10 pb-24">
+
+    {% if messages %}
+      <div class="mb-6 space-y-2">
+        {% for message in messages %}
+          <div class="p-4 rounded-lg border shadow-sm
+            {% if message.tags == 'success' %} bg-green-50 border-green-200 text-green-800
+            {% elif message.tags == 'warning' %} bg-yellow-50 border-yellow-200 text-yellow-800
+            {% elif message.tags == 'error' %} bg-red-50 border-red-200 text-red-800
+            {% else %} bg-blue-50 border-blue-200 text-blue-800 {% endif %}">
+            {{ message }}
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
 
     <header class="mb-8 space-y-4">
       <div class="flex justify-between items-center gap-4">
@@ -69,7 +85,7 @@
         </div>
 
         {% if post.post_type == 'LOST' %}
-        <div class_space-y-2">
+        <div class="space-y-2">
           <h3 class="text-lg font-semibold text-red-600">ข้อมูลการหาย</h3>
           <dl class="text-sm text-neutral-600 space-y-1">
             <div class="flex"><dt class="w-24 shrink-0 font-medium">วันที่หาย :</dt>
@@ -102,10 +118,21 @@
   </main>
 
   <footer class="fixed bottom-4 right-4 z-50">
-    <a href="#contact-section"
-       class="flex items-center gap-2 rounded-full bg-orange-500 pl-5 pr-6 py-3 text-lg font-semibold text-white shadow-lg hover:bg-orange-600 transition">
-      <span class="text-2xl">🐾</span> รับเลี้ยงฉัน
-    </a>
+    {% if request.user.is_authenticated %}
+      <form method="POST" action="{% url 'send_adoption_request' pk=post.pk %}">
+        {% csrf_token %}
+        <button type="submit"
+           onclick="return confirm('ยืนยันที่จะส่งคำขอรับเลี้ยงน้อง {{ post.pet.name }} ไปยังเจ้าของโพสต์?')"
+           class="flex items-center gap-2 rounded-full bg-orange-500 pl-5 pr-6 py-3 text-lg font-semibold text-white shadow-lg hover:bg-orange-600 transition hover:scale-105">
+          <span class="text-2xl">🐾</span> สนใจรับเลี้ยง
+        </button>
+      </form>
+    {% else %}
+      <a href="{% url 'login' %}?next={{ request.path }}"
+         class="flex items-center gap-2 rounded-full bg-gray-800 pl-5 pr-6 py-3 text-lg font-semibold text-white shadow-lg hover:bg-gray-700 transition">
+        <span>🔐</span> เข้าสู่ระบบเพื่อรับเลี้ยง
+      </a>
+    {% endif %}
   </footer>
 
 </body>

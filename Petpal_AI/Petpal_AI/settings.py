@@ -127,3 +127,17 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 CHROMA_API_IMPL = os.getenv('CHROMA_API_IMPL', 'rest')
 CHROMA_HOST = os.getenv('CHROMA_HOST', 'chroma')  # docker service name
 CHROMA_PORT = int(os.getenv('CHROMA_PORT', '8000'))
+
+
+# --- Email Configuration ---
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+
+EMAIL_HOST_USER = 'mr.golf0900@gmail.com'
+
+EMAIL_HOST_PASSWORD = 'eviw mmpc denv wnpf'
+DEFAULT_FROM_EMAIL = 'Petpal AI <noreply@petpal.ai>'
+
+# -------------------------

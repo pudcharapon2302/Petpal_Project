@@ -5,17 +5,22 @@ from django.contrib.auth.forms import UserCreationForm
 from django.contrib import messages
 from django.urls import NoReverseMatch
 from django.views.decorators.http import require_POST
-from .models import Animal, User , Profile, Pet , Post, Foundation
+from .models import Animal, User , Profile, Pet , Post, Foundation , AdoptionRequest, ChatMessage
 from .forms import CustomUserCreationForm ,LoginForm, PetForm, RegisterForm , VaccineFormSet, AllergyFormSet , PublicPostForm
 from django.contrib.auth import authenticate, login, logout, get_user_model
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
+from django.utils import timezone
+from datetime import timedelta
 
 
 
 User = get_user_model()
+
+def get_active_posts():
+    return Post.objects.filter(is_active=True)
 
 # Create your views here.
 def Landing_Page(request):
@@ -97,24 +102,26 @@ def login_view(request):
     return render(request, "auth/login.html", {"form": form, "next": next_url})
 
 def logout_view(request):
-    # ... (โค้ด logout_view ... ถูกต้องแล้ว) ...
     logout(request)
     messages.success(request, "ออกจากระบบแล้ว")
     return redirect(settings.LOGOUT_REDIRECT_URL)
 
-
 @login_required
 def profile_page(request):
-    # ... (โค้ด profile_page ... ถูกต้องแล้ว) ...
     profile, _ = Profile.objects.get_or_create(user=request.user)
-    pets = Pet.objects.filter(owner=request.user).order_by("-id")
+    pets = Pet.objects.filter(owner=request.user, status='OWNED').order_by("-id")
     animals = Animal.objects.all().order_by("species", "breed")
-    return render(request, "myapp/profile.html", {"profile": profile, "pets": pets, "animals": animals})
+    adoption_notifications = AdoptionRequest.objects.filter(post__user=request.user).select_related('requester', 'post', 'post__pet')
+    return render(request, "myapp/profile.html", {
+        "profile": profile, 
+        "pets": pets, 
+        "animals": animals,
+        "adoption_notifications": adoption_notifications # <-- ส่งไปหน้าเว็บ
+    })
 
 @require_POST
 @login_required
 def account_delete(request):
-    # ... (โค้ด account_delete ... ถูกต้องแล้ว) ...
     if request.user.is_superuser:
         return redirect("profile")
     confirm = request.POST.get("confirm", "")
@@ -244,17 +251,11 @@ def pet_delete(request, pk: int):
 
 def adoption_list_view(request):
     
-    # ⬇️ ⬇️ ⬇️ ✅ เพิ่ม DEBUG PRINT ⬇️ ⬇️ ⬇️
-    print("\n--- 1. DEBUG: กำลังรัน [adoption_list_view] (หน้ารวม 'หาบ้าน') ---")
-    
     cat_posts = Post.objects.filter(
         post_type='ADOPTION', 
         is_active=True,
         pet__animal__species__iexact='CAT'
     ).select_related('pet', 'pet__animal').order_by('-created_at')
-
-    # ⬇️ ⬇️ ⬇️ ✅ เพิ่ม DEBUG PRINT ⬇️ ⬇️ ⬇️
-    print(f"--- 2. DEBUG: ผลลัพธ์ 'cat_posts': {list(cat_posts)} ---")
 
     dog_posts = Post.objects.filter(
         post_type='ADOPTION', 
@@ -312,7 +313,7 @@ def pet_report_create(request, post_type):
                         gender=cleaned_data.get('gender'),
                         birth_date=cleaned_data.get('birth_date'),
                         image=cleaned_data.get('image'),
-                        status=Pet.StatusChoices.OWNED
+                        status=post_type.upper()
                     )
                     new_post = Post.objects.create(
                         user=request.user,
@@ -342,11 +343,9 @@ def pet_report_create(request, post_type):
 
 @login_required
 def report_select_category(request):
-    # ... (โค้ด report_select_category ... ถูกต้องแล้ว) ...
     return render(request, "myapp/pet_report_select.html")
 
 def foundation_list_view(request):
-    # ... (โค้ด foundation_list_view ... ถูกต้องแล้ว) ...
     foundations = Foundation.objects.filter(is_active=True).order_by('name')
     context = {
         'foundations': foundations,
@@ -356,17 +355,11 @@ def foundation_list_view(request):
 
 def cat_list_view(request):
     
-    # ⬇️ ⬇️ ⬇️ ✅ เพิ่ม DEBUG PRINT ⬇️ ⬇️ ⬇️
-    print("\n--- 1. DEBUG: กำลังรัน [cat_list_view] (หน้า 'แมวเท่านั้น') ---")
-    
     posts = Post.objects.filter(
         post_type='ADOPTION', 
         is_active=True,
         pet__animal__species__iexact='CAT'
     ).select_related('pet', 'pet__animal').order_by('-created_at')
-
-    # ⬇️ ⬇️ ⬇️ ✅ เพิ่ม DEBUG PRINT ⬇️ ⬇️ ⬇️
-    print(f"--- 2. DEBUG: ผลลัพธ์ 'cat_posts': {list(posts)} ---")
     
     context = {
         'cat_posts': posts,
@@ -408,3 +401,89 @@ def post_detail_view(request, pk):
     
     # Render template ใหม่ (ที่เรากำลังจะสร้างในขั้นตอนที่ 3)
     return render(request, 'myapp/post_detail.html', context)
+
+@login_required
+def send_adoption_request(request, pk):
+    post = get_object_or_404(Post, pk=pk)
+    
+    # ห้ามเจ้าของกดรับเลี้ยงโพสต์ตัวเอง
+    if post.user == request.user:
+        messages.warning(request, "คุณไม่สามารถกดรับเลี้ยงสัตว์ของตัวเองได้")
+        return redirect('post_detail', pk=pk)
+
+    # ตรวจสอบว่าเคยกดไปหรือยัง
+    existing_request = AdoptionRequest.objects.filter(post=post, requester=request.user).exists()
+    
+    if existing_request:
+        messages.info(request, "คุณได้ส่งคำขอรับเลี้ยงน้องตัวนี้ไปแล้ว")
+    else:
+        AdoptionRequest.objects.create(post=post, requester=request.user)
+        messages.success(request, f"ส่งคำขอรับเลี้ยงน้อง {post.pet.name} แล้ว! เจ้าของจะได้รับการแจ้งเตือน")
+        
+    return redirect('post_detail', pk=pk)
+
+@login_required
+def adoption_requests_list(request):
+    received_requests = AdoptionRequest.objects.filter(post__user=request.user)\
+        .select_related('requester', 'post', 'post__pet')\
+        .order_by('-created_at')
+    
+    sent_requests = AdoptionRequest.objects.filter(requester=request.user)\
+        .select_related('post__user', 'post', 'post__pet')\
+        .order_by('-created_at')
+    
+    return render(request, 'myapp/adoption_requests_list.html', {
+        'received_requests': received_requests,
+        'sent_requests': sent_requests
+    })
+
+@login_required
+def chat_room(request, request_id):
+    req = get_object_or_404(AdoptionRequest, pk=request_id)
+
+    if request.user != req.requester and request.user != req.post.user:
+        messages.error(request, "คุณไม่มีสิทธิ์เข้าถึงห้องแชทนี้")
+        return redirect('landing')
+
+    if request.method == "POST":
+        content = request.POST.get('content', '').strip()
+        if content:
+            ChatMessage.objects.create(
+                request=req,
+                sender=request.user,
+                content=content
+            )
+            return redirect('chat_room', request_id=request_id)
+
+    chat_messages = req.messages.all().order_by('timestamp')
+
+    return render(request, 'myapp/chat_room.html', {
+        'adoption_req': req,
+        'chat_messages': chat_messages
+    })
+
+@login_required
+def update_adoption_status(request, request_id, action):
+    req = get_object_or_404(AdoptionRequest, pk=request_id)
+
+    # ความปลอดภัย: ต้องเป็น "เจ้าของโพสต์" เท่านั้นถึงจะมีสิทธิ์อนุมัติ
+    if request.user != req.post.user:
+        messages.error(request, "คุณไม่มีสิทธิ์ดำเนินการนี้")
+        return redirect('chat_room', request_id=request_id)
+
+    if action == 'approve':
+        req.status = AdoptionRequest.Status.APPROVED
+        req.save()
+        
+        req.post.adopted_at = timezone.now()
+        req.post.is_active = False 
+        req.post.save()
+        
+        messages.success(request, f"อนุมัติให้ {req.requester.username} รับเลี้ยงแล้ว!")
+        
+    elif action == 'reject':
+        req.status = AdoptionRequest.Status.REJECTED
+        req.save()
+        messages.warning(request, "คุณได้ปฏิเสธคำขอนี้")
+
+    return redirect('chat_room', request_id=request_id)
