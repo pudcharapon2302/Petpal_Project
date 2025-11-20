@@ -1,0 +1,111 @@
+{% load static %}
+{% load tailwind_tags %}
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>โพสต์ของฉัน — Petpal AI</title>
+  {% tailwind_css %}
+  <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style> html, body { font-family: "Noto Sans Thai", system_ui; } </style>
+</head>
+<body class="bg-gray-50 text-neutral-900">
+
+  {% include "myapp/partials/navbar.html" %}
+
+  <main class="mx-auto max-w-5xl px-4 py-10">
+    
+    <div class="flex items-center justify-between mb-8">
+      <h1 class="text-3xl font-bold flex items-center gap-3">
+        📝 โพสต์ของฉัน
+        <span class="bg-gray-200 text-gray-700 text-base px-3 py-1 rounded-full">{{ posts.count }}</span>
+      </h1>
+      <a href="{% url 'report_select_category' %}" class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg shadow font-medium transition">
+        + สร้างประกาศใหม่
+      </a>
+    </div>
+
+    <div class="space-y-4">
+      {% for post in posts %}
+      <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5 flex flex-col md:flex-row gap-6 transition hover:shadow-md overflow-hidden relative">
+        
+        <div class="absolute left-0 top-0 bottom-0 w-1.5 
+          {% if post.is_active %} bg-green-500 {% else %} bg-gray-300 {% endif %}">
+        </div>
+
+        <div class="shrink-0">
+          {% if post.pet.image %}
+            <img src="{{ post.pet.image.url }}" class="h-24 w-24 rounded-lg object-cover border border-gray-100 
+                 {% if not post.is_active %} grayscale opacity-70 {% endif %}">
+          {% else %}
+            <div class="h-24 w-24 rounded-lg bg-gray-100 flex items-center justify-center text-gray-400 text-xs">No Pic</div>
+          {% endif %}
+        </div>
+
+        <div class="flex-1 min-w-0">
+          <div class="flex justify-between items-start">
+            <div>
+              <h3 class="text-lg font-bold text-gray-900 flex items-center gap-2">
+                {{ post.pet.name }}
+                <span class="text-xs px-2 py-0.5 rounded border
+                  {% if post.post_type == 'ADOPTION' %} bg-blue-50 text-blue-600 border-blue-200
+                  {% else %} bg-red-50 text-red-600 border-red-200 {% endif %}">
+                  {{ post.get_post_type_display }}
+                </span>
+              </h3>
+              <p class="text-sm text-gray-500 mt-1">สร้างเมื่อ: {{ post.created_at|date:"d M Y" }}</p>
+            </div>
+            
+            <div class="text-right">
+              {% if post.is_active %}
+                <span class="inline-flex items-center gap-1 text-green-600 font-semibold text-sm bg-green-50 px-2 py-1 rounded">
+                  ● เผยแพร่อยู่
+                </span>
+              {% else %}
+                <span class="inline-flex items-center gap-1 text-gray-500 font-semibold text-sm bg-gray-100 px-2 py-1 rounded">
+                  ○ ปิดใช้งาน
+                </span>
+              {% endif %}
+            </div>
+          </div>
+
+          <div class="mt-4 flex flex-wrap gap-3 pt-3 border-t border-gray-100">
+            <a href="{% url 'post_detail' post.pk %}" class="text-sm text-gray-600 hover:text-gray-900 font-medium px-2 py-1">
+              ดูหน้าเว็บ
+            </a>
+
+            <a href="{% url 'pet_report_edit' post.pk %}" 
+               class="text-sm text-blue-600 hover:text-blue-800 font-medium px-2 py-1 border border-blue-200 rounded hover:bg-blue-50 transition">
+               ✏️ แก้ไข
+            </a>
+            
+            <a href="{% url 'toggle_post_status' post.pk %}" 
+               class="text-sm px-3 py-1 rounded border transition
+               {% if post.is_active %} text-yellow-600 border-yellow-200 hover:bg-yellow-50
+               {% else %} text-green-600 border-green-200 hover:bg-green-50 {% endif %}">
+               {% if post.is_active %} 🔒 ปิดประกาศ {% else %} 🔓 เปิดประกาศใหม่ {% endif %}
+            </a>
+
+            <form method="POST" action="{% url 'delete_post' post.pk %}" class="inline">
+              {% csrf_token %}
+              <button type="submit" onclick="return confirm('ยืนยันที่จะลบประกาศนี้ถาวร?')" 
+                      class="text-sm text-red-600 hover:text-red-800 px-2 py-1">
+                ลบ
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+      {% empty %}
+        <div class="text-center py-20 bg-white rounded-xl border-2 border-dashed border-gray-200">
+          <p class="text-gray-500 text-lg">คุณยังไม่มีประกาศใดๆ</p>
+          <a href="{% url 'report_select_category' %}" class="text-orange-500 hover:underline mt-2 block">เริ่มสร้างประกาศเลย</a>
+        </div>
+      {% endfor %}
+    </div>
+  </main>
+
+</body>
+</html>

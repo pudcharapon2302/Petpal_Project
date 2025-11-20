@@ -21,21 +21,6 @@
   {% include "myapp/partials/navbar.html" %}
 
   <main class="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-10 pb-24">
-
-    {% if messages %}
-      <div class="mb-6 space-y-2">
-        {% for message in messages %}
-          <div class="p-4 rounded-lg border shadow-sm
-            {% if message.tags == 'success' %} bg-green-50 border-green-200 text-green-800
-            {% elif message.tags == 'warning' %} bg-yellow-50 border-yellow-200 text-yellow-800
-            {% elif message.tags == 'error' %} bg-red-50 border-red-200 text-red-800
-            {% else %} bg-blue-50 border-blue-200 text-blue-800 {% endif %}">
-            {{ message }}
-          </div>
-        {% endfor %}
-      </div>
-    {% endif %}
-
     <header class="mb-8 space-y-4">
       <div class="flex justify-between items-center gap-4">
         <h1 class="text-4xl sm:text-5xl font-extrabold tracking-tight">

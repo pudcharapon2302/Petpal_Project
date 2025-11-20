@@ -40,25 +40,31 @@
       <div>
         <label class="text-lg font-semibold">{{ form.image.label }}</label>
         <div class="mt-2 flex justify-center rounded-lg border border-dashed border-gray-900/25 px-6 py-10"
-             x-data="{imagePreview: null}">
+             x-data="{
+                imagePreview: '{% if form.initial.image %}{{ form.initial.image.url }}{% endif %}' || null
+             }">
+             
           <div class="text-center" x-show="!imagePreview">
-            <svg class="mx-auto h-12 w-12 text-gray-300" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M1.5 6a2.25 2.25 0 012.25-2.25h16.5A2.25 2.25 0 0122.5 6v12a2.25 2.25 0 01-2.25 2.25H3.75A2.25 2.25 0 011.5 18V6zM3 16.06l4.47-4.47a.75.75 0 011.06 0l3.97 3.97 3.97-3.97a.75.75 0 011.06 0l4.47 4.47V6H3v10.06z" clip-rule="evenodd" /></svg>
-            <div class="mt-4 flex text-sm leading-6 text-gray-600">
-              <label for="{{ form.image.id_for_label }}" class="relative cursor-pointer rounded-md bg-white font-semibold text-orange-600 hover:text-orange-500">
-                <span>อัปโหลดไฟล์</span>
-                <input id="{{ form.image.id_for_label }}" name="{{ form.image.name }}" type="file" class="sr-only"
-                       @change="imagePreview = $event.target.files[0] ? URL.createObjectURL($event.target.files[0]) : null">
-              </label>
-              <p class="pl-1">หรือลากมาวาง</p>
+            <svg class="mx-auto h-12 w-12 text-gray-300" ...></svg>
+            <label ...>
+                    <span>อัปโหลดไฟล์</span>
+                    <input id="{{ form.image.id_for_label }}" name="{{ form.image.name }}" type="file" class="sr-only"
+                           @change="imagePreview = $event.target.files[0] ? URL.createObjectURL($event.target.files[0]) : null">
+                </label>
             </div>
-            <p class="text-xs leading-5 text-gray-600">PNG, JPG, GIF (สูงสุด 10MB)</p>
-          </div>
+
           <div x-show="imagePreview" class="relative">
-            <img :src="imagePreview" alt="Preview" class="max-h-64 rounded-md">
-            <button @click="imagePreview = null; $event.target.closest('form').image.value = null;" type="button"
-                    class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full h-6 w-6 flex items-center justify-center">
+            <img :src="imagePreview" alt="Preview" class="max-h-64 rounded-md shadow-sm">
+            
+            <button @click="imagePreview = null; document.getElementById('{{ form.image.id_for_label }}').value = '';" 
+                    type="button"
+                    class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full h-6 w-6 flex items-center justify-center shadow-sm hover:bg-red-600 transition">
               &times;
             </button>
+            
+            {% if form.initial.image %}
+              <p class="text-xs text-gray-500 mt-2 text-center">(รูปปัจจุบัน)</p>
+            {% endif %}
           </div>
         </div>
       </div>
@@ -116,7 +122,7 @@
       <div class="flex justify-end pt-5">
         <button type="submit"
                 class="rounded-full bg-green-400 px-10 py-3 text-lg font-semibold text-green-900 shadow-sm hover:bg-green-500">
-          Confirm
+          {% if is_edit %} บันทึกการแก้ไข {% else %} Confirm {% endif %}
         </button>
       </div>
 

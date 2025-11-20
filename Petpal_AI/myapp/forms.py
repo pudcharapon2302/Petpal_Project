@@ -147,3 +147,11 @@ class PublicPostForm(forms.Form):
         label="รูปภาพ", required=True,
         widget=forms.ClearableFileInput(attrs={"accept":"image/*"})
     )
+
+class PublicPostEditForm(PublicPostForm):
+    # ดึงทุกอย่างมาจาก PublicPostForm แต่แก้ field 'image' ให้เป็น ไม่บังคับ
+    image = forms.ImageField(
+        label="เปลี่ยนรูปภาพ (ถ้าต้องการ)", 
+        required=False,
+        widget=forms.ClearableFileInput(attrs={"accept":"image/*"})
+    )

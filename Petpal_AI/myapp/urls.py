@@ -1,6 +1,6 @@
 from django.urls import path
 from django.contrib.auth.views import LoginView, LogoutView
-from .views import Landing_Page, account_delete, adoption_requests_list, pet_add, pet_create, pet_delete, pet_detail, pet_edit, profile_page, profile_update, register , adoption_list_view, lost_list_view, pet_report_create , report_select_category , foundation_list_view , cat_list_view, dog_list_view, post_detail_view, send_adoption_request, chat_room, update_adoption_status 
+from .views import Landing_Page, account_delete, adoption_requests_list, delete_post, my_posts_list, pet_add, pet_create, pet_delete, pet_detail, pet_edit, pet_report_edit, profile_page, profile_update, register , adoption_list_view, lost_list_view, pet_report_create , report_select_category , foundation_list_view , cat_list_view, dog_list_view, post_detail_view, send_adoption_request, chat_room, toggle_post_status, update_adoption_status , ai_chat_page
 
 urlpatterns = [
     path('', Landing_Page, name='landing'),
@@ -21,8 +21,8 @@ urlpatterns = [
     path("accounts/pets/<int:pk>/", pet_detail, name="pet_detail"),
 
     # Pet edit
-    path("accounts/pets/<int:pk>/edit/", pet_edit, name="pet_edit"),      # ✅ แก้ไข
-    path("accounts/pets/<int:pk>/delete/", pet_delete, name="pet_delete"),# ✅ ลบ
+    path("accounts/pets/<int:pk>/edit/", pet_edit, name="pet_edit"),
+    path("accounts/pets/<int:pk>/delete/", pet_delete, name="pet_delete"),
 
     # Adoption & Lost List
     path('pet/adoptions/', adoption_list_view, name='adoption_list'),
@@ -48,5 +48,13 @@ urlpatterns = [
     path('chat/<int:request_id>/', chat_room, name='chat_room'),
     path('chat/<int:request_id>/action/<str:action>/', update_adoption_status, name='update_adoption_status'),
 
-    
+    # Manage Posts
+    path('my-posts/', my_posts_list, name='my_posts_list'),
+    path('my-posts/<int:pk>/toggle/', toggle_post_status, name='toggle_post_status'),
+    path('my-posts/<int:pk>/delete/', delete_post, name='delete_post'),
+    path('my-posts/<int:pk>/edit/', pet_report_edit, name='pet_report_edit'),
+
+    # AI Chat Page
+    path('ai-chat/', ai_chat_page, name='ai_chat_page'),
+
 ]

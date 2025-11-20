@@ -1,55 +1,43 @@
 {% load static %}
-{% load tailwind_tags %}  <!doctype html>
+{% load tailwind_tags %}
+<!doctype html>
 <html lang="th" x-data="{ }">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Petpal AI — ผู้ช่วยอัจฉริยะเพื่อสัตว์เลี้ยงของคุณ</title>
 
-  <!-- Alpine.js (CDN) -->
-  {% tailwind_css %} <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
-  <!-- HTMX (CDN) -->
+  {% tailwind_css %}
+  <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
   <script src="https://unpkg.com/htmx.org@1.9.12"></script>
 
-  <!-- ตัวเลือกฟอนต์ไทย -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;600;700&display=swap" rel="stylesheet">
   <style>
     html, body { font-family: "Noto Sans Thai", system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"; }
-    /* เงานุ่ม ๆ สำหรับการ์ด */
     .soft-card { box-shadow: 0 10px 20px -10px rgba(0,0,0,.15); }
   </style>
 </head>
 <body class="bg-white text-neutral-900">
 
     {% include "myapp/partials/navbar.html" %}
-  <!-- ===== MAIN CONTAINER ===== -->
+  
   <main class="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-10">
 
-    <!-- Header / Title -->
     <header class="mb-8">
       <h1 class="text-4xl sm:text-5xl font-extrabold tracking-tight">Petpal AI</h1>
       <p class="mt-3 max-w-3xl text-neutral-600">
         ผู้ช่วยอัจฉริยะเพื่อสัตว์เลี้ยงของคุณ<br class="hidden sm:block">
-        ติดตามสัตว์หาย หาบ้านให้เพื่อนใหม่ รับคำปรึกษาด้านสุขภาพ พร้อมเชื่อมต่อกับมูลนิธิช่วยเหลือสัตว์ – ทั้งหมดในที่เดียว ด้วยพลังของ AI
+        ติดตามสัตว์หาย หาบ้านให้เพื่อนใหม่ รับคำปรึกษาด้านสุขภาพ พร้อมเชื่อมต่อกับมูลนิธิช่วยเหลือสัตว์
       </p>
     </header>
 
-    <!-- Hero Image -->
-    
-
     <section class="mb-16">
       <figure class="overflow-hidden rounded-2xl soft-card">
-        <img
-          src="{% static 'images/cat-main.jpg' %}"
-          alt="แมวนอนอย่างมีความสุขบนพื้นไม้"
-          class="w-full h-[320px] sm:h-[420px] object-cover"
-          loading="lazy"
-        />
+        <img src="{% static 'images/cat-main.jpg' %}" alt="Main" class="w-full h-[320px] sm:h-[420px] object-cover" loading="lazy"/>
       </figure>
     </section>
 
-    <!-- น้องๆที่อยากได้บ้านใหม่ -->
     <section class="mb-16">
       <div class="flex justify-between items-center mb-6">
         <h2 class="text-2xl sm:text-3xl font-extrabold">น้องๆที่อยากได้บ้านใหม่</h2>
@@ -57,54 +45,47 @@
           ดูทั้งหมด
         </a>
       </div>
-
       <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        
         {% for post in posts_for_adoption %}
         
-        <article class="rounded-xl overflow-hidden bg-white soft-card">
-          
-          {% if post.pet.image %}
-            <img src="{{ post.pet.image.url }}" alt="{{ post.pet.name }}" class="h-64 w-full object-cover" loading="lazy">
-          {% else %}
-            <img src="{% static 'images/cat1.jpg' %}" alt="รูปตัวอย่าง" class="h-64 w-full object-cover" loading="lazy">
-          {% endif %}
-               
-          <div class="p-4">
-            <h3 class="font-semibold">{{ post.pet.name }}</h3> 
+        <a href="{% url 'post_detail' pk=post.pk %}" class="block hover:shadow-xl transition duration-300">
+          <article class="rounded-xl overflow-hidden bg-white soft-card h-full">
             
-            <dl class="mt-2 text-sm text-neutral-600 space-y-1">
-              
-              <div class="flex gap-2">
-                <dt class="w-16 shrink-0">พันธุ์ :</dt>
-                <dd>{{ post.pet.animal.breed|default:"—" }}</dd>
-              </div>
+            <div class="relative">
+              {% if post.pet.image %}
+                <img src="{{ post.pet.image.url }}" alt="{{ post.pet.name }}" class="h-64 w-full object-cover" loading="lazy">
+              {% else %}
+                <img src="{% static 'images/cat1.jpg' %}" alt="รูปตัวอย่าง" class="h-64 w-full object-cover" loading="lazy">
+              {% endif %}
 
-              <div class="flex gap-2">
-                <dt class="w-16 shrink-0">เพศ :</dt>
-                <dd>{{ post.pet.get_gender_display|default:"—" }}</dd>
+              {% if post.adopted_at %}
+              <div class="absolute inset-0 bg-black/50 flex items-center justify-center z-10">
+                 <div class="bg-green-500 text-white px-4 py-2 rounded-full font-bold border-2 border-white shadow-lg transform -rotate-6">
+                   🎉 มีคนรับเลี้ยงแล้ว
+                 </div>
               </div>
-              
-              <div class="flex gap-2">
-                <dt class="w-16 shrink-0">วันเกิด :</dt>
-                <dd>{{ post.pet.birth_date|date:"j M Y"|default:"—" }}</dd>
-              </div>
-
-            </dl>
-          </div>
-        </article>
+              {% endif %}
+            </div>
+                 
+            <div class="p-4">
+              <h3 class="font-semibold">{{ post.pet.name }}</h3> 
+              <dl class="mt-2 text-sm text-neutral-600 space-y-1">
+                <div class="flex gap-2"><dt class="w-16 shrink-0">พันธุ์ :</dt><dd>{{ post.pet.animal.breed|default:"—" }}</dd></div>
+                <div class="flex gap-2"><dt class="w-16 shrink-0">เพศ :</dt><dd>{{ post.pet.get_gender_display|default:"—" }}</dd></div>
+                <div class="flex gap-2"><dt class="w-16 shrink-0">วันเกิด :</dt><dd>{{ post.pet.birth_date|date:"j M Y"|default:"—" }}</dd></div>
+              </dl>
+            </div>
+          </article>
+        </a>
 
         {% empty %}
-        
         <div class="lg:col-span-3 text-center text-neutral-500 py-10">
           <p>ยังไม่มีข้อมูลน้องๆ ที่รอการอุปถัมภ์ในขณะนี้</p>
         </div>
-
         {% endfor %}
-        </div>
+      </div>
     </section>
 
-    <!-- สัตว์เลี้ยงหาย -->
     <section class="mb-16">
       <div class="flex justify-between items-center mb-6">
         <h2 class="text-2xl sm:text-3xl font-extrabold">สัตว์เลี้ยงหาย</h2>
@@ -112,119 +93,80 @@
           ดูทั้งหมด
         </a>
       </div>
-
       <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-
         {% for post in lost_posts %}
         
-        <article class="rounded-xl overflow-hidden bg-white soft-card">
-          
-          {% if post.pet.image %}
-            <img src="{{ post.pet.image.url }}" alt="{{ post.pet.name }}" class="h-64 w-full object-cover" loading="lazy">
-          {% else %}
-            <img src="{% static 'images/cat3.jpg' %}" alt="รูปตัวอย่าง" class="h-64 w-full object-cover" loading="lazy">
-          {% endif %}
-               
-          <div class="p-4">
-            <h3 class="font-semibold">{{ post.pet.name }}</h3>
-            <dl class="mt-2 text-sm text-neutral-600 space-y-1">
-              
-              <div class="flex gap-2">
-                <dt class="w-20 shrink-0">พันธุ์ :</dt>
-                <dd>{{ post.pet.animal.breed|default:"—" }}</dd>
-              </div>
-              
-              <div class="flex gap-2">
-                <dt class="w-20 shrink-0">เพศ :</dt>
-                <dd>{{ post.pet.get_gender_display|default:"—" }}</dd> 
-              </div>
-              
-              <div class="flex gap-2">
-                <dt class="w-20 shrink-0">วันเกิด :</dt>
-                <dd>{{ post.pet.birth_date|date:"j M Y"|default:"—" }}</dd>
-              </div>
-              
-              <div class="flex gap-2">
-                <dt class="w-20 shrink-0">เบอร์ติดต่อ :</dt>
-                <dd>{{ post.contact_phone|default:"—" }}</dd>
-              </div>
+        <a href="{% url 'post_detail' pk=post.pk %}" class="block hover:shadow-xl transition duration-300">
+          <article class="rounded-xl overflow-hidden bg-white soft-card h-full">
+            
+            <div class="relative">
+              {% if post.pet.image %}
+                <img src="{{ post.pet.image.url }}" alt="{{ post.pet.name }}" class="h-64 w-full object-cover" loading="lazy">
+              {% else %}
+                <img src="{% static 'images/cat3.jpg' %}" alt="รูปตัวอย่าง" class="h-64 w-full object-cover" loading="lazy">
+              {% endif %}
 
-            </dl>
-          </div>
-        </article>
+              {% if post.adopted_at %}
+              <div class="absolute inset-0 bg-black/50 flex items-center justify-center z-10">
+                 <div class="bg-green-500 text-white px-4 py-2 rounded-full font-bold border-2 border-white shadow-lg transform -rotate-6">
+                   🎉 เจอเจ้าของแล้ว
+                 </div>
+              </div>
+              {% endif %}
+            </div>
+                 
+            <div class="p-4">
+              <h3 class="font-semibold">{{ post.pet.name }}</h3>
+              <dl class="mt-2 text-sm text-neutral-600 space-y-1">
+                <div class="flex gap-2"><dt class="w-20 shrink-0">พันธุ์ :</dt><dd>{{ post.pet.animal.breed|default:"—" }}</dd></div>
+                <div class="flex gap-2"><dt class="w-20 shrink-0">เพศ :</dt><dd>{{ post.pet.get_gender_display|default:"—" }}</dd></div>
+                <div class="flex gap-2"><dt class="w-20 shrink-0">วันเกิด :</dt><dd>{{ post.pet.birth_date|date:"j M Y"|default:"—" }}</dd></div>
+                <div class="flex gap-2"><dt class="w-20 shrink-0">เบอร์ติดต่อ :</dt><dd>{{ post.contact_phone|default:"—" }}</dd></div>
+              </dl>
+            </div>
+          </article>
+        </a>
 
         {% empty %}
-        
         <div class="lg:col-span-3 text-center text-neutral-500 py-10">
           <p>ยังไม่มีรายงานสัตว์เลี้ยงหายในขณะนี้</p>
         </div>
-
         {% endfor %}
-        </div>
+      </div>
     </section>
-
-    <!-- หน่วยงานช่วยเหลือ/มูลนิธิ -->
+    
     <section class="mb-8">
       <h2 class="text-2xl sm:text-3xl font-extrabold mb-6">หน่วยงานช่วยเหลือ/มูลนิธิ</h2>
-
       <div class="grid gap-6 md:grid-cols-2">
-        <!-- Org 1 -->
         <article class="rounded-xl overflow-hidden bg-white soft-card">
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-0">
-            <img
-              src="{% static 'images/soidog.jpg' %}"
-              alt="สุนัขที่รอการรับเลี้ยง" class="h-56 w-full object-cover" loading="lazy">
+            <img src="{% static 'images/soidog.jpg' %}" alt="Soi Dog" class="h-56 w-full object-cover" loading="lazy">
             <div class="p-4">
               <h3 class="font-semibold">มูลนิธิเพื่อสุนัขในซอย (Soi Dog Foundation)</h3>
-              <p class="mt-2 text-sm text-neutral-600">
-                ที่อยู่: 167/9 หมู่ 4 ซอยโป่งงาม 10 ตำบลไม้ขาว อำเภอถลาง จังหวัดภูเก็ต 83110 (สำนักงานใหญ่)
-              </p>
-              <p class="mt-1 text-sm text-neutral-600">
-                แฟนเพจ: <a class="text-blue-600 hover:underline" href="https://www.facebook.com/SoiDogInThai" target="_blank" rel="noopener">SoiDogInThai</a>
-              </p>
-              <p class="mt-1 text-sm text-neutral-600">
-                เว็บไซต์: <a class="text-blue-600 hover:underline" href="https://www.soidog.org/th" target="_blank" rel="noopener">soidog.org/th</a>
-              </p>
+              <p class="mt-2 text-sm text-neutral-600">ที่อยู่: 167/9 หมู่ 4 ซอยโป่งงาม 10 ตำบลไม้ขาว อำเภอถลาง จังหวัดภูเก็ต 83110</p>
+              <p class="mt-1 text-sm text-neutral-600">แฟนเพจ: <a class="text-blue-600 hover:underline" href="https://www.facebook.com/SoiDogInThai" target="_blank">SoiDogInThai</a></p>
+              <p class="mt-1 text-sm text-neutral-600">เว็บไซต์: <a class="text-blue-600 hover:underline" href="https://www.soidog.org/th" target="_blank">soidog.org/th</a></p>
             </div>
           </div>
         </article>
-
-        <!-- Org 2 -->
         <article class="rounded-xl overflow-hidden bg-white soft-card">
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-0">
-            <img
-              src="{% static 'images/thevoice.jpg' %}"
-              alt="อาสาสมัครช่วยเหลือสัตว์" class="h-56 w-full object-cover" loading="lazy">
+            <img src="{% static 'images/thevoice.jpg' %}" alt="The Voice" class="h-56 w-full object-cover" loading="lazy">
             <div class="p-4">
               <h3 class="font-semibold">มูลนิธิ The Voice (เสียงจากเรา)</h3>
-              <p class="mt-2 text-sm text-neutral-600">
-                ที่อยู่: 92/5 อาคารสารธารณ 2 ชั้น 2 ถนนสาทรเหนือ แขวงสีลม เขตบางรัก กรุงเทพมหานคร 10500
-              </p>
-              <p class="mt-1 text-sm text-neutral-600">
-                แฟนเพจ: <a class="text-blue-600 hover:underline" href="https://www.facebook.com/thevoicefoundation" target="_blank" rel="noopener">The Voice Foundation</a>
-              </p>
-              <p class="mt-1 text-sm text-neutral-600">
-                เว็บไซต์: <a class="text-blue-600 hover:underline" href="https://www.thevoicefoundation.org/" target="_blank" rel="noopener">thevoicefoundation.org</a>
-              </p>
+              <p class="mt-2 text-sm text-neutral-600">ที่อยู่: 92/5 อาคารสารธารณ 2 ชั้น 2 ถนนสาทรเหนือ แขวงสีลม เขตบางรัก</p>
+              <p class="mt-1 text-sm text-neutral-600">แฟนเพจ: <a class="text-blue-600 hover:underline" href="https://www.facebook.com/thevoicefoundation" target="_blank">The Voice Foundation</a></p>
+              <p class="mt-1 text-sm text-neutral-600">เว็บไซต์: <a class="text-blue-600 hover:underline" href="https://www.thevoicefoundation.org/" target="_blank">thevoicefoundation.org</a></p>
             </div>
           </div>
         </article>
       </div>
     </section>
 
-    <!-- ปุ่มกลับขึ้นบน (เล็ก ๆ ใช้ Alpine) -->
-    <div x-data="{show:false}"
-         x-init="window.addEventListener('scroll',()=>show=window.scrollY>300)"
-         x-show="show"
-         x-transition
-         class="fixed bottom-6 right-6">
-      <button @click="window.scrollTo({top:0,behavior:'smooth'})"
-              class="rounded-full bg-neutral-900 text-white px-4 py-2 shadow-lg hover:opacity-90">
-        ↑ ขึ้นบน
-      </button>
+    <div x-data="{show:false}" x-init="window.addEventListener('scroll',()=>show=window.scrollY>300)" x-show="show" x-transition class="fixed bottom-6 right-6">
+      <button @click="window.scrollTo({top:0,behavior:'smooth'})" class="rounded-full bg-neutral-900 text-white px-4 py-2 shadow-lg hover:opacity-90">↑ ขึ้นบน</button>
     </div>
 
   </main>
-
 </body>
 </html>

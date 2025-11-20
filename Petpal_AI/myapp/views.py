@@ -6,7 +6,7 @@ from django.contrib import messages
 from django.urls import NoReverseMatch
 from django.views.decorators.http import require_POST
 from .models import Animal, User , Profile, Pet , Post, Foundation , AdoptionRequest, ChatMessage
-from .forms import CustomUserCreationForm ,LoginForm, PetForm, RegisterForm , VaccineFormSet, AllergyFormSet , PublicPostForm
+from .forms import CustomUserCreationForm ,LoginForm, PetForm, RegisterForm , VaccineFormSet, AllergyFormSet , PublicPostForm,PublicPostEditForm
 from django.contrib.auth import authenticate, login, logout, get_user_model
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.conf import settings
@@ -249,6 +249,7 @@ def pet_delete(request, pk: int):
     messages.error(request, "วิธีลบที่ถูกต้องคือกดปุ่ม Delete")
     return redirect("pet_detail", pk=pk)
 
+@login_required
 def adoption_list_view(request):
     
     cat_posts = Post.objects.filter(
@@ -271,6 +272,7 @@ def adoption_list_view(request):
     }
     return render(request, 'myapp/pet_list.html', context)
 
+@login_required
 def lost_list_view(request):
     # ... (โค้ด lost_list_view ... ถูกต้องแล้ว) ...
     cat_posts = Post.objects.filter(
@@ -345,6 +347,7 @@ def pet_report_create(request, post_type):
 def report_select_category(request):
     return render(request, "myapp/pet_report_select.html")
 
+@login_required
 def foundation_list_view(request):
     foundations = Foundation.objects.filter(is_active=True).order_by('name')
     context = {
@@ -385,6 +388,7 @@ def dog_list_view(request):
     }
     return render(request, 'myapp/pet_list.html', context)
 
+@login_required
 def post_detail_view(request, pk):
     # ดึง Post 1 ชิ้น โดยใช้ pk (ID) จาก URL
     #    เราใช้ select_related เพื่อดึงข้อมูล Pet, Animal, User มาพร้อมกันใน Query เดียว
@@ -487,3 +491,98 @@ def update_adoption_status(request, request_id, action):
         messages.warning(request, "คุณได้ปฏิเสธคำขอนี้")
 
     return redirect('chat_room', request_id=request_id)
+
+@login_required
+def my_posts_list(request):
+    """ แสดงรายการโพสต์ทั้งหมดของผู้ใช้ปัจจุบัน """
+    posts = Post.objects.filter(user=request.user)\
+        .select_related('pet', 'pet__animal')\
+        .order_by('-created_at')
+    
+    return render(request, 'myapp/my_posts_list.html', {'posts': posts})
+
+@login_required
+def toggle_post_status(request, pk):
+    """ สลับสถานะ เปิด/ปิด โพสต์ """
+    post = get_object_or_404(Post, pk=pk, user=request.user) # ต้องเป็นเจ้าของเท่านั้น
+    
+    if post.is_active:
+        post.is_active = False
+        messages.warning(request, f"ปิดโพสต์ '{post.pet.name}' แล้ว")
+    else:
+        post.is_active = True
+        messages.success(request, f"เปิดโพสต์ '{post.pet.name}' อีกครั้ง")
+    
+    post.save()
+    return redirect('my_posts_list')
+
+@login_required
+def delete_post(request, pk):
+    """ ลบโพสต์ถาวร """
+    post = get_object_or_404(Post, pk=pk, user=request.user)
+    
+    if request.method == "POST":
+        pet_name = post.pet.name
+        post.delete()
+        messages.success(request, f"ลบประกาศ '{pet_name}' เรียบร้อยแล้ว")
+        
+    return redirect('my_posts_list')
+
+@login_required
+def pet_report_edit(request, pk):
+    post = get_object_or_404(Post, pk=pk, user=request.user)
+    pet = post.pet
+    
+    if request.method == "POST":
+        form = PublicPostEditForm(request.POST, request.FILES)
+        if form.is_valid():
+            cleaned_data = form.cleaned_data
+            try:
+                with transaction.atomic():
+                    pet.name = cleaned_data.get('pet_name')
+                    pet.animal = cleaned_data.get('animal')
+                    pet.gender = cleaned_data.get('gender')
+                    pet.birth_date = cleaned_data.get('birth_date')
+                    if cleaned_data.get('image'): # อัปเดตรูปเฉพาะถ้ามีการอัปโหลดใหม่
+                        pet.image = cleaned_data.get('image')
+                    pet.save()
+
+                    #
+                    post.description = cleaned_data.get('description')
+                    post.lost_date = cleaned_data.get('lost_date')
+                    post.lost_location = cleaned_data.get('lost_location')
+                    post.contact_phone = cleaned_data.get('contact_phone')
+                    post.contact_social = cleaned_data.get('contact_social')
+                    # (หมายเหตุ: เราไม่เปิดให้แก้ post_type เพราะมันจะยุ่งยากเรื่อง Logic)
+                    post.save()
+
+                messages.success(request, f"อัปเดตประกาศ '{pet.name}' เรียบร้อยแล้ว")
+                return redirect('my_posts_list')
+
+            except Exception as e:
+                messages.error(request, f"เกิดข้อผิดพลาด: {e}")
+    else:
+        initial_data = {
+            'post_type': post.post_type,
+            'description': post.description,
+            'lost_date': post.lost_date,
+            'lost_location': post.lost_location,
+            'contact_phone': post.contact_phone,
+            'contact_social': post.contact_social,
+            'pet_name': pet.name,
+            'animal': pet.animal,
+            'gender': pet.gender,
+            'birth_date': pet.birth_date,
+            'image': pet.image
+        }
+        form = PublicPostEditForm(initial=initial_data)
+
+    return render(request, "myapp/pet_report_create.html", {
+        'form': form,
+        'post_type': post.post_type, # ส่งไปเพื่อคุมการแสดงผล
+        'page_title': f"แก้ไขประกาศ: {pet.name}",
+        'is_edit': True
+    })
+
+def ai_chat_page(request):
+    return render(request, 'myapp/ai_chat_full.html')

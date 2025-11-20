@@ -13,3 +13,4 @@ django-tailwind
 Django>=5.0,<6.0
 pillow>=10.0
 python-dotenv>=1.0
+google-generativeai

@@ -5,6 +5,8 @@ from django.utils.html import format_html
 
 # ปรับให้ตรงกับ models ของโปรเจกต์คุณ
 from .models import (
+    AdoptionRequest,
+    ChatMessage,
     User,
     Profile,
     Animal,
@@ -230,3 +232,27 @@ class FoundationAdmin(admin.ModelAdmin):
             'fields': ('address', 'phone', 'email', 'website_url', 'facebook_url')
         }),
     )
+
+@admin.register(AdoptionRequest)
+class AdoptionRequestAdmin(admin.ModelAdmin):
+    list_display = ('id', 'requester', 'post', 'status', 'created_at')
+    list_filter = ('status', 'created_at')
+    search_fields = ('requester__username', 'post__pet__name')
+    autocomplete_fields = ('requester', 'post')
+
+@admin.register(ChatMessage)
+class ChatMessageAdmin(admin.ModelAdmin):
+    list_display = ('id', 'sender', 'short_content', 'request', 'timestamp')
+    
+    # ตัวกรอง: ดูตามวันที่
+    list_filter = ('timestamp',)
+    
+    # 🔎 ช่องค้นหา: พิมพ์คำที่ต้องการตรวจสอบตรงนี้ (สำคัญมาก!)
+    search_fields = ('content', 'sender__username', 'sender__email')
+    
+    readonly_fields = ('timestamp',) # ห้ามแก้เวลา
+
+    # ฟังก์ชันย่อข้อความ (ถ้าข้อความยาวเกินไป ให้ตัดเหลือแค่สั้นๆ ในหน้า list)
+    def short_content(self, obj):
+        return (obj.content[:50] + '...') if len(obj.content) > 50 else obj.content
+    short_content.short_description = "ข้อความ"
