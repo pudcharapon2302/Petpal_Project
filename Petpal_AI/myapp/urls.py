@@ -1,6 +1,6 @@
 from django.urls import path
 from django.contrib.auth.views import LoginView, LogoutView
-from .views import Landing_Page, account_delete, adoption_requests_list, delete_post, my_posts_list, pet_add, pet_create, pet_delete, pet_detail, pet_edit, pet_report_edit, profile_page, profile_update, register , adoption_list_view, lost_list_view, pet_report_create , report_select_category , foundation_list_view , cat_list_view, dog_list_view, post_detail_view, send_adoption_request, chat_room, toggle_post_status, update_adoption_status , ai_chat_page
+from .views import Landing_Page, account_delete, adoption_requests_list, chat_api, delete_post, my_posts_list, pet_add, pet_create, pet_delete, pet_detail, pet_edit, pet_report_edit, profile_page, profile_update, register , adoption_list_view, lost_list_view, pet_report_create , report_select_category , foundation_list_view , cat_list_view, dog_list_view, post_detail_view, send_adoption_request, chat_room, toggle_post_status, train_ai_basic, update_adoption_status , ai_chat_page
 
 urlpatterns = [
     path('', Landing_Page, name='landing'),
@@ -56,5 +56,6 @@ urlpatterns = [
 
     # AI Chat Page
     path('ai-chat/', ai_chat_page, name='ai_chat_page'),
-
+    path('api/chat/', chat_api, name='chat_api'),
+    path('admin/train-ai/', train_ai_basic, name='train_ai'),
 ]

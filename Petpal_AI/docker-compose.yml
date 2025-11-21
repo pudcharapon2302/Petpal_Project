@@ -47,6 +47,10 @@ services:
       - .:/app
       - ./data/staticfiles:/app/staticfiles
       - ./data/media:/app/media
+    environment:
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY}
+      - DB_NAME=${DB_NAME}
+      - DB_PASSWORD=${DB_PASSWORD}
     env_file:
       - .env
     ports:

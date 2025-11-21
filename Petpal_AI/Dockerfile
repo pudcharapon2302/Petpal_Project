@@ -38,6 +38,11 @@ RUN python -m pip install --no-cache-dir --upgrade pip && \
 # Copy the rest of the project
 COPY . /app
 
+WORKDIR /app/theme/static_src
+RUN npm install
+WORKDIR /app
+
+
 # Expose Django default port
 EXPOSE 8000
 

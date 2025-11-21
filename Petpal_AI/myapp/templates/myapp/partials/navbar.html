@@ -13,9 +13,8 @@
           <span class="hidden sm:block font-semibold text-white tracking-wide">Petpal AI</span>
         </a>
 
-        <div class="relative" @keydown.escape.window="chatOpen = false">
-          
-          <button @click="chatOpen = !chatOpen" 
+        <div x-data="chatApp()" class="relative" @keydown.escape.window="isOpen = false">
+          <button @click="toggleChat()" 
                   class="flex items-center gap-2 bg-white/20 hover:bg-white/30 text-white px-3 py-2 rounded-full transition backdrop-blur-sm border border-white/30 shadow-sm group">
              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6">
                 <path d="M12 2a3 3 0 0 0-3 3v1h6V5a3 3 0 0 0-3-3z" opacity="0.6"/>
@@ -24,17 +23,17 @@
              <span class="text-sm font-medium hidden lg:block">AI Assistant</span>
           </button>
 
-          <div x-show="chatOpen" 
+          <div x-show="isOpen" 
                x-transition:enter="transition ease-out duration-200"
                x-transition:enter-start="opacity-0 translate-y-2"
                x-transition:enter-end="opacity-100 translate-y-0"
                x-transition:leave="transition ease-in duration-150"
                x-transition:leave-start="opacity-100 translate-y-0"
                x-transition:leave-end="opacity-0 translate-y-2"
-               @click.outside="chatOpen = false"
+               @click.outside="isOpen = false"
                x-cloak
                class="absolute top-full left-0 mt-3 w-80 md:w-96 bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden flex flex-col z-[100]">
-            
+
             <div class="bg-gradient-to-r from-orange-500 to-yellow-400 p-3 flex justify-between items-center text-white">
               <div class="flex items-center gap-2">
                 <div class="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">🤖</div>
@@ -47,23 +46,32 @@
               </a>
             </div>
 
-            <div class="h-72 bg-gray-50 p-3 overflow-y-auto space-y-2">
-               <div class="flex justify-start">
-                 <div class="bg-white border border-gray-200 text-gray-700 rounded-2xl rounded-tl-none px-3 py-2 shadow-sm text-sm max-w-[90%]">
-                   สวัสดีครับ! มีเรื่องสัตว์เลี้ยงให้ผมช่วยไหมครับ? 🐶🐱
-                 </div>
-               </div>
+            <div class="h-72 bg-gray-50 p-3 overflow-y-auto space-y-2" id="chat-scroll" x-ref="chatScroll">
+              <template x-for="msg in messages">
+                <div :class="msg.sender === 'ai' ? 'flex justify-start' : 'flex justify-end'">
+                  <div :class="msg.sender === 'ai' ? 'bg-white border border-gray-200 text-gray-700 rounded-2xl rounded-tl-none px-3 py-2 shadow-sm text-sm max-w-[90%]' : 'bg-orange-100 text-orange-900 rounded-2xl rounded-tr-none px-3 py-2 shadow-sm text-sm max-w-[90%]'">
+                    <span x-text="msg.text"></span>
+                  </div>
+                </div>
+              </template>
+              <template x-if="loading">
+                <div class="flex justify-start">
+                  <div class="bg-white border border-gray-200 text-gray-400 rounded-2xl rounded-tl-none px-3 py-2 shadow-sm text-sm max-w-[90%] animate-pulse">
+                    กำลังตอบ...
+                  </div>
+                </div>
+              </template>
             </div>
 
             <div class="p-3 bg-white border-t border-gray-100">
-               <form class="flex gap-2">
-                 <input type="text" placeholder="ถาม AI..." class="flex-1 bg-gray-100 border-0 rounded-full px-3 py-1.5 text-sm focus:ring-1 focus:ring-orange-500">
-                 <button type="submit" class="bg-orange-500 text-white p-1.5 rounded-full hover:bg-orange-600">
-                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4">
-                     <path d="M3.478 2.404a.75.75 0 00-.926.941l2.432 7.905H13.5a.75.75 0 010 1.5H4.984l-2.432 7.905a.75.75 0 00.926.94 60.519 60.519 0 0018.445-8.986.75.75 0 000-1.218A60.517 60.517 0 003.478 2.404z" />
-                   </svg>
-                 </button>
-               </form>
+              <form class="flex gap-2" @submit.prevent="sendMessage">
+                <input type="text" x-model="userInput" placeholder="ถาม AI..." class="flex-1 bg-gray-100 border-0 rounded-full px-3 py-1.5 text-sm focus:ring-1 focus:ring-orange-500" :disabled="loading">
+                <button type="submit" class="bg-orange-500 text-white p-1.5 rounded-full hover:bg-orange-600" :disabled="loading">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4">
+                    <path d="M3.478 2.404a.75.75 0 00-.926.941l2.432 7.905H13.5a.75.75 0 010 1.5H4.984l-2.432 7.905a.75.75 0 00.926.94 60.519 60.519 0 0018.445-8.986.75.75 0 000-1.218A60.517 60.517 0 003.478 2.404z" />
+                  </svg>
+                </button>
+              </form>
             </div>
 
           </div>
@@ -78,7 +86,7 @@
         {% if request.user.is_authenticated %}
         <a href="{% url 'my_posts_list' %}" class="text-white/90 hover:text-white hover:underline underline-offset-4 flex items-center gap-1">
            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
-             <path d="M7 3a1 1 0 000 2h6a1 1 0 100-2H7zM4 7a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1zM2 11a2 2 0 012-2h12a2 2 0 012 2v4a2 2 0 01-2 2H4a2 2 0 01-2-2v-4z" />
+             <path d="M7 3a1 1 0 000 2h6a1 1 0 100-2H7zM4 7a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1zM2 11a2 2 0 002-2h12a2 2 0 012 2v4a2 2 0 01-2 2H4a2 2 0 01-2-2v-4z" />
            </svg>
            <span>โพสต์ของฉัน</span>
         </a>
@@ -170,3 +178,55 @@
     </div>
   </div>
 </nav>
+
+<script>
+function chatApp() {
+    return {
+        isOpen: false,
+        userInput: '',
+        loading: false,
+        messages: [
+            { text: "สวัสดีครับ! 😺 มีอะไรให้ PetBot ช่วยไหมครับ?", sender: 'ai' }
+        ],
+
+        toggleChat() {
+            this.isOpen = !this.isOpen;
+            if(this.isOpen) setTimeout(() => this.scrollToBottom(), 100);
+        },
+
+        sendMessage() {
+            if (this.userInput.trim() === '') return;
+            const text = this.userInput;
+            this.userInput = '';
+            this.loading = true;
+            this.addMessage(text, 'user');
+
+            fetch('/api/chat/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message: text })
+            })
+            .then(res => res.json())
+            .then(data => {
+                this.addMessage(data.response, 'ai');
+            })
+            .catch(() => {
+                this.addMessage('ขออภัย ระบบมีปัญหาชั่วคราว', 'ai');
+            })
+            .finally(() => {
+                this.loading = false;
+                setTimeout(() => this.scrollToBottom(), 100);
+            });
+        },
+
+        addMessage(text, sender) {
+            this.messages.push({ text, sender });
+            setTimeout(() => this.scrollToBottom(), 100);
+        },
+
+        scrollToBottom() {
+            this.$refs.chatScroll.scrollTop = this.$refs.chatScroll.scrollHeight;
+        }
+    }
+}
+</script>

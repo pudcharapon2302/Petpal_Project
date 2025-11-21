@@ -5,6 +5,10 @@ from django.dispatch import receiver
 from django.db.models.signals import post_save
 from django.utils import timezone
 from datetime import timedelta
+from .rag_service import rag_service
+from django.db.models.signals import post_save, post_delete
+from django.dispatch import receiver
+import chromadb
 
 class User(AbstractUser):
     USER_STATUS_CHOICES = [
@@ -266,3 +270,22 @@ class ChatMessage(models.Model):
 
     def __str__(self):
         return f"ข้อความจาก {self.sender.username} ({self.timestamp.strftime('%d/%m/%Y %H:%M')})"
+    
+@receiver(post_save, sender=Post)
+def sync_post_to_ai(sender, instance, created, **kwargs):
+    """
+    ถ้าโพสต์ถูกสร้างใหม่ หรือแก้ไข:
+    - ถ้าเปิดใช้งาน (is_active=True) -> ให้ AI จำ (Add/Update)
+    - ถ้าปิดใช้งาน (is_active=False) -> ให้ AI ลืม (Delete)
+    """
+    if instance.is_active:
+        print(f" AI Learning: กำลังจำข้อมูลโพสต์ '{instance.pet.name}'...")
+        rag_service.add_post_to_rag(instance)
+    else:
+        print(f" AI Forgetting: ลบข้อมูลโพสต์ '{instance.pet.name}' ออกจากสมอง...")
+        rag_service.delete_post_from_rag(instance.id)
+
+@receiver(post_delete, sender=Post)
+def remove_post_from_ai(sender, instance, **kwargs):
+    print(f" AI Forgetting: ลบข้อมูลโพสต์ '{instance.pet.name}' ถาวร...")
+    rag_service.delete_post_from_rag(instance.id)

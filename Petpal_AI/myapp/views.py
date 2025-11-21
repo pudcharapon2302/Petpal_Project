@@ -1,10 +1,12 @@
 # myapp/views.py
 from django.shortcuts import get_object_or_404, render, redirect
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib import messages
 from django.urls import NoReverseMatch
 from django.views.decorators.http import require_POST
+from django.views.decorators.csrf import csrf_exempt
+import json
 from .models import Animal, User , Profile, Pet , Post, Foundation , AdoptionRequest, ChatMessage
 from .forms import CustomUserCreationForm ,LoginForm, PetForm, RegisterForm , VaccineFormSet, AllergyFormSet , PublicPostForm,PublicPostEditForm
 from django.contrib.auth import authenticate, login, logout, get_user_model
@@ -14,7 +16,7 @@ from django.contrib.auth.decorators import login_required
 from django.db import transaction
 from django.utils import timezone
 from datetime import timedelta
-
+from .rag_service import rag_service
 
 
 User = get_user_model()
@@ -586,3 +588,41 @@ def pet_report_edit(request, pk):
 
 def ai_chat_page(request):
     return render(request, 'myapp/ai_chat_full.html')
+
+@csrf_exempt
+def chat_api(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            user_message = data.get('message', '')
+            
+            if not user_message:
+                return JsonResponse({'error': 'No message provided'}, status=400)
+
+            ai_response = rag_service.ask_ai(user_message)
+            
+            return JsonResponse({'response': ai_response})
+        
+        except Exception as e:
+            print("Chat API error:", e)
+            return JsonResponse({'error': str(e)}, status=500)
+            
+    return JsonResponse({'error': 'Invalid method'}, status=405)
+
+@login_required
+def train_ai_basic(request):
+    if not request.user.is_superuser:
+        return redirect('landing')
+    rag_service.clear_knowledge()
+    
+    active_posts = Post.objects.filter(is_active=True)
+    
+    print(f" กำลังเริ่ม Train ข้อมูล {active_posts.count()} รายการ...")
+    
+    count = 0
+    for post in active_posts:
+        rag_service.add_post_to_rag(post)
+        count += 1
+        
+    messages.success(request, f" AI เรียนรู้ข้อมูลใหม่ครบ {count} รายการแล้ว!")
+    return redirect('landing')
