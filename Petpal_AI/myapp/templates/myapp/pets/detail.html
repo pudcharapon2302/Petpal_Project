@@ -59,11 +59,11 @@
         </div>
 
         <div class="mt-4">
-          <p class="font-semibold">Vaccination History:</p>
+          <p class="font-semibold text-black">Vaccination History:</p>
           {% if vaccines %}
             <ul class="list-disc pl-6">
               {% for v in vaccines %}
-                <li>
+                <li class="text-black">
                   {{ v.vaccinated_on|date:"F d, Y" }}: {{ v.vaccine_name }}
                   {% if v.hospital_name %} — {{ v.hospital_name }}{% endif %}
                   {% if v.next_due_date %} (next: {{ v.next_due_date|date:"F d, Y" }}){% endif %}
@@ -76,11 +76,11 @@
         </div>
 
         <div class="mt-4">
-          <p class="font-semibold">Allergy History:</p>
+          <p class="font-semibold text-black">Allergy History:</p>
           {% if allergies %}
             <ul class="list-disc pl-6">
               {% for a in allergies %}
-                <li>{{ a.allergy_name }} — {{ a.severity }} (noted {{ a.noted_on|date:"F d, Y" }})</li>
+                <li class = "text-black">{{ a.allergy_name }} — {{ a.severity }} (noted {{ a.noted_on|date:"F d, Y" }})</li>
               {% endfor %}
             </ul>
           {% else %}
@@ -89,7 +89,7 @@
         </div>
 
         <div class="mt-6">
-          <a href="{% url 'profile' %}" class="px-6 py-2 rounded-2xl bg-gray-200">Back</a>
+          <a href="{% url 'profile' %}" class="px-6 py-2 rounded-2xl bg-orange-200 text-black">Back</a>
         </div>
       </div>
     </div>

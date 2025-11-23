@@ -65,10 +65,10 @@ class PetForm(forms.ModelForm):
         model = Pet
         fields = ["animal", "name", "birth_date", "weight", "image", "cover_image"]
         widgets = {
-            "animal": forms.Select(attrs={"class":"mt-1 w-full rounded-xl border border-gray-300 px-3 py-2"}),
-            "name": forms.TextInput(attrs={"class":"mt-1 w-full rounded-xl border border-gray-300 px-3 py-2","placeholder":"เช่น Topfy"}),
-            "birth_date": forms.DateInput(attrs={"type":"date","class":"mt-1 w-full rounded-xl border border-gray-300 px-3 py-2"}),
-            "weight": forms.NumberInput(attrs={"step":"0.01","class":"mt-1 w-full rounded-xl border border-gray-300 px-3 py-2","placeholder":"เช่น 4.2"}),
+            "animal": forms.Select(attrs={"class":"mt-1 w-full text-black rounded-xl border border-gray-300 px-3 py-2"}),
+            "name": forms.TextInput(attrs={"class":"mt-1 w-full text-black rounded-xl border border-gray-300 px-3 py-2","placeholder":"เช่น Topfy"}),
+            "birth_date": forms.DateInput(attrs={"type":"date","class":"mt-1 w-full text-black rounded-xl border border-gray-300 px-3 py-2"}),
+            "weight": forms.NumberInput(attrs={"step":"0.01","class":"mt-1 w-full text-black rounded-xl border border-gray-300 px-3 py-2","placeholder":"เช่น 4.2"}),
             "image": forms.ClearableFileInput(attrs={"id":"id_avatar_image","accept":"image/*","class":"hidden"}),
             "cover_image": forms.ClearableFileInput(attrs={"id":"id_cover_image","accept":"image/*","class":"hidden"}),
         }
@@ -78,10 +78,10 @@ VaccineFormSet = inlineformset_factory(
     Pet, VaccineRecord,
     fields=["vaccine_name", "vaccinated_on", "next_due_date", "hospital_name"],
     widgets={
-        "vaccine_name":  forms.TextInput(attrs={"class":"w-full rounded-xl border border-gray-300 px-3 py-2","placeholder":"เช่น FVRCP"}),
-        "vaccinated_on": forms.DateInput(attrs={"type":"date","class":"w-full rounded-xl border border-gray-300 px-3 py-2"}),
-        "next_due_date": forms.DateInput(attrs={"type":"date","class":"w-full rounded-xl border border-gray-300 px-3 py-2"}),
-        "hospital_name": forms.TextInput(attrs={"class":"w-full rounded-xl border border-gray-300 px-3 py-2","placeholder":"คลินิก/รพ."}),
+        "vaccine_name":  forms.TextInput(attrs={"class":"w-full rounded-xl text-black border border-gray-300 px-3 py-2","placeholder":"เช่น FVRCP"}),
+        "vaccinated_on": forms.DateInput(attrs={"type":"date","class":"w-full rounded-xl text-black border border-gray-300 px-3 py-2"}),
+        "next_due_date": forms.DateInput(attrs={"type":"date","class":"w-full rounded-xl text-black border border-gray-300 px-3 py-2"}),
+        "hospital_name": forms.TextInput(attrs={"class":"w-full rounded-xl text-black border border-gray-300 px-3 py-2","placeholder":"คลินิก/รพ."}),
     },
     extra=1, can_delete=True
 )
@@ -91,9 +91,9 @@ AllergyFormSet = inlineformset_factory(
     Pet, PetAllergy,
     fields=["allergy_name", "severity", "noted_on"],
     widgets={
-        "allergy_name": forms.TextInput(attrs={"class":"w-full rounded-xl border border-gray-300 px-3 py-2","placeholder":"เช่น Chicken"}),
-        "severity":     forms.Select(attrs={"class":"w-full rounded-xl border border-gray-300 px-3 py-2"}),
-        "noted_on":     forms.DateInput(attrs={"type":"date","class":"w-full rounded-xl border border-gray-300 px-3 py-2"}),
+        "allergy_name": forms.TextInput(attrs={"class":"w-full rounded-xl text-black border border-gray-300 px-3 py-2","placeholder":"เช่น Chicken"}),
+        "severity":     forms.Select(attrs={"class":"w-full rounded-xl text-black border border-gray-300 px-3 py-2"}),
+        "noted_on":     forms.DateInput(attrs={"type":"date","class":"w-full rounded-xl text-black border border-gray-300 px-3 py-2"}),
     },
     extra=1, can_delete=True
 )

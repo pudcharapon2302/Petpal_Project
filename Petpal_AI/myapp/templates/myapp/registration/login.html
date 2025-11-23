@@ -36,16 +36,6 @@
         </div>
       </div>
 
-      <!-- ฟอร์ม -->
-      <div class="mx-auto max-w-2xl">
-        {% if messages %}
-          <ul class="mb-4">
-            {% for m in messages %}
-              <li class="rounded-md bg-red-50 text-red-700 px-4 py-2 text-sm">{{ m }}</li>
-            {% endfor %}
-          </ul>
-        {% endif %}
-
         <form method="post" class="space-y-4">
           {% csrf_token %}
 

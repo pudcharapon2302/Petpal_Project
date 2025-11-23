@@ -44,24 +44,23 @@
 
         <div class="p-6 grid md:grid-cols-2 gap-6">
           <!-- Header: avatar + ปุ่มอัปโหลด -->
-          <div class="md:col-span-2 flex items-center gap-3">
+          <div class="md:col-span-2 flex items-center gap-4">
             <img id="thumb_preview" src="{% static 'img/pet-placeholder.jpg' %}"
-                 class="w-10 h-10 rounded-full object-cover ring-2 ring-white shadow" alt="preview">
-            <div>
-              <div class="text-lg font-semibold">Name</div>
-              <div class="text-sm text-gray-500">โปรดกรอกข้อมูลด้านล่าง</div>
+                 class="w-16 h-16 rounded-full object-cover ring-2 ring-orange-300 shadow-md flex-shrink-0" alt="preview">
+            <div class="flex-1">
+              <div class="text-lg font-semibold text-gray-900">Pet Photo</div>
+              <div class="text-sm text-gray-500">อัปโหลดรูปสัตว์เลี้ยงของคุณ</div>
             </div>
 
             <button type="button"
                     onclick="document.getElementById('id_avatar_image').click()"
-                    class="ml-auto inline-flex items-center gap-2 px-4 py-2 rounded-xl border cursor-pointer">
+                    class="ml-auto inline-flex items-center gap-2 px-4 py-2 rounded-xl border-2 border-orange-500 text-orange-500 hover:bg-orange-50 cursor-pointer transition">
               <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round"
                   d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14M8 7h.01M7 20h10a2 2 0 002-2V8a2 2 0 00-2-2h-3l-2-2H9L7 6H6a2 2 0 00-2 2v10a2 2 0 002 2z"/>
               </svg>
-              <span>Upload photo</span>
+              <span>Upload Photo</span> 
             </button>
-            <span id="file_name" class="ml-3 text-sm text-gray-500"></span>
 
             {{ form.image }}
           </div>

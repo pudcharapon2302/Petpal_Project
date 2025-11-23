@@ -77,6 +77,6 @@ class Command(BaseCommand):
                     self.stdout.write(self.style.ERROR(f'Error in item {i}: {e}'))
                     time.sleep(60) 
 
-            self.stdout.write(self.style.SUCCESS('🎉 Training finished!'))
+            self.stdout.write(self.style.SUCCESS(' Training finished!'))
         else:
             self.stdout.write(self.style.WARNING('No documents found to train.'))

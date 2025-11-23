@@ -163,7 +163,7 @@
                   <span class="text-sm text-neutral-600">Full name</span>
                   <input name="full_name" type="text" value="{{ request.user.first_name }}"
                          placeholder="ชื่อที่จะแสดงในโปรไฟล์"
-                         class="mt-1 w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 focus:outline-none focus:ring-4 focus:ring-neutral-900/10 focus:border-neutral-900" />
+                         class="mt-1 w-full rounded-xl border border-neutral-300 text-black bg-white px-3 py-2 focus:outline-none focus:ring-4 focus:ring-neutral-900/10 focus:border-neutral-900" />
                 </label>
 
                 <label class="block">
@@ -180,13 +180,13 @@
                 <span class="text-sm text-neutral-600">Phone</span>
                 <input name="phone" type="text" value="{{ request.user.phone }}"
                        placeholder="เช่น 08xxxxxxxx"
-                       class="mt-1 w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 focus:outline-none focus:ring-4 focus:ring-neutral-900/10 focus:border-neutral-900" />
+                       class="mt-1 w-full rounded-xl border border-neutral-300 text-black bg-white px-3 py-2 focus:outline-none focus:ring-4 focus:ring-neutral-900/10 focus:border-neutral-900" />
               </label>
 
               <label class="block md:col-span-2">
                 <span class="text-sm text-neutral-600">Address</span>
                 <textarea name="address" rows="3" placeholder="ที่อยู่สำหรับติดต่อ/จัดส่ง"
-                          class="mt-1 w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 focus:outline-none focus:ring-4 focus:ring-neutral-900/10 focus:border-neutral-900">{{ request.user.address }}</textarea>
+                          class="mt-1 w-full rounded-xl border border-neutral-300 text-black bg-white px-3 py-2 focus:outline-none focus:ring-4 focus:ring-neutral-900/10 focus:border-neutral-900">{{ request.user.address }}</textarea>
               </label>
             </div>
           </div>
