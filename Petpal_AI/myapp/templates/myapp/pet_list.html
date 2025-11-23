@@ -57,7 +57,7 @@
     {% if page_type == 'adoption_all' or page_type == 'lost_all' or page_type == 'cats_only' %}
     <section class="mb-16">
       <div class="flex justify-between items-center mb-6">
-        <h2 class="text-2xl sm:text-3xl font-extrabold">น้องแมว 🐱</h2>
+        <h2 class="text-2xl sm:text-3xl font-extrabold">น้องแมว  </h2>
         {% if page_type == 'adoption_all' or page_type == 'lost_all' %}
           <a href="{% url 'cat_list' %}" class="text-blue-600 hover:underline font-semibold">
             ดูทั้งหมด
@@ -80,7 +80,7 @@
                 {% if post.adopted_at %}
                 <div class="absolute inset-0 bg-black/50 flex items-center justify-center z-10">
                    <div class="bg-green-500 text-white px-4 py-2 rounded-full font-bold border-2 border-white shadow-lg transform -rotate-6">
-                     🎉 มีคนรับเลี้ยงแล้ว
+                    มีคนรับเลี้ยงแล้ว
                    </div>
                 </div>
                 {% endif %}
@@ -122,7 +122,7 @@
     {% if page_type == 'adoption_all' or page_type == 'lost_all' or page_type == 'dogs_only' %}
     <section class="mb-16">
       <div class="flex justify-between items-center mb-6">
-        <h2 class="text-2xl sm:text-3xl font-extrabold">น้องหมา 🐶</h2>
+        <h2 class="text-2xl sm:text-3xl font-extrabold">น้องหมา</h2>
         {% if page_type == 'adoption_all' or page_type == 'lost_all' %}
           <a href="{% url 'dog_list' %}" class="text-blue-600 hover:underline font-semibold">
             ดูทั้งหมด
@@ -145,7 +145,7 @@
                 {% if post.adopted_at %}
                 <div class="absolute inset-0 bg-black/50 flex items-center justify-center z-10">
                    <div class="bg-green-500 text-white px-4 py-2 rounded-full font-bold border-2 border-white shadow-lg transform -rotate-6">
-                     🎉 มีคนรับเลี้ยงแล้ว
+                    มีคนรับเลี้ยงแล้ว
                    </div>
                 </div>
                 {% endif %}

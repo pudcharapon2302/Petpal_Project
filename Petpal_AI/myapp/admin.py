@@ -247,7 +247,7 @@ class ChatMessageAdmin(admin.ModelAdmin):
     # ตัวกรอง: ดูตามวันที่
     list_filter = ('timestamp',)
     
-    # 🔎 ช่องค้นหา: พิมพ์คำที่ต้องการตรวจสอบตรงนี้ (สำคัญมาก!)
+    # ช่องค้นหา: พิมพ์คำที่ต้องการตรวจสอบตรงนี้ (สำคัญมาก!)
     search_fields = ('content', 'sender__username', 'sender__email')
     
     readonly_fields = ('timestamp',) # ห้ามแก้เวลา

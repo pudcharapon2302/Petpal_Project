@@ -17,7 +17,7 @@ from django.db import transaction
 from django.utils import timezone
 from datetime import timedelta
 from .rag_service import rag_service
-
+import time
 
 User = get_user_model()
 
@@ -613,16 +613,15 @@ def chat_api(request):
 def train_ai_basic(request):
     if not request.user.is_superuser:
         return redirect('landing')
+
     rag_service.clear_knowledge()
-    
-    active_posts = Post.objects.filter(is_active=True)
-    
-    print(f" กำลังเริ่ม Train ข้อมูล {active_posts.count()} รายการ...")
-    
+
+    posts = Post.objects.filter(is_active=True)
     count = 0
-    for post in active_posts:
+    for post in posts:
         rag_service.add_post_to_rag(post)
         count += 1
-        
-    messages.success(request, f" AI เรียนรู้ข้อมูลใหม่ครบ {count} รายการแล้ว!")
+        time.sleep(2) 
+
+    messages.success(request, f"AI เรียนรู้ข้อมูลโพสต์จำนวน {count} รายการเรียบร้อยแล้ว!")
     return redirect('landing')

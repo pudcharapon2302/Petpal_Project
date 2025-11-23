@@ -22,7 +22,7 @@
 
   <div class="bg-orange-50 border-b border-orange-100 px-4 py-2 text-center shadow-sm z-10">
     <p class="text-xs md:text-sm text-orange-800 flex items-center justify-center gap-2">
-      <span>🛡️</span>
+      <span></span>
       <span>เพื่อความปลอดภัย: โปรดนัดรับในที่สาธารณะ ไม่ให้ข้อมูลส่วนบุคคลเด็ดขาด </span>
     </p>
   </div>
@@ -58,12 +58,12 @@
             <a href="{% url 'update_adoption_status' adoption_req.id 'approve' %}" 
                onclick="return confirm('ยืนยันการอนุมัติ? หลังจากอนุมัติแล้ว ห้องแชทจะปิดและแสดงเบอร์ติดต่อ')"
                class="w-full py-2.5 bg-green-500 hover:bg-green-600 text-white rounded-xl text-sm font-semibold text-center shadow-sm transition">
-               ✅ อนุมัติให้รับเลี้ยง
+               อนุมัติให้รับเลี้ยง
             </a>
             <a href="{% url 'update_adoption_status' adoption_req.id 'reject' %}" 
                onclick="return confirm('ยืนยันที่จะปฏิเสธ?')"
                class="w-full py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-xl text-sm font-semibold text-center transition">
-               ❌ ปฏิเสธ
+               ปฏิเสธ
             </a>
           </div>
         </div>
@@ -156,7 +156,7 @@
           </form>
           {% else %}
             <div class="text-center p-3 bg-gray-50 rounded-xl text-gray-500 text-sm border border-gray-100">
-              🔒 ห้องแชทนี้ถูกปิดเนื่องจากคำขอสิ้นสุดแล้ว
+              ห้องแชทนี้ถูกปิดเนื่องจากคำขอสิ้นสุดแล้ว
             </div>
           {% endif %}
         </div>

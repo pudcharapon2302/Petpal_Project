@@ -1,28 +1,210 @@
-{% extends 'myapp/navbar.html' %}
-{% block content %}
-<div class="max-w-xl mx-auto mt-10">
-  <h2 class="text-2xl font-bold mb-4">AI Chatbot (Gemini RAG)</h2>
-  <div id="chat-window" class="bg-gray-100 rounded-lg p-4 h-96 overflow-y-auto mb-4"></div>
-  <form id="chat-form">
-    <input type="text" name="message" id="message" class="w-full px-4 py-2 rounded mb-2" placeholder="พิมพ์ข้อความ..." required>
-    <button type="submit" class="bg-orange-500 text-white px-4 py-2 rounded">ส่งข้อความ</button>
-  </form>
-</div>
-<script>
-document.getElementById('chat-form').onsubmit = async function(e) {
-  e.preventDefault();
-  const msg = document.getElementById('message').value;
-  const chatWindow = document.getElementById('chat-window');
-  chatWindow.innerHTML += `<div class="mb-2 text-right"><span class="bg-orange-200 px-3 py-1 rounded">${msg}</span></div>`;
-  const res = await fetch("{% url 'chat_api' %}", {
-    method: "POST",
-    headers: {"Content-Type": "application/json"},
-    body: JSON.stringify({message: msg})
-  });
-  const data = await res.json();
-  chatWindow.innerHTML += `<div class="mb-2 text-left"><span class="bg-gray-200 px-3 py-1 rounded">${data.response}</span></div>`;
-  document.getElementById('message').value = "";
-  chatWindow.scrollTop = chatWindow.scrollHeight;
-};
-</script>
-{% endblock %}
+{% load static %}
+{% load tailwind_tags %}
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>AI Chat — Petpal AI</title>
+  {% tailwind_css %}
+  <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <style>
+    html, body { 
+      font-family: "Noto Sans Thai", system_ui;
+      height: 100%;
+      margin: 0;
+      padding: 0;
+    }
+    #chat-window {
+      scrollbar-width: thin;
+      scrollbar-color: #f97316 #fafafa;
+    }
+    #chat-window::-webkit-scrollbar {
+      width: 6px;
+    }
+    #chat-window::-webkit-scrollbar-track {
+      background: #fafafa;
+    }
+    #chat-window::-webkit-scrollbar-thumb {
+      background: #f97316;
+      border-radius: 10px;
+    }
+    .chat-message-user {
+      animation: slideInRight 0.3s ease-out;
+    }
+    .chat-message-ai {
+      animation: slideInLeft 0.3s ease-out;
+    }
+    @keyframes slideInRight {
+      from {
+        opacity: 0;
+        transform: translateX(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+    @keyframes slideInLeft {
+      from {
+        opacity: 0;
+        transform: translateX(-20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+  </style>
+</head>
+<body class="bg-white text-neutral-900 flex flex-col h-screen overflow-hidden">
+
+  {% include "myapp/partials/navbar.html" %}
+
+  <main class="flex-1 flex flex-col overflow-hidden bg-gradient-to-b from-orange-50 to-white">
+    
+    <!-- Chat Container - Centered, No Border -->
+    <div class="flex-1 overflow-hidden flex flex-col items-center justify-center p-6">
+      
+      <!-- Chat Content Area -->
+      <div class="w-full max-w-3xl h-full flex flex-col">
+        
+        <!-- Header Section -->
+        <div class="text-center mb-8 pt-4">
+          <h1 class="text-4xl font-extrabold text-gray-900 tracking-tight">🐾 Petpal AI</h1>
+          <p class="text-gray-500 mt-2 text-base">คุยกับ AI ผู้ช่วยเรื่องสัตว์เลี้ยง</p>
+        </div>
+
+        <!-- Chat Window -->
+        <div id="chat-window" class="flex-1 overflow-y-auto px-4 py-6 space-y-4">
+          <div class="chat-message-ai flex justify-start">
+            <div class="bg-white border border-gray-200 text-gray-700 rounded-2xl rounded-tl-none px-5 py-3 shadow-sm max-w-md text-sm leading-relaxed">
+              <p class="font-semibold text-base mb-2">สวัสดีครับ! 😊</p>
+              <p>ผมคือ Petpal AI ผู้ช่วยเรื่องสัตว์เลี้ยง</p>
+              <p class="mt-2">ยินดีที่จะตอบคำถาม แนะนำ และช่วยดูแลสัตว์เลี้ยงของคุณ 🐕🐈</p>
+              <p class="mt-2">มีอะไรให้ผมช่วยไหมครับ?</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Input Area - Fixed at Bottom -->
+        <div class="bg-white border-t border-gray-200 p-6 shadow-lg rounded-t-3xl">
+          <form id="chat-form" class="flex gap-3 max-w-3xl mx-auto">
+            <input 
+              type="text" 
+              id="message" 
+              placeholder="ถามเรื่องสัตว์เลี้ยงที่นี่..." 
+              class="flex-1 bg-gray-100 border border-gray-300 text-gray-900 rounded-full px-5 py-3 text-base focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition placeholder-gray-400" 
+              required
+              autocomplete="off">
+            <button 
+              type="submit" 
+              class="bg-orange-500 hover:bg-orange-600 active:bg-orange-700 text-white px-6 py-3 rounded-full font-medium transition duration-200 flex items-center justify-center shadow-md hover:shadow-lg">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5">
+                <path d="M3.478 2.404a.75.75 0 00-.926.941l2.432 7.905H13.5a.75.75 0 010 1.5H4.984l-2.432 7.905a.75.75 0 00.926.94 60.519 60.519 0 0018.445-8.986.75.75 0 000-1.218A60.517 60.517 0 003.478 2.404z" />
+              </svg>
+            </button>
+          </form>
+          <p class="text-xs text-gray-400 text-center mt-3">Petpal AI อาจมีข้อมูลที่ไม่ถูกต้องบ้าง โปรดตรวจสอบเพิ่มเติม</p>
+        </div>
+
+      </div>
+
+    </div>
+
+  </main>
+
+  <script>
+    function addMsg(text, sender) {
+      const chatWindow = document.getElementById('chat-window');
+      const msgClass = sender === 'user' ? 'chat-message-user' : 'chat-message-ai';
+      
+      // ✅ แก้ไข: User ชิดขวา, AI ชิดซ้าย
+      const justifyClass = sender === 'user' ? 'flex justify-end' : 'flex justify-start';
+      const bgClass = sender === 'user' 
+        ? 'bg-orange-500 text-white rounded-3xl rounded-tr-none' 
+        : 'bg-white text-gray-700 border border-gray-200 rounded-2xl rounded-tl-none';
+      const maxWidth = sender === 'user' ? 'max-w-2xl' : 'max-w-md';
+      
+      const div = document.createElement('div');
+      div.className = `${justifyClass} ${msgClass}`;
+      div.innerHTML = `
+        <div class="${bgClass} px-5 py-3 shadow-sm ${maxWidth} text-sm leading-relaxed break-words">
+          ${text}
+        </div>
+      `;
+      chatWindow.appendChild(div);
+      chatWindow.scrollTop = chatWindow.scrollHeight;
+    }
+
+    document.getElementById('chat-form').onsubmit = async function(e) {
+      e.preventDefault();
+      const msg = document.getElementById('message').value.trim();
+      if (!msg) return;
+
+      const inputField = document.getElementById('message');
+      
+      // แสดงข้อความของผู้ใช้
+      addMsg(msg.replace(/</g, '&lt;').replace(/>/g, '&gt;'), 'user');
+      inputField.value = "";
+      inputField.focus();
+
+      // แสดง "typing..." indicator
+      const chatWindow = document.getElementById('chat-window');
+      const typingDiv = document.createElement('div');
+      typingDiv.className = 'flex justify-start chat-message-ai';
+      typingDiv.id = 'typing-indicator';
+      typingDiv.innerHTML = `
+        <div class="bg-white border border-gray-200 text-gray-600 rounded-2xl rounded-tl-none px-5 py-3 shadow-sm">
+          <div class="flex gap-1">
+            <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
+            <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 0.1s"></div>
+            <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 0.2s"></div>
+          </div>
+        </div>
+      `;
+      chatWindow.appendChild(typingDiv);
+      chatWindow.scrollTop = chatWindow.scrollHeight;
+
+      try {
+        const res = await fetch("{% url 'chat_api' %}", {
+          method: "POST",
+          headers: {"Content-Type": "application/json"},
+          body: JSON.stringify({message: msg})
+        });
+
+        if (!res.ok) {
+          throw new Error(`HTTP error! status: ${res.status}`);
+        }
+
+        const data = await res.json();
+        
+        // ลบ typing indicator
+        const typingMsg = document.getElementById('typing-indicator');
+        if (typingMsg) typingMsg.remove();
+        
+        // แสดงคำตอบของ AI
+        const response = (data.response || 'ขออภัย ไม่มีคำตอบ')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/\n/g, '<br>');
+        addMsg(response, 'ai');
+        
+      } catch (error) {
+        console.error('Error:', error);
+        
+        // ลบ typing indicator
+        const typingMsg = document.getElementById('typing-indicator');
+        if (typingMsg) typingMsg.remove();
+        
+        // แสดง error message
+        addMsg(`❌ เกิดข้อผิดพลาด: ${error.message}`, 'ai');
+      }
+    };
+
+    document.getElementById('message').focus();
+  </script>
+
+</body>
+</html>

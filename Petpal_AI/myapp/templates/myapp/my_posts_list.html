@@ -78,14 +78,14 @@
 
             <a href="{% url 'pet_report_edit' post.pk %}" 
                class="text-sm text-blue-600 hover:text-blue-800 font-medium px-2 py-1 border border-blue-200 rounded hover:bg-blue-50 transition">
-               ✏️ แก้ไข
+                แก้ไข
             </a>
             
             <a href="{% url 'toggle_post_status' post.pk %}" 
                class="text-sm px-3 py-1 rounded border transition
                {% if post.is_active %} text-yellow-600 border-yellow-200 hover:bg-yellow-50
                {% else %} text-green-600 border-green-200 hover:bg-green-50 {% endif %}">
-               {% if post.is_active %} 🔒 ปิดประกาศ {% else %} 🔓 เปิดประกาศใหม่ {% endif %}
+               {% if post.is_active %}  ปิดประกาศ {% else %} เปิดประกาศใหม่ {% endif %}
             </a>
 
             <form method="POST" action="{% url 'delete_post' post.pk %}" class="inline">

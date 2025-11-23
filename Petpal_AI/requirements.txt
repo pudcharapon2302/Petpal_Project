@@ -1,20 +1,27 @@
-# ---- Django & DB ----
-Django==5.2.6
-mysqlclient==2.2.4
-
-# ---- Vector DB ----
-chromadb>=0.5.23
-
-# ---- Useful dev tools (optional) ----
-python-dotenv==1.0.1
-
-pymysql==1.1.1
-django-tailwind
+# ---- Core Django & Database ----
 Django>=5.0,<6.0
+mysqlclient>=2.2.4
+pymysql>=1.1.1
+python-dotenv>=1.0.0
 pillow>=10.0
-python-dotenv>=1.0
-google-generativeai
-langchain
-langchain-google-genai
-langchain-chroma
-langchain-community
+django-tailwind
+
+# ---- PyTorch (CPU Only) ----
+# ต้องอยู่ก่อน sentence-transformers เพื่อป้องกันการโหลดตัว GPU ใหญ่ๆ
+--extra-index-url https://download.pytorch.org/whl/cpu
+torch
+torchvision
+torchaudio
+
+# ---- AI & Vector DB ----
+sentence-transformers>=3.0.0
+chromadb>=0.5.5
+google-generativeai>=0.7.0
+
+# ---- LangChain Ecosystem (v0.3+) ----
+langchain>=0.3.0
+langchain-core>=0.3.0
+langchain-community>=0.3.0
+langchain-google-genai>=2.0.0
+langchain-chroma>=0.1.4
+langchain-huggingface>=0.1.0
