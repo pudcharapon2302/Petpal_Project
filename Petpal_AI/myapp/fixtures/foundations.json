@@ -1,0 +1,642 @@
+[
+  {
+    "model": "myapp.foundation",
+    "pk": 1,
+    "fields": {
+      "name": "มูลนิธิเพื่อสุนัขในซอย (Soi Dog Foundation)",
+      "description": "องค์กรช่วยเหลือสัตว์ที่ใหญ่ที่สุดในเอเชียตะวันออกเฉียงใต้ เน้นการทำหมัน ฉีดวัคซีน และต่อต้านการค้าเนื้อสุนัข",
+      "address": "167/9 หมู่ 4 ซอยไม้ขาว 10 ต.ไม้ขาว อ.ถลาง จ.ภูเก็ต 83110",
+      "phone": "076-681-029",
+      "email": "info@soidog.org",
+      "website_url": "https://www.soidog.org/",
+      "facebook_url": "https://www.facebook.com/SoiDogInThai",
+      "logo": "",
+      "is_active": true,
+      "created_at": "2025-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "myapp.foundation",
+    "pk": 2,
+    "fields": {
+      "name": "Lanta Animal Welfare",
+      "description": "ศูนย์ช่วยเหลือและคลินิกสัตว์บนเกาะลันตา ลดประชากรสัตว์จรจัดผ่านการทำหมัน และเปิดให้นักท่องเที่ยวเข้าชม",
+      "address": "629 หมู่ 2 ต.ศาลาด่าน อ.เกาะลันตา จ.กระบี่ 81150",
+      "phone": "084-304-4331",
+      "email": "info@lantaanimalwelfare.com",
+      "website_url": "https://lantaanimalwelfare.com/",
+      "facebook_url": "https://www.facebook.com/lantaanimalwelfare",
+      "logo": "",
+      "is_active": true,
+      "created_at": "2025-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "myapp.foundation",
+    "pk": 3,
+    "fields": {
+      "name": "Dog and Cat Rescue Samui Foundation",
+      "description": "มูลนิธิช่วยเหลือสัตว์เกาะสมุย มีศูนย์พักพิงและคลินิกรักษาสัตว์จรจัดที่บ้านตลิ่งงาม",
+      "address": "112/35 หมู่ 6 ต.บ่อผุด อ.เกาะสมุย จ.สุราษฎร์ธานี 84320",
+      "phone": "077-413-490",
+      "email": "info@samuidog.org",
+      "website_url": "http://www.samuidog.org/",
+      "facebook_url": "https://www.facebook.com/DogAndCatRescueSamui",
+      "logo": "",
+      "is_active": true,
+      "created_at": "2025-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "myapp.foundation",
+    "pk": 4,
+    "fields": {
+      "name": "Phangan Animal Care for Strays (PACS)",
+      "description": "ให้บริการสัตวแพทย์และทำหมันสัตว์จรจัดบนเกาะพะงัน ทำงานร่วมกับชุมชน",
+      "address": "14/1 หมู่ 4 ต.วอกตุ่ม อ.เกาะพะงัน จ.สุราษฎร์ธานี 84280",
+      "phone": "089-875-7513",
+      "email": "info@pacsthailand.com",
+      "website_url": "http://www.pacsthailand.com/",
+      "facebook_url": "https://www.facebook.com/PhanganAnimalCare",
+      "logo": "",
+      "is_active": true,
+      "created_at": "2025-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "myapp.foundation",
+    "pk": 5,
+    "fields": {
+      "name": "Koh Tao Animal Clinic",
+      "description": "คลินิกช่วยเหลือสัตว์บนเกาะเต่า ดำเนินการโดยมูลนิธิ Noistar Thai Animal Rescue",
+      "address": "ถนนอ่าวโตนด เกาะเต่า จ.สุราษฎร์ธานี",
+      "phone": "-",
+      "email": "operations@kohtaoanimalclinic.org",
+      "website_url": "",
+      "facebook_url": "https://www.facebook.com/KohTaoAnimalClinic",
+      "logo": "",
+      "is_active": true,
+      "created_at": "2025-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "myapp.foundation",
+    "pk": 6,
+    "fields": {
+      "name": "Tonsai Elephant Care Camp Phuket",
+      "description": "ปางช้างในภูเก็ตที่ปรับตัวเพื่อสวัสดิภาพช้างและการท่องเที่ยวเชิงอนุรักษ์",
+      "address": "322/5 ใกล้ซอยพระบารมี 8 ต.ป่าตอง อ.กะทู้ จ.ภูเก็ต 83150",
+      "phone": "095-036-4454",
+      "email": "Infotonsaielephant@gmail.com",
+      "website_url": "https://tonsaielephantphuket.com/",
+      "facebook_url": "",
+      "logo": "",
+      "is_active": true,
+      "created_at": "2025-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "myapp.foundation",
+    "pk": 7,
+    "fields": {
+      "name": "WVS Care for Dogs (Thailand)",
+      "description": "ศูนย์ฝึกอบรมสัตวแพทย์นานาชาติและคลินิกช่วยเหลือสัตว์จรจัด ให้บริการทำหมันและรักษาฟรีในเชียงใหม่",
+      "address": "12 หมู่ 11 ต.น้ำแพร่ อ.หางดง จ.เชียงใหม่ 50230",
+      "phone": "086-913-8701",
+      "email": "contact@wvsthailand.org",
+      "website_url": "https://wvsthailand.org/",
+      "facebook_url": "https://www.facebook.com/WVSThailand",
+      "logo": "",
+      "is_active": true,
+      "created_at": "2025-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "myapp.foundation",
+    "pk": 8,
+    "fields": {
+      "name": "Elephant Nature Park (ENP)",
+      "description": "ศูนย์บริบาลช้างและสัตว์เลี้ยง (สุนัข, แมว, ควาย) ต้นแบบการอนุรักษ์ที่ไม่เน้นการแสดง",
+      "address": "1 ถ.ราชมรรคา ต.พระสิงห์ อ.เมือง จ.เชียงใหม่ 50200",
+      "phone": "053-272-855",
+      "email": "info@elephantnaturepark.org",
+      "website_url": "https://www.elephantnaturepark.org/",
+      "facebook_url": "https://www.facebook.com/TheElephantNaturePark",
+      "logo": "",
+      "is_active": true,
+      "created_at": "2025-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "myapp.foundation",
+    "pk": 9,
+    "fields": {
+      "name": "มูลนิธิสันติสุขเพื่อสุนัขและแมว (Santisook Dog and Cat Rescue)",
+      "description": "ช่วยเหลือสัตว์จรจัดในพื้นที่ดอยสะเก็ดและสันป่าตอง เชียงใหม่ เน้นการทำหมันและหาบ้านใหม่",
+      "address": "114/278 หมู่ 1 ต.ป่าป้อง อ.ดอยสะเก็ด จ.เชียงใหม่ 50220",
+      "phone": "081-638-2105",
+      "email": "contact@santisookdogsandcats.org",
+      "website_url": "http://santisookdogsandcats.org/",
+      "facebook_url": "https://www.facebook.com/SantisookDogandCatRescue",
+      "logo": "",
+      "is_active": true,
+      "created_at": "2025-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "myapp.foundation",
+    "pk": 10,
+    "fields": {
+      "name": "The ARK Chiang Mai",
+      "description": "มูลนิธิรักษ์สุนัขแห่งประเทศไทย (ดิ อาร์ค) ดูแลและให้ที่พักพิงแก่สุนัขจรจัดจำนวนมากในเชียงใหม่",
+      "address": "247 หมู่ 8 ต.ลวงเหนือ อ.ดอยสะเก็ด จ.เชียงใหม่ 50220",
+      "phone": "088-547-7393",
+      "email": "thearkcm@hotmail.com",
+      "website_url": "https://www.thearkth.org/",
+      "facebook_url": "https://www.facebook.com/theark.cm",
+      "logo": "",
+      "is_active": true,
+      "created_at": "2025-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "myapp.foundation",
+    "pk": 11,
+    "fields": {
+      "name": "มูลนิธิบ้านสงเคราะห์สัตว์พิการ (Home for Handicapped Animals)",
+      "description": "ดูแลสัตว์พิการและถูกทอดทิ้ง ให้ที่พักพิงถาวร อาหาร และการรักษาพยาบาล",
+      "address": "15/1 หมู่ 1 ซ.พระมหาการุณย์ 25 ถ.ติวานนท์-ปากเกร็ด 56 ต.บ้านใหม่ อ.ปากเกร็ด จ.นนทบุรี 11120",
+      "phone": "02-584-4896",
+      "email": "home4animals@yahoo.com",
+      "website_url": "https://home4animals.org/",
+      "facebook_url": "https://www.facebook.com/home4animals",
+      "logo": "",
+      "is_active": true,
+      "created_at": "2025-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "myapp.foundation",
+    "pk": 12,
+    "fields": {
+      "name": "Watchdog Thailand Foundation (WDT)",
+      "description": "เน้นงานด้านกฎหมาย รับเรื่องร้องเรียนทารุณกรรมสัตว์ และประสานงานตำรวจ",
+      "address": "ติดต่อผ่านช่องทางออนไลน์",
+      "phone": "-",
+      "email": "sue@watchdogthailand.com",
+      "website_url": "http://watchdogthailand.com/",
+      "facebook_url": "https://www.facebook.com/WDT.Foundation",
+      "logo": "",
+      "is_active": true,
+      "created_at": "2025-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "myapp.foundation",
+    "pk": 13,
+    "fields": {
+      "name": "PAWS Bangkok",
+      "description": "ช่วยเหลือแมวในกรุงเทพฯ เน้นการทำหมัน หาบ้านใหม่ และให้ความรู้ผ่าน Cat Cafe",
+      "address": "Asok Pethouse Cat Cafe, สุขุมวิท 19, กรุงเทพฯ",
+      "phone": "-",
+      "email": "protect@pawsbangkok.org",
+      "website_url": "",
+      "facebook_url": "https://www.facebook.com/pawsbangkok",
+      "logo": "",
+      "is_active": true,
+      "created_at": "2025-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "myapp.foundation",
+    "pk": 14,
+    "fields": {
+      "name": "มูลนิธิเพื่อการรักษาสุนัขจรจัด (The Foundation for the Care of Stray Dogs)",
+      "description": "สงเคราะห์สุนัขจรจัดในพื้นที่ทุ่งครุ ให้ที่พักพิงและอาหาร",
+      "address": "9 หมู่ 5 ซอย 84 ถ.ประชาอุทิศ แขวงทุ่งครุ เขตทุ่งครุ กทม. 10140",
+      "phone": "-",
+      "email": "",
+      "website_url": "",
+      "facebook_url": "",
+      "logo": "",
+      "is_active": true,
+      "created_at": "2025-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "myapp.foundation",
+    "pk": 15,
+    "fields": {
+      "name": "สมาคมพิทักษ์สัตว์ (ไทย) - AGA",
+      "description": "องค์กรเก่าแก่ที่รณรงค์เรื่องสวัสดิภาพสัตว์และช่วยเหลือสัตว์ตกทุกข์ได้ยาก",
+      "address": "45 หมู่ 4 ถ.รามคำแหง แขวงสะพานสูง กทม. 10240",
+      "phone": "-",
+      "email": "",
+      "website_url": "",
+      "facebook_url": "",
+      "logo": "",
+      "is_active": true,
+      "created_at": "2025-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "myapp.foundation",
+    "pk": 16,
+    "fields": {
+      "name": "มูลนิธิรักษ์แมว ปันน้ำใจให้แมวจร",
+      "description": "ออกหน่วยทำหมันแมวจรจัดสัญจรตามวัดและชุมชนต่างๆ พร้อมช่วยหาบ้านผ่านสื่อออนไลน์",
+      "address": "ติดต่อผ่านออนไลน์",
+      "phone": "-",
+      "email": "rakmaw@gmail.com",
+      "website_url": "https://www.rakmaw.com/",
+      "facebook_url": "https://www.facebook.com/catroompantip",
+      "logo": "",
+      "is_active": true,
+      "created_at": "2025-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "myapp.foundation",
+    "pk": 17,
+    "fields": {
+      "name": "The Man That Rescues Dogs (TMTRD)",
+      "description": "ศูนย์ดูแลสุนัขจรจัดในชลบุรี มีชื่อเสียงด้านการดูแลสุนัขพิการ (Wheelchair Dogs) และคลินิกทำหมันฟรี",
+      "address": "146/9 บ้านหนองข่า ซอย 15 หมู่ 11 ต.บางพระ อ.ศรีราชา จ.ชลบุรี 20110",
+      "phone": "084-354-2334",
+      "email": "info@tmtrd.org",
+      "website_url": "https://tmtrd.org/",
+      "facebook_url": "https://www.facebook.com/tmtrd.org",
+      "logo": "",
+      "is_active": true,
+      "created_at": "2025-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "myapp.foundation",
+    "pk": 18,
+    "fields": {
+      "name": "Rescue P.A.W.S. Thailand",
+      "description": "องค์กรช่วยเหลือสัตว์ในหัวหิน เน้นการลดประชากรสัตว์จรจัดอย่างมีมนุษยธรรมผ่านการทำหมัน",
+      "address": "65 วัดเขาเต่า ต.หนองแก อ.หัวหิน จ.ประจวบคีรีขันธ์ 77110",
+      "phone": "084-201-2683",
+      "email": "contact@rescue-paws.org",
+      "website_url": "https://rescue-paws.org/",
+      "facebook_url": "https://www.facebook.com/RescuePawsThailand",
+      "logo": "",
+      "is_active": true,
+      "created_at": "2025-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "myapp.foundation",
+    "pk": 19,
+    "fields": {
+      "name": "Wildlife Friends Foundation Thailand (WFFT)",
+      "description": "มูลนิธิเพื่อนสัตว์ป่า ช่วยเหลือสัตว์ป่าและสัตว์เลี้ยงที่ถูกทารุณกรรม มีศูนย์พักพิงขนาดใหญ่",
+      "address": "108 หมู่ 6 ต.ท่าไม้รวก อ.ท่ายาง จ.เพชรบุรี 76130",
+      "phone": "032-458-135",
+      "email": "info@wfft.org",
+      "website_url": "https://www.wfft.org/",
+      "facebook_url": "https://www.facebook.com/WildlifeFriendsFoundation",
+      "logo": "",
+      "is_active": true,
+      "created_at": "2025-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "myapp.foundation",
+    "pk": 20,
+    "fields": {
+      "name": "Saved Souls Foundation",
+      "description": "ศูนย์พักพิงในขอนแก่น ดูแลสุนัขที่รอดชีวิตจากการค้าเนื้อ สุนัขพิการ และสัตว์ตาบอด",
+      "address": "133 หมู่ 4 บ้านโคกงาม ต.บ้านฝาง อ.บ้านฝาง จ.ขอนแก่น 40270",
+      "phone": "062-369-8246",
+      "email": "info@savedsouls-foundation.org",
+      "website_url": "https://savedsouls-foundation.org/",
+      "facebook_url": "https://www.facebook.com/SavedSoulsFoundation",
+      "logo": "",
+      "is_active": true,
+      "created_at": "2025-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "myapp.foundation",
+    "pk": 21,
+    "fields": {
+      "name": "Huay Yang Dog Rescue",
+      "description": "กลุ่มอาสาสมัครช่วยเหลือสุนัขในอำเภอทับสะแก ประจวบคีรีขันธ์",
+      "address": "82/1-2 หมู่ 5 ต.ชากโดน อ.แกลง จ.ระยอง (ที่อยู่จดทะเบียน) / ปฏิบัติงานในห้วยยาง",
+      "phone": "-",
+      "email": "help@dogrescuethailand.com",
+      "website_url": "https://dogrescuethailand.com/",
+      "facebook_url": "https://www.facebook.com/huayyangdogrescue",
+      "logo": "",
+      "is_active": true,
+      "created_at": "2025-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "myapp.foundation",
+    "pk": 22,
+    "fields": {
+      "name": "Happy Dogs Koh Chang",
+      "description": "ศูนย์พักพิงและหาบ้านให้สุนัขบนเกาะช้าง",
+      "address": "เกาะช้าง จ.ตราด 23170",
+      "phone": "+66 92 818 3329",
+      "email": "-",
+      "website_url": "http://happydogskohchang.com/",
+      "facebook_url": "https://www.facebook.com/happydogskohchang",
+      "logo": "",
+      "is_active": true,
+      "created_at": "2025-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "myapp.foundation",
+    "pk": 23,
+    "fields": {
+      "name": "Hope for Strays Foundation",
+      "description": "มูลนิธิช่วยเหลือสุนัขจรจัดในพื้นที่พัทยาตะวันออกและบางละมุง",
+      "address": "ต.หนองปรือ อ.บางละมุง จ.ชลบุรี",
+      "phone": "089-158-8345",
+      "email": "-",
+      "website_url": "https://hopeforstrays.org/",
+      "facebook_url": "https://www.facebook.com/HopeforStraysThailand",
+      "logo": "",
+      "is_active": true,
+      "created_at": "2025-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "myapp.foundation",
+    "pk": 24,
+    "fields": {
+      "name": "Jai Dog Rescue",
+      "description": "ศูนย์พักพิงและคลินิกทำหมันสัตว์ในพื้นที่ปากช่องและเขาใหญ่",
+      "address": "อ.ปากช่อง จ.นครราชสีมา",
+      "phone": "-",
+      "email": "info@jaidogrescue.org",
+      "website_url": "https://jaidogrescue.org/",
+      "facebook_url": "https://www.facebook.com/JaiDogRescue",
+      "logo": "",
+      "is_active": true,
+      "created_at": "2025-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "myapp.foundation",
+    "pk": 25,
+    "fields": {
+      "name": "Baan Unrak Animal Sanctuary",
+      "description": "ศูนย์พักพิงสัตว์ในสังขละบุรี กาญจนบุรี ดูแลรักษาสัตว์และส่งเสริมความสัมพันธ์ชุมชน",
+      "address": "99/1 หมู่ 1 ต.หนองลู อ.สังขละบุรี จ.กาญจนบุรี 71240",
+      "phone": "034-510-778",
+      "email": "baanunrak@gmail.com",
+      "website_url": "https://www.baanunrak.org/",
+      "facebook_url": "https://www.facebook.com/baanunrakanimalsanctuary",
+      "logo": "",
+      "is_active": true,
+      "created_at": "2025-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "myapp.foundation",
+    "pk": 26,
+    "fields": {
+      "name": "บ้านนางฟ้าของสัตว์จร",
+      "description": "ศูนย์พักพิงขนาดใหญ่ รับดูแลสุนัขและแมวจรจัดจำนวนมากในสระบุรี",
+      "address": "ม.13 บ้านท่าเสา อ.มวกเหล็ก จ.สระบุรี",
+      "phone": "-",
+      "email": "-",
+      "website_url": "",
+      "facebook_url": "https://www.facebook.com/CHSAThai",
+      "logo": "",
+      "is_active": true,
+      "created_at": "2025-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "myapp.foundation",
+    "pk": 27,
+    "fields": {
+      "name": "มูลนิธิ The Voice (เสียงจากเรา)",
+      "description": "กระบอกเสียงให้สัตว์ยากไร้ รับแจ้งเหตุด่วนสัตว์เจ็บป่วยและถูกทารุณกรรม โดยคุณเก๋ ชลลดา",
+      "address": "49/1 ซอย 12 ถ.โชตนา ต.ช้างเผือก อ.เมือง จ.เชียงใหม่",
+      "phone": "081-568-2939",
+      "email": "thevoicefoundation@gmail.com",
+      "website_url": "https://www.thevoicefoundation.org/",
+      "facebook_url": "https://www.facebook.com/thevoicefoundation",
+      "logo": "",
+      "is_active": true,
+      "created_at": "2025-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "myapp.foundation",
+    "pk": 28,
+    "fields": {
+      "name": "Bodhi Dog Rescue and Shelter",
+      "description": "ศูนย์พักพิงสุนัข ณ วัดโสภณวนาราม ภูเก็ต ช่วยเหลือสุนัขจรจัดในพื้นที่",
+      "address": "วัดโสภณวนาราม ถ.ป่าคลอก อ.ถลาง จ.ภูเก็ต 83110",
+      "phone": "084-628-8077",
+      "email": "-",
+      "website_url": "http://bodhishelter.com/",
+      "facebook_url": "",
+      "logo": "",
+      "is_active": true,
+      "created_at": "2025-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "myapp.foundation",
+    "pk": 29,
+    "fields": {
+      "name": "มูลนิธิไทยเลิฟแอนนิมอล (Thai Love Animal Foundation)",
+      "description": "ช่วยเหลือสัตว์จรจัดและสัตว์ที่ถูกทารุณกรรม ในเขตภาคตะวันออก",
+      "address": "234/44 หมู่ 6 ต.สัตหีบ อ.สัตหีบ จ.ชลบุรี",
+      "phone": "062-646-3966",
+      "email": "thailoveanimal@hotmail.com",
+      "website_url": "https://thailoveanimal.org/",
+      "facebook_url": "https://www.facebook.com/thailoveanimal",
+      "logo": "",
+      "is_active": true,
+      "created_at": "2025-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "myapp.foundation",
+    "pk": 30,
+    "fields": {
+      "name": "Seub Nakhasathien Foundation",
+      "description": "มูลนิธิสืบนาคะเสถียร อนุรักษ์ป่าไม้และสัตว์ป่า (มีบทบาทสนับสนุนสวัสดิภาพสัตว์ป่า)",
+      "address": "กรุงเทพมหานคร",
+      "phone": "-",
+      "email": "-",
+      "website_url": "https://www.seub.or.th/",
+      "facebook_url": "https://www.facebook.com/SeubNakhasathienFD",
+      "logo": "",
+      "is_active": true,
+      "created_at": "2025-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "myapp.foundation",
+    "pk": 31,
+    "fields": {
+      "name": "Thai Society for the Prevention of Cruelty to Animals (TSPCA)",
+      "description": "สมาคมป้องกันการทารุณสัตว์แห่งประเทศไทย รณรงค์ยุติการทารุณกรรมสัตว์ผ่านสันติวิธี",
+      "address": "ชั้น 9 อาคาร B.L.H. กรุงเทพมหานคร",
+      "phone": "02-255-5805",
+      "email": "info@thaispca.org",
+      "website_url": "https://www.thaispca.org/",
+      "facebook_url": "https://www.facebook.com/tspca.thai",
+      "logo": "",
+      "is_active": true,
+      "created_at": "2025-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "myapp.foundation",
+    "pk": 32,
+    "fields": {
+      "name": "Wildlife Conservation Society (WCS) Thailand",
+      "description": "องค์กรอนุรักษ์สัตว์ป่าสากล สาขาประเทศไทย ทำงานวิจัยและคุ้มครองสัตว์ป่า",
+      "address": "55/297 เมืองทองธานี โครงการ 5 ซอย 3 ปากเกร็ด นนทบุรี 11120",
+      "phone": "02-503-4478",
+      "email": "wcsthailand@wcs.org",
+      "website_url": "https://thailand.wcs.org/",
+      "facebook_url": "",
+      "logo": "",
+      "is_active": true,
+      "created_at": "2025-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "myapp.foundation",
+    "pk": 33,
+    "fields": {
+      "name": "The Kanchanaburi Animal Shelter",
+      "description": "ศูนย์พักพิงสัตว์ในจังหวัดกาญจนบุรี",
+      "address": "ต.หนองบัว อ.เมือง จ.กาญจนบุรี",
+      "phone": "-",
+      "email": "-",
+      "website_url": "",
+      "facebook_url": "",
+      "logo": "",
+      "is_active": true,
+      "created_at": "2025-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "myapp.foundation",
+    "pk": 34,
+    "fields": {
+      "name": "Boon Lott's Elephant Sanctuary (BLES)",
+      "description": "ศูนย์บริบาลช้างในสุโขทัย ช่วยเหลือช้างจากการถูกทารุณกรรม",
+      "address": "บ้านตึก สุโขทัย",
+      "phone": "-",
+      "email": "-",
+      "website_url": "http://www.blesele.org/",
+      "facebook_url": "",
+      "logo": "",
+      "is_active": true,
+      "created_at": "2025-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "myapp.foundation",
+    "pk": 35,
+    "fields": {
+      "name": "Friends of the Asian Elephant (FAE)",
+      "description": "มูลนิธิเพื่อนช้าง โรงพยาบาลช้างแห่งแรกของโลก",
+      "address": "ลำปาง",
+      "phone": "-",
+      "email": "-",
+      "website_url": "https://www.friendsoftheasianelephant.org/",
+      "facebook_url": "",
+      "logo": "",
+      "is_active": true,
+      "created_at": "2025-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "myapp.foundation",
+    "pk": 36,
+    "fields": {
+      "name": "Highland Farm and Gibbon Sanctuary",
+      "description": "ศูนย์ช่วยเหลือชะนีและสัตว์ป่าในแม่สอด ตาก",
+      "address": "แม่สอด จ.ตาก",
+      "phone": "-",
+      "email": "-",
+      "website_url": "",
+      "facebook_url": "",
+      "logo": "",
+      "is_active": true,
+      "created_at": "2025-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "myapp.foundation",
+    "pk": 37,
+    "fields": {
+      "name": "Love Wildlife Foundation",
+      "description": "มูลนิธิรักสัตว์ป่า ให้ความรู้และช่วยเหลือสัตว์ป่าในที่เลี้ยง",
+      "address": "กรุงเทพมหานคร",
+      "phone": "-",
+      "email": "-",
+      "website_url": "",
+      "facebook_url": "https://www.facebook.com/LoveWildlifeFoundation",
+      "logo": "",
+      "is_active": true,
+      "created_at": "2025-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "myapp.foundation",
+    "pk": 38,
+    "fields": {
+      "name": "Phuket Elephant Sanctuary",
+      "description": "ศูนย์บริบาลช้างภูเก็ต เน้นการท่องเที่ยวเชิงจริยธรรม",
+      "address": "ภูเก็ต",
+      "phone": "-",
+      "email": "-",
+      "website_url": "https://www.phuketelephantsanctuary.org/",
+      "facebook_url": "",
+      "logo": "",
+      "is_active": true,
+      "created_at": "2025-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "myapp.foundation",
+    "pk": 39,
+    "fields": {
+      "name": "The Gibbon Rehabilitation Project",
+      "description": "โครงการคืนชะนีสู่ป่า ภูเก็ต",
+      "address": "ภูเก็ต",
+      "phone": "-",
+      "email": "-",
+      "website_url": "https://www.gibbonproject.org/",
+      "facebook_url": "",
+      "logo": "",
+      "is_active": true,
+      "created_at": "2025-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "myapp.foundation",
+    "pk": 40,
+    "fields": {
+      "name": "Malee's Animals Shelter",
+      "description": "บ้านพักพิงสัตว์ที่ท่าใหม่ จันทบุรี",
+      "address": "ท่าใหม่ จ.จันทบุรี",
+      "phone": "-",
+      "email": "-",
+      "website_url": "https://www.chanthaburishelter.com/",
+      "facebook_url": "https://m.facebook.com/profile.php/?id=100063475005811",
+      "logo": "",
+      "is_active": true,
+      "created_at": "2025-01-01T00:00:00Z"
+    }
+  }
+]

@@ -8,7 +8,7 @@ from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import csrf_exempt
 import json
 from .models import Animal, User , Profile, Pet , Post, Foundation , AdoptionRequest, ChatMessage
-from .forms import CustomUserCreationForm ,LoginForm, PetForm, RegisterForm , VaccineFormSet, AllergyFormSet , PublicPostForm,PublicPostEditForm
+from .forms import CommentForm, CustomUserCreationForm ,LoginForm, PetForm, RegisterForm , VaccineFormSet, AllergyFormSet , PublicPostForm,PublicPostEditForm
 from django.contrib.auth import authenticate, login, logout, get_user_model
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.conf import settings
@@ -142,16 +142,35 @@ def account_delete(request):
 
 @login_required
 def profile_update(request):
-    # ... (โค้ด profile_update ... ถูกต้องแล้ว) ...
     if request.method == "POST":
-        profile, _ = Profile.objects.get_or_create(user=request.user)
-        request.user.first_name = request.POST.get("full_name", "").strip()
-        request.user.phone = request.POST.get("phone", "").strip()
-        request.user.address = request.POST.get("address", "").strip()
+        # 1. รับค่าจากฟอร์ม
+        full_name = request.POST.get("full_name", "").strip()
+        phone = request.POST.get("phone", "").strip()
+        address = request.POST.get("address", "").strip()
+        new_email = request.POST.get("email", "").strip()
+
+        # 2. ตรวจสอบอีเมลซ้ำ (สำคัญ!)
+        # ถ้ามีการเปลี่ยนอีเมล และ อีเมลใหม่นั้นมีคนใช้แล้ว (ที่ไม่ใช่ตัวเราเอง)
+        if new_email != request.user.email:
+            if User.objects.filter(email=new_email).exists():
+                messages.error(request, f"อีเมล '{new_email}' มีผู้ใช้งานแล้ว โปรดใช้อีเมลอื่น")
+                return redirect("profile")
+            request.user.email = new_email
+
+        # 3. อัปเดตข้อมูล User
+        request.user.first_name = full_name
+        request.user.phone = phone
+        request.user.address = address
         request.user.save()
+
+        # 4. อัปเดตข้อมูล Profile (รูปภาพ)
+        profile, _ = Profile.objects.get_or_create(user=request.user)
         if "avatar" in request.FILES:
             profile.avatar = request.FILES["avatar"]
         profile.save()
+        
+        messages.success(request, "อัปเดตข้อมูลส่วนตัวเรียบร้อยแล้ว")
+
     return redirect("profile")
 
 @login_required
@@ -328,6 +347,9 @@ def pet_report_create(request, post_type):
                         lost_location=cleaned_data.get('lost_location'),
                         contact_phone=cleaned_data.get('contact_phone'),
                         contact_social=cleaned_data.get('contact_social'),
+                        province=cleaned_data.get('province'),
+                        amphoe=cleaned_data.get('amphoe'),
+                        tambon=cleaned_data.get('tambon'),
                         is_active=True
                     )
                 messages.success(request, f"บันทึกประกาศ '{new_pet.name}' เรียบร้อยแล้ว")
@@ -399,14 +421,30 @@ def post_detail_view(request, pk):
         pk=pk, 
         is_active=True
     )
-    
+    comment_form = CommentForm()
+    comments = post.comments.select_related('user').all()
     # สร้าง context เพื่อส่ง 'post' ไปให้ template ใหม่
     context = {
-        'post': post
+        'post': post,
+        'comment_form': comment_form,
+        'comments': comments,
     }
     
     # Render template ใหม่ (ที่เรากำลังจะสร้างในขั้นตอนที่ 3)
     return render(request, 'myapp/post_detail.html', context)
+
+@login_required
+def add_comment(request, pk):
+    post = get_object_or_404(Post, pk=pk)
+    if request.method == 'POST':
+        form = CommentForm(request.POST)
+        if form.is_valid():
+            comment = form.save(commit=False)
+            comment.post = post
+            comment.user = request.user
+            comment.save()
+            messages.success(request, "เพิ่มความคิดเห็นเรียบร้อยแล้ว")
+    return redirect('post_detail', pk=pk)
 
 @login_required
 def send_adoption_request(request, pk):
@@ -501,7 +539,11 @@ def my_posts_list(request):
         .select_related('pet', 'pet__animal')\
         .order_by('-created_at')
     
-    return render(request, 'myapp/my_posts_list.html', {'posts': posts})
+    today = timezone.now().date()
+    
+    return render(request, 'myapp/my_posts_list.html', 
+                  { 'posts': posts,
+                    'today': today})
 
 @login_required
 def toggle_post_status(request, pk):
@@ -555,6 +597,9 @@ def pet_report_edit(request, pk):
                     post.lost_location = cleaned_data.get('lost_location')
                     post.contact_phone = cleaned_data.get('contact_phone')
                     post.contact_social = cleaned_data.get('contact_social')
+                    post.province = cleaned_data.get('province')
+                    post.amphoe = cleaned_data.get('amphoe')
+                    post.tambon = cleaned_data.get('tambon')
                     # (หมายเหตุ: เราไม่เปิดให้แก้ post_type เพราะมันจะยุ่งยากเรื่อง Logic)
                     post.save()
 
@@ -575,7 +620,10 @@ def pet_report_edit(request, pk):
             'animal': pet.animal,
             'gender': pet.gender,
             'birth_date': pet.birth_date,
-            'image': pet.image
+            'image': pet.image,
+            'province': post.province,
+            'amphoe': post.amphoe,
+            'tambon': post.tambon,
         }
         form = PublicPostEditForm(initial=initial_data)
 
@@ -625,3 +673,34 @@ def train_ai_basic(request):
 
     messages.success(request, f"AI เรียนรู้ข้อมูลโพสต์จำนวน {count} รายการเรียบร้อยแล้ว!")
     return redirect('landing')
+
+@login_required
+def renew_post(request, pk):
+    """ ต่ออายุประกาศไปอีก 30 วัน นับจากวันนี้ """
+    post = get_object_or_404(Post, pk=pk, user=request.user)
+    
+    # ตั้งวันหมดอายุใหม่ = วันนี้ + 30 วัน
+    post.expiry_date = timezone.now().date() + timedelta(days=30)
+    
+    # ถ้าโพสต์เคยปิดไปเพราะหมดอายุ ก็ให้เปิดใหม่ด้วย
+    if not post.is_active:
+        post.is_active = True
+        
+    post.save()
+    
+    messages.success(request, f"ต่ออายุประกาศ '{post.pet.name}' เรียบร้อยแล้ว (หมดอายุ: {post.expiry_date})")
+    return redirect('my_posts_list')
+
+def generate_poster(request, pk):
+    """ สร้างหน้า HTML สำหรับพิมพ์โปสเตอร์ A4 """
+    post = get_object_or_404(Post.objects.select_related('pet', 'pet__animal'), pk=pk)
+    
+    # สร้าง QR Code URL (ชี้กลับมาที่หน้าเว็บนี้)
+    # ใช้ API ฟรีของ goqr.me หรือ qrserver
+    current_site = request.build_absolute_uri(f'/post/{pk}/')
+    qr_code_url = f"https://api.qrserver.com/v1/create-qr-code/?size=150x150&data={current_site}"
+
+    return render(request, 'myapp/poster.html', {
+        'post': post,
+        'qr_code_url': qr_code_url
+    })

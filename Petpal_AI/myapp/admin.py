@@ -14,7 +14,8 @@ from .models import (
     VaccineRecord,
     PetAllergy,
     Post,
-    Foundation
+    Foundation,
+    Comment,
 )
 
 # -------------------- User --------------------
@@ -256,3 +257,23 @@ class ChatMessageAdmin(admin.ModelAdmin):
     def short_content(self, obj):
         return (obj.content[:50] + '...') if len(obj.content) > 50 else obj.content
     short_content.short_description = "ข้อความ"
+
+# -------------------- Comment --------------------
+@admin.register(Comment)
+class CommentAdmin(admin.ModelAdmin):
+    list_display = ('user', 'post_pet_name', 'short_content', 'created_at')
+    list_filter = ('created_at',)
+    search_fields = ('content', 'user__username', 'post__pet__name')
+    autocomplete_fields = ('post', 'user')
+    date_hierarchy = 'created_at'
+    ordering = ('-created_at',)
+
+    # ฟังก์ชันย่อเนื้อหาคอมเมนต์ (แสดงแค่ 50 ตัวอักษร)
+    def short_content(self, obj):
+        return (obj.content[:50] + '...') if len(obj.content) > 50 else obj.content
+    short_content.short_description = "ความคิดเห็น"
+
+    # ฟังก์ชันแสดงชื่อสัตว์ในโพสต์
+    def post_pet_name(self, obj):
+        return f"{obj.post.pet.name} ({obj.post.get_post_type_display()})"
+    post_pet_name.short_description = "โพสต์ของ"

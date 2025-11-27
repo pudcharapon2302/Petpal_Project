@@ -14,111 +14,214 @@
     html { scroll-behavior: smooth; } 
     body { font-family: "Noto Sans Thai", system_ui; }
     .soft-card { box-shadow: 0 10px 20px -10px rgba(0,0,0,.15); }
+    .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+    .custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 10px; }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #9ca3af; }
   </style>
 </head>
 <body class="bg-gray-50 text-neutral-900">
 
   {% include "myapp/partials/navbar.html" %}
 
-  <main class="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-10 pb-24">
-    <header class="mb-8 space-y-4">
-      <div class="flex justify-between items-center gap-4">
-        <h1 class="text-4xl sm:text-5xl font-extrabold tracking-tight">
-          รายละเอียดโพสต์
-        </h1>
-        <button onclick="history.back()"
-           class="rounded-md shadow-sm text-sm font-medium px-4 py-2 border border-gray-300 bg-white text-gray-700 hover:bg-gray-50">
-          Back
-        </button>
-      </div>
-    </header>
-    
-    <article class="max-w-2xl mx-auto rounded-xl overflow-hidden bg-white shadow-lg border border-gray-200">
-      
-      {% if post.pet.image %}
-        <img src="{{ post.pet.image.url }}" alt="{{ post.pet.name }}" class="h-96 w-full object-cover">
-      {% else %}
-        <div class="h-96 w-full bg-gray-100 flex items-center justify-center">
-          <span class="text-gray-400">(No Image)</span>
-        </div>
-      {% endif %}
-           
-      <div class="p-6 space-y-4">
-        
-        <div class="space-y-2">
-          <h2 class="text-3xl font-bold">{{ post.pet.name }}</h2>
-          <dl class="text-sm text-neutral-600 space-y-1">
-            <div class="flex"><dt class="w-20 shrink-0 font-medium">พันธุ์ :</dt>
-              <dd>{{ post.pet.animal.breed|default:"—" }}</dd>
-            </div>
-            <div class="flex"><dt class="w-20 shrink-0 font-medium">เพศ :</dt>
-              <dd>{{ post.pet.get_gender_display|default:"—" }}</dd>
-            </div>
-            <div class="flex"><dt class="w-20 shrink-0 font-medium">วันเกิด :</dt>
-              <dd>{{ post.pet.birth_date|date:"j M Y"|default:"—" }}</dd>
-            </div>
-          </dl>
-        </div>
+  <main class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 pb-24">
 
-        <hr/>
+    <!-- Header Section -->
+    <header class="mb-6 flex flex-wrap justify-between items-center gap-4">
+      
+      <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight text-gray-900">
+        รายละเอียดโพสต์
+      </h1>
+
+      <div class="flex items-center gap-3">
         
-        <div class="space-y-2">
-          <h3 class="text-lg font-semibold">รายละเอียด</h3>
-          <p class="text-neutral-700">
-            {{ post.description|default:"(ไม่มีคำอธิบาย)"|linebreaksbr }}
-          </p>
-        </div>
+        <button onclick="history.back()"
+           class="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 shadow-sm transition flex items-center gap-1">
+          <span>&larr;</span> ย้อนกลับ
+        </button>
 
         {% if post.post_type == 'LOST' %}
-        <div class="space-y-2">
-          <h3 class="text-lg font-semibold text-red-600">ข้อมูลการหาย</h3>
-          <dl class="text-sm text-neutral-600 space-y-1">
-            <div class="flex"><dt class="w-24 shrink-0 font-medium">วันที่หาย :</dt>
-              <dd>{{ post.lost_date|date:"j M Y"|default:"—" }}</dd>
-            </div>
-            <div class="flex"><dt class="w-24 shrink-0 font-medium">หายจาก (สถานที่) :</dt>
-              <dd>{{ post.lost_location|default:"—" }}</dd>
-            </div>
-          </dl>
-        </div>
+          <a href="{% url 'generate_poster' post.pk %}" target="_blank"
+            class="inline-flex border border-gray-300 items-center gap-2 bg-gray-100 text-gray-600 px-4 py-2 rounded-lg hover:bg-gray-900 transition shadow-sm text-sm font-medium">
+            <span>🖨️</span> สร้างโปสเตอร์
+          </a>
         {% endif %}
-
-        <hr/>
-        
-        <div class="space-y-2" id="contact-section">
-          <h3 class="text-lg font-semibold">ข้อมูลติดต่อ (จากผู้โพสต์)</h3>
-          <dl class="text-sm text-neutral-600 space-y-1">
-            <div class="flex"><dt class="w-24 shrink-0 font-medium">เบอร์ติดต่อ :</dt>
-              <dd>{{ post.contact_phone|default:"—" }}</dd>
-            </div>
-            <div class="flex"><dt class="w-24 shrink-0 font-medium">Social :</dt>
-              <dd>{{ post.contact_social|default:"—"|linebreaksbr }}</dd>
-            </div>
-          </dl>
-        </div>
         
       </div>
-    </article>
+
+    </header>
+
+    <!-- Main Content -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      
+      <!-- Left Section: Pet Details -->
+      <div class="lg:col-span-1 space-y-6">
+        <article class="rounded-2xl overflow-hidden bg-white shadow-md border border-gray-200">
+          <div class="relative bg-gray-100">
+            {% if post.pet.image %}
+              <img src="{{ post.pet.image.url }}" alt="{{ post.pet.name }}" class="w-full max-h-[500px] object-contain mx-auto">
+            {% else %}
+              <div class="h-80 flex items-center justify-center text-gray-400">
+                <span class="text-lg">(ไม่มีรูปภาพ)</span>
+              </div>
+            {% endif %}
+          </div>
+          <div class="p-6 md:p-8 space-y-6">
+            <div class="border-b border-gray-100 pb-6">
+              <h2 class="text-3xl font-bold text-gray-900 mb-4">{{ post.pet.name }}</h2>
+              <div class="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
+                <div>
+                  <span class="block text-gray-500 mb-1">สายพันธุ์</span>
+                  <span class="font-medium text-lg">{{ post.pet.animal.breed|default:"—" }}</span>
+                </div>
+                <div>
+                  <span class="block text-gray-500 mb-1">เพศ</span>
+                  <span class="font-medium text-lg">{{ post.pet.get_gender_display|default:"—" }}</span>
+                </div>
+                <div>
+                  <span class="block text-gray-500 mb-1">วันเกิด (ประมาณ)</span>
+                  <span class="font-medium text-lg">{{ post.pet.birth_date|date:"j M Y"|default:"—" }}</span>
+                </div>
+              </div>
+            </div>
+            <div class="space-y-3">
+              <h3 class="text-lg font-bold text-gray-800">รายละเอียดเพิ่มเติม</h3>
+              <p class="text-gray-700 leading-relaxed whitespace-pre-line">
+                {{ post.description|default:"(ไม่มีคำอธิบาย)" }}
+              </p>
+            </div>
+            <div class="bg-gray-50 p-4 rounded-xl border border-gray-100">
+              <label class="text-xs font-bold text-gray-400 uppercase tracking-wider">พิกัด / สถานที่</label>
+              <div class="text-lg font-medium text-gray-900 mt-1 flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5 text-orange-500">
+                  <path fill-rule="evenodd" d="M9.69 18.933l.003.001C9.89 19.02 10 19s.11.02.308-.066l.002-.001.006-.003.018-.008a5.741 5.741 0 00.281-.14c.186-.096.446-.24.757-.433.62-.384 1.445-.966 2.274-1.765C15.302 14.988 17 12.493 17 9A7 7 0 103 9c0 3.492 1.698 5.988 3.355 7.584a13.731 13.731 0 002.273 1.765 11.842 11.842 0 00.976.544l.062.029.018.008.006.003zM10 11.25a2.25 2.25 0 100-4.5 2.25 2.25 0 000 4.5z" clip-rule="evenodd" />
+                </svg>
+                {{ post.tambon|default:"" }} {{ post.amphoe|default:"" }}
+                {% if post.province %} จ.{{ post.province }} {% endif %}
+              </div>
+            </div>
+          </div>
+        </article>
+      </div>
+
+      <!-- Right Section: Comments -->
+      <div class="lg:col-span-2 space-y-6">
+        <div class="bg-white rounded-2xl shadow-lg border border-gray-200 flex flex-col h-full">
+          <div class="p-4 border-b border-gray-100 flex justify-between items-center bg-gray-50 rounded-t-2xl">
+            <h3 class="text-lg font-bold text-gray-800 flex items-center gap-2">
+              💬 ความคิดเห็น
+            </h3>
+            <span class="bg-gray-200 text-gray-600 text-xs px-2 py-1 rounded-full font-bold">{{ comments.count }}</span>
+          </div>
+          <div class="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar bg-gray-50">
+            {% for comment in comments %}
+              <div class="flex gap-3 items-start">
+                {% if comment.user.profile.avatar %}
+                  <img src="{{ comment.user.profile.avatar.url }}" class="w-10 h-10 rounded-full object-cover border border-gray-100 shadow-sm shrink-0">
+                {% else %}
+                  <div class="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center text-orange-600 text-xs font-bold shrink-0 border border-orange-200">
+                    {{ comment.user.username|first|upper }}
+                  </div>
+                {% endif %}
+                <div class="flex-1">
+                  <div class="bg-white rounded-2xl px-4 py-3 text-sm text-gray-800 shadow-md">
+                    <span class="font-bold text-gray-900 block text-xs mb-1">{{ comment.user.username }}</span>
+                    {{ comment.content }}
+                  </div>
+                  <div class="text-[10px] text-gray-400 mt-1 ml-1">
+                    {{ comment.created_at|timesince }} ที่แล้ว
+                  </div>
+                </div>
+              </div>
+            {% empty %}
+              <div class="h-full flex flex-col items-center justify-center text-gray-400 text-center p-6">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mb-2 opacity-20" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
+                <p>ยังไม่มีความคิดเห็น<br>มาเริ่มคุยกันเถอะ!</p>
+              </div>
+            {% endfor %}
+          </div>
+          <div class="p-4 border-t border-gray-100 bg-gray-50 rounded-b-2xl">
+            {% if request.user.is_authenticated %}
+              <form action="{% url 'add_comment' post.pk %}" method="POST" class="flex gap-2 items-center">
+                {% csrf_token %}
+                <div class="flex-1">
+                  {{ comment_form.content }}
+                </div>
+                <button type="submit" class="bg-orange-500 hover:bg-orange-600 text-white p-2 rounded-full shadow-md transition hover:scale-105 shrink-0">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5">
+                    <path d="M3.478 2.404a.75.75 0 00-.926.941l2.432 7.905H13.5a.75.75 0 010 1.5H4.984l-2.432 7.905a.75.75 0 00.926.94 60.519 60.519 0 0018.445-8.986.75.75 0 000-1.218A60.517 60.517 0 003.478 2.404z" />
+                  </svg>
+                </button>
+              </form>
+            {% else %}
+              <div class="text-center text-xs text-gray-500">
+                <a href="{% url 'login' %}?next={{ request.path }}" class="text-orange-600 font-bold hover:underline">เข้าสู่ระบบ</a> เพื่อคอมเมนต์
+              </div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
 
   </main>
-
-  <footer class="fixed bottom-4 right-4 z-50">
+  <footer class="fixed bottom-6 right-6 z-50">
     {% if request.user.is_authenticated %}
-      <form method="POST" action="{% url 'send_adoption_request' pk=post.pk %}">
-        {% csrf_token %}
-        <button type="submit"
-           onclick="return confirm('ยืนยันที่จะส่งคำขอรับเลี้ยงน้อง {{ post.pet.name }} ไปยังเจ้าของโพสต์?')"
-           class="flex items-center gap-2 rounded-full bg-orange-500 pl-5 pr-6 py-3 text-lg font-semibold text-white shadow-lg hover:bg-orange-600 transition hover:scale-105">
-          <span class="text-2xl">🐾</span> สนใจรับเลี้ยง
-        </button>
-      </form>
+      
+      {% if post.user == request.user %}
+        <a href="{% url 'adoption_requests_list' %}"
+           class="relative flex items-center gap-3 bg-gradient-to-r from-yellow-600 to-orange-600 hover:from-yellow-700 hover:to-orange-700 text-white px-6 py-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 border-2 border-white/20 group">
+           
+           <div class="relative">
+             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6 group-hover:animate-[swing_1s_ease-in-out_infinite]">
+               <path fill-rule="evenodd" d="M5.25 9a6.75 6.75 0 0113.5 0v.75c0 2.123.8 4.057 2.118 5.52a.75.75 0 01-.297 1.206c-1.544.57-3.16.99-4.831 1.243a3.75 3.75 0 11-7.48 0 24.585 24.585 0 01-4.831-1.244.75.75 0 01-.298-1.205A8.217 8.217 0 005.25 9.75V9zm4.502 8.9a2.25 2.25 0 104.496 0 25.057 25.057 0 01-4.496 0z" clip-rule="evenodd" />
+             </svg>
+             
+             {% if adoption_notifications.count > 0 %}
+               <span class="absolute -top-2 -right-2 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white ring-2 ring-white animate-pulse">
+                 {{ adoption_notifications.count }}
+               </span>
+             {% endif %}
+           </div>
+
+           <span class="font-bold tracking-wide text-sm md:text-base">
+             ดูคำขอที่เข้ามา
+             {% if adoption_notifications.count > 0 %}
+               <span class="ml-1 opacity-90 text-xs font-normal">({{ adoption_notifications.count }} รายการ)</span>
+             {% endif %}
+           </span>
+        </a>
+
+      {% elif my_request %}
+        <a href="{% url 'chat_room' my_request.id %}"
+           class="flex items-center gap-2 rounded-full bg-blue-500 pl-5 pr-6 py-3 text-lg font-semibold text-white shadow-lg hover:bg-blue-600 transition border-2 border-white transform hover:scale-105 animate-pulse">
+           <span class="text-2xl">💬</span> 
+           <span>แชทกับเจ้าของ ({{ my_request.get_status_display }})</span>
+        </a>
+
+      {% else %}
+        
+        {% if post.post_type == 'ADOPTION' %}
+          <form method="POST" action="{% url 'send_adoption_request' pk=post.pk %}">
+            {% csrf_token %}
+            <button type="submit"
+               onclick="return confirm('ยืนยันที่จะส่งคำขอรับเลี้ยงน้อง {{ post.pet.name }} ไปยังเจ้าของโพสต์?')"
+               class="flex items-center gap-2 bg-gradient-to-r from-orange-400 to-orange-500 hover:from-orange-500 hover:to-orange-600 text-white px-8 py-3 rounded-full shadow-xl hover:scale-105 transition font-bold border-2 border-white group">
+              <span class="text-2xl group-hover:-translate-y-1 transition">🐾</span> 
+              <span class="text-lg drop-shadow-sm">สนใจรับเลี้ยง (ทักแชท)</span>
+            </button>
+          </form>
+        {% endif %}
+
+      {% endif %}
+
     {% else %}
+      {% if post.post_type == 'ADOPTION' %}
       <a href="{% url 'login' %}?next={{ request.path }}"
-         class="flex items-center gap-2 rounded-full bg-gray-800 pl-5 pr-6 py-3 text-lg font-semibold text-white shadow-lg hover:bg-gray-700 transition">
+         class="flex items-center gap-2 rounded-full bg-gray-800 pl-5 pr-6 py-3 text-lg font-semibold text-white shadow-lg hover:bg-gray-700 transition border-2 border-white transform hover:scale-105">
         <span>🔐</span> เข้าสู่ระบบเพื่อรับเลี้ยง
       </a>
+      {% endif %}
     {% endif %}
   </footer>
-
 </body>
 </html>

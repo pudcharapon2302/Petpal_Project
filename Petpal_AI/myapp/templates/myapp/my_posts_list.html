@@ -56,6 +56,25 @@
                 </span>
               </h3>
               <p class="text-sm text-gray-500 mt-1">สร้างเมื่อ: {{ post.created_at|date:"d M Y" }}</p>
+              <div class="mt-3">
+                {% if post.expiry_date < today %}
+                  <div class="flex items-center justify-between bg-red-50 text-red-700 px-3 py-2 rounded-lg border border-red-100 text-sm animate-pulse">
+                    <span class="flex items-center gap-1.5 font-bold">
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4 shrink-0"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94 8.28 7.22z" clip-rule="evenodd" /></svg>
+                      หมดอายุแล้ว
+                    </span>
+                    <span class="text-xs opacity-80">({{ post.expiry_date|date:"d/m/y" }})</span>
+                  </div>
+                {% else %}
+                  <div class="flex items-center justify-between bg-orange-50 text-orange-700 px-3 py-2 rounded-lg border border-orange-100 text-sm">
+                     <span class="flex items-center gap-1.5 font-medium truncate mr-2">
+                       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4 shrink-0"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm.75-13a.75.75 0 00-1.5 0v5c0 .414.336.75.75.75h4a.75.75 0 000-1.5h-3.25V5z" clip-rule="evenodd" /></svg>
+                       เหลืออีก {{ post.expiry_date|timeuntil:today }}
+                     </span>
+                     <span class="text-xs text-orange-500 shrink-0">({{ post.expiry_date|date:"d/m/y" }})</span>
+                  </div>
+                {% endif %}
+              </div>
             </div>
             
             <div class="text-right">
@@ -70,12 +89,19 @@
               {% endif %}
             </div>
           </div>
-
+          
           <div class="mt-4 flex flex-wrap gap-3 pt-3 border-t border-gray-100">
             <a href="{% url 'post_detail' post.pk %}" class="text-sm text-gray-600 hover:text-gray-900 font-medium px-2 py-1">
               ดูหน้าเว็บ
             </a>
-
+            <form method="POST" action="{% url 'renew_post' post.pk %}" class="inline">
+              {% csrf_token %}
+              <button type="submit" 
+                      class="text-sm text-orange-600 hover:text-orange-800 font-medium px-2 py-1 border border-orange-200 rounded hover:bg-orange-50 transition flex items-center gap-1"
+                      title="ขยายเวลาไปอีก 30 วัน">
+                 ต่ออายุโพสต์
+              </button>
+            </form>
             <a href="{% url 'pet_report_edit' post.pk %}" 
                class="text-sm text-blue-600 hover:text-blue-800 font-medium px-2 py-1 border border-blue-200 rounded hover:bg-blue-50 transition">
                 แก้ไข

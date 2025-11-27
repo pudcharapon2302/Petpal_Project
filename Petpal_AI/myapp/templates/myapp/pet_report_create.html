@@ -88,6 +88,20 @@
           {{ form.birth_date }}
         </div>
         <div>
+          <label for="{{ form.province.id_for_label }}" class="block font-medium">จังหวัด :</label>
+          {{ form.province }}
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block font-medium">อำเภอ/เขต :</label>
+              {{ form.amphoe }}
+            </div>
+            <div>
+              <label class="block font-medium">ตำบล/แขวง :</label>
+              {{ form.tambon }}
+            </div>
+        </div>
+        <div>
           <label for="{{ form.description.id_for_label }}" class="block font-medium">{{ form.description.label }} :</label>
           {{ form.description }}
         </div>

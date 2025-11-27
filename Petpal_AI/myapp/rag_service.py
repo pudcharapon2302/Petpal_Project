@@ -86,14 +86,51 @@ class RAGService:
 
     def add_post_to_rag(self, post):
         try:
-            text = f"ประกาศ: {post.get_post_type_display()}\nสัตว์: {post.pet.name} ({post.pet.animal.breed})\nรายละเอียด: {post.description}\nติดต่อ: {post.contact_phone}"
+            # สร้างข้อความที่อยู่ (จัดการกรณีเป็นค่าว่างด้วย)
+            location_parts = [
+                post.tambon, 
+                post.amphoe, 
+                f"จ.{post.province}" if post.province else None
+            ]
+            # ตัดค่า None ออก แล้วเอามาต่อกัน (เช่น "ต.ในเมือง อ.เมือง จ.อุบลราชธานี")
+            location_text = " ".join(filter(None, location_parts))
+            
+            if not location_text:
+                location_text = "ไม่ระบุพิกัด"
+
+            # รวมเข้าไปใน Text หลักเพื่อให้ AI จำ
+            text = f"""
+            ประเภทประกาศ: {post.get_post_type_display()}
+            ชื่อสัตว์เลี้ยง: {post.pet.name}
+            สายพันธุ์: {post.pet.animal.breed if post.pet.animal else 'ไม่ระบุ'}
+            เพศ: {post.pet.get_gender_display()}
+            
+             ที่อยู่/พิกัด: {location_text}
+            
+            รายละเอียดเพิ่มเติม: {post.description or '-'}
+            ช่องทางติดต่อ: {post.contact_phone} / {post.contact_social}
+            """
+            
+            # สร้าง Document และบันทึก
             doc = Document(page_content=text, metadata={"id": str(post.id)})
             self.vector_store.add_documents([doc])
-        except: pass
+            
+        except Exception as e:
+             print(f" Error adding post: {e}")
     
     def clear_knowledge(self):
         try: self.vector_store.delete_collection() 
         except: pass
+        
+        try:
+            self.vector_store = Chroma(
+                client=self.chroma_client,
+                collection_name="petpal_collection",
+                embedding_function=self.embeddings,
+            )
+            print(" Re-initialized Collection")
+        except Exception as e:
+            print(f" Error re-initializing: {e}")
 
     def delete_post_from_rag(self, post_id):
         """ ลบข้อมูลโพสต์ออกจากสมอง AI """

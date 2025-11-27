@@ -158,6 +158,9 @@ class Post(models.Model):
     pet = models.ForeignKey(Pet, on_delete=models.CASCADE, related_name="posts")
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="posts")
 
+    province = models.CharField(max_length=100, blank=True, null=True, verbose_name="จังหวัด")
+    amphoe = models.CharField(max_length=100, blank=True, null=True, verbose_name="อำเภอ/เขต")
+    tambon = models.CharField(max_length=100, blank=True, null=True, verbose_name="ตำบล/แขวง")
     description = models.TextField(blank=True, null=True)
     lost_date = models.DateField(blank=True, null=True)
     lost_location = models.CharField(max_length=255, blank=True)
@@ -181,6 +184,17 @@ class Foundation(models.Model):
     Model สำหรับเก็บข้อมูลมูลนิธิ หรือ องค์กรช่วยเหลือสัตว์
     (สำหรับหน้า 'ติดต่อ' ที่เป็น Directory)
     """
+    class OrgType(models.TextChoices):
+        FOUNDATION = "FOUNDATION", "มูลนิธิ/องค์กรเอกชน"
+        GOVERNMENT = "GOVERNMENT", "หน่วยงานรัฐ (ปศุสัตว์)"
+        HOSPITAL = "HOSPITAL", "โรงพยาบาลสัตว์"
+
+    org_type = models.CharField(
+        max_length=20,
+        choices=OrgType.choices,
+        default=OrgType.FOUNDATION,
+        verbose_name="ประเภทองค์กร"
+    )
     name = models.CharField(
         max_length=255, 
         verbose_name="ชื่อมูลนิธิ/องค์กร"
@@ -289,3 +303,15 @@ def sync_post_to_ai(sender, instance, created, **kwargs):
 def remove_post_from_ai(sender, instance, **kwargs):
     print(f" AI Forgetting: ลบข้อมูลโพสต์ '{instance.pet.name}' ถาวร...")
     rag_service.delete_post_from_rag(instance.id)
+
+class Comment(models.Model):
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='comments')
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    content = models.TextField(verbose_name="ความคิดเห็น")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['created_at'] # เรียงจากเก่าไปใหม่ (เหมือนแชท)
+
+    def __str__(self):
+        return f"Comment by {self.user.username} on {self.post.pet.name}"

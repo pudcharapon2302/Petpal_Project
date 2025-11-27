@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<body style="font-family: sans-serif; color: #333; line-height: 1.6;">
+    <div style="max-width: 600px; margin: 0 auto; border: 1px solid #eee; border-radius: 10px; overflow: hidden;">
+        <div style="background-color: #f97316; padding: 20px; text-align: center;">
+            <h1 style="color: white; margin: 0;">Petpal AI</h1>
+        </div>
+        
+        {% if post.pet.image %}
+        <img src="http://localhost:8000{{ post.pet.image.url }}" style="width: 100%; height: 200px; object-fit: cover;">
+        {% endif %}
+
+        <div style="padding: 30px;">
+            <h2 style="color: #f97316;">⚠️ ประกาศใกล้หมดอายุ</h2>
+            <p>สวัสดีคุณ <strong>{{ post.user.username }}</strong>,</p>
+            <p>ประกาศของคุณสำหรับน้อง <strong>"{{ post.pet.name }}"</strong> กำลังจะหมดอายุในวันที่ <strong>{{ post.expiry_date|date:"d M Y" }}</strong> (อีก 3 วัน)</p>
+            <p>เพื่อให้ประกาศแสดงอยู่บนหน้าเว็บต่อไป กรุณากดปุ่มด้านล่างเพื่อต่ออายุครับ</p>
+            
+            <div style="text-align: center; margin: 30px 0;">
+                <a href="http://localhost:8000/my-posts/" 
+                   style="background-color: #f97316; color: white; padding: 12px 24px; text-decoration: none; border-radius: 50px; font-weight: bold; display: inline-block;">
+                    ต่ออายุประกาศทันที
+                </a>
+            </div>
+            
+            <p style="font-size: 12px; color: #999; text-align: center;">
+                หากน้องได้บ้านแล้ว หรือเจอตัวแล้ว สามารถปล่อยให้ประกาศหมดอายุได้เลยครับ
+            </p>
+        </div>
+    </div>
+</body>
+</html>
