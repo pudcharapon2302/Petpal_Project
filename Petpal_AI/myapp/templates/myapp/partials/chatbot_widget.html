@@ -51,7 +51,7 @@
     <div class="p-3 bg-white border-t border-gray-100">
       <form class="flex gap-2" @submit.prevent="sendMessage">
         <input type="text" x-model="userInput" placeholder="พิมพ์คำถาม..." 
-               class="flex-1 bg-gray-100 border-0 rounded-full px-4 py-2 text-sm focus:ring-2 focus:ring-orange-500 focus:bg-white transition">
+               class="flex-1 bg-gray-100 border-0 rounded-full px-4 py-2 text-sm focus:ring-2 focus:ring-orange-500 focus:bg-white transition text-gray-900 placeholder-gray-400">
         <button type="submit" :disabled="loading" class="bg-orange-500 text-white p-2 rounded-full hover:bg-orange-600 shadow-md transition disabled:opacity-50">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5">
             <path d="M3.478 2.404a.75.75 0 00-.926.941l2.432 7.905H13.5a.75.75 0 010 1.5H4.984l-2.432 7.905a.75.75 0 00.926.94 60.519 60.519 0 0018.445-8.986.75.75 0 000-1.218A60.517 60.517 0 003.478 2.404z" />
@@ -68,74 +68,74 @@ function chatApp() {
     return {
         isOpen: false,
         userInput: '',
+        messages: [],
         loading: false,
-        messages: [
-            { text: "สวัสดีครับ! มีอะไรให้ PetBot ช่วยไหมครับ?", sender: 'ai' }
-        ],
 
         init() {
+            // ✅ แก้ไขตรงนี้: เช็คว่าถ้าอยู่หน้า AI Chat เต็มจอ ให้ลบ Widget นี้ทิ้งเลย
+            if (window.location.pathname.includes('/ai-chat/')) {
+                this.$el.remove(); // ลบ Element ของ Widget ออกจากหน้าเว็บ
+                return; // จบการทำงาน ไม่ต้องโหลดต่อ
+            }
+
+            // ถ้าไม่ใช่หน้า AI Chat ก็ทำงานตามปกติ
             this.renderMessages();
         },
 
         toggleChat() {
             this.isOpen = !this.isOpen;
-            if(this.isOpen) setTimeout(() => this.scrollToBottom(), 100);
+            if (this.isOpen && this.messages.length === 0) {
+                // ข้อความต้อนรับ
+                this.messages.push({
+                    role: 'ai',
+                    text: 'สวัสดีครับ! 🐶 มีเรื่องสัตว์เลี้ยงให้ช่วยมั้ยครับ?'
+                });
+            }
         },
 
-        sendMessage() {
-            if (this.userInput.trim() === '') return;
-            
+        async sendMessage() {
+            if (!this.userInput.trim()) return;
+
             const text = this.userInput;
             this.userInput = '';
+            this.messages.push({ role: 'user', text: text });
             this.loading = true;
 
-            // แสดงข้อความเราทันที
-            this.addMessage(text, 'user');
-
-            // ส่งไปหา AI
-            fetch('/api/chat/', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ message: text })
-            })
-            .then(res => res.json())
-            .then(data => {
-                // รับคำตอบจาก AI
-                this.addMessage(data.response, 'ai');
-            })
-            .catch(err => {
-                console.error(err);
-                this.addMessage('ขออภัย ระบบขัดข้องชั่วคราว', 'ai');
-            })
-            .finally(() => {
-                this.loading = false;
+            // Scroll ลงล่าง
+            this.$nextTick(() => {
+                const box = document.getElementById('widget-chat-box');
+                if(box) box.scrollTop = box.scrollHeight;
             });
-        },
 
-        addMessage(text, sender) {
-            this.messages.push({ text, sender });
-            this.renderMessages();
+            try {
+                const res = await fetch('/api/chat/?source=widget', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    credentials: 'same-origin', // ส่ง Cookie ไปด้วย
+                    body: JSON.stringify({ message: text })
+                });
+
+                if (!res.ok) throw new Error('Network error');
+
+                const data = await res.json();
+                this.messages.push({ role: 'ai', text: data.response || 'ขออภัย ไม่เข้าใจคำถาม' });
+
+            } catch (error) {
+                console.error(error);
+                this.messages.push({ role: 'ai', text: 'เกิดข้อผิดพลาด กรุณาลองใหม่' });
+            } finally {
+                this.loading = false;
+                this.$nextTick(() => {
+                    const box = document.getElementById('widget-chat-box');
+                    if(box) box.scrollTop = box.scrollHeight;
+                });
+            }
         },
 
         renderMessages() {
-            const chatBox = document.getElementById('widget-chat-box');
-            chatBox.innerHTML = this.messages.map(msg => `
-                <div class="flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}">
-                    ${msg.sender === 'ai' ? '<div class="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center text-xs mr-2 border border-orange-200 shrink-0">🤖</div>' : ''}
-                    <div class="${msg.sender === 'user' ? 'bg-orange-500 text-white rounded-tr-none' : 'bg-white border border-gray-200 text-gray-700 rounded-tl-none'} 
-                                rounded-2xl px-4 py-2 shadow-sm text-sm max-w-[85%]">
-                        ${msg.text}
-                    </div>
-                </div>
-            `).join('');
-            this.scrollToBottom();
-        },
-
-        scrollToBottom() {
-            const chatBox = document.getElementById('widget-chat-box');
-            if(chatBox) chatBox.scrollTop = chatBox.scrollHeight;
+            // ฟังก์ชันเดิมของคุณ (ถ้ามี logic โหลดข้อความเก่าก็ใส่ไว้ตรงนี้)
         }
     }
 }

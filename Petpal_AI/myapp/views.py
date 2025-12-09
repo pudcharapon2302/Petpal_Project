@@ -3,7 +3,7 @@ from django.shortcuts import get_object_or_404, render, redirect
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib import messages
-from django.urls import NoReverseMatch
+from django.urls import NoReverseMatch, reverse
 from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import csrf_exempt
 import json
@@ -189,6 +189,7 @@ def pet_create(request):
             birth_date=request.POST.get("birth_date") or None,
             image=request.FILES.get("image"),
         )
+        rag_service.add_pet_to_rag(Pet)
     return redirect("profile")
 
 @login_required
@@ -205,6 +206,7 @@ def pet_add(request):
             if vaccines.is_valid() and allergies.is_valid():
                 vaccines.save()
                 allergies.save()
+                rag_service.add_pet_to_rag(pet)
                 messages.success(request, "บันทึกข้อมูลสัตว์เลี้ยงเรียบร้อย")
                 return redirect("pet_detail", pk=pet.pk)
             pet.delete()
@@ -248,6 +250,7 @@ def pet_edit(request, pk):
         allergies = AllergyFormSet(request.POST, instance=pet, prefix="allergies")
         if form.is_valid() and vaccines.is_valid() and allergies.is_valid():
             form.save(); vaccines.save(); allergies.save()
+            rag_service.add_pet_to_rag(pet)
             messages.success(request, "อัปเดตข้อมูลเรียบร้อย")
             return redirect("pet_detail", pk=pet.pk)
     else:
@@ -640,21 +643,29 @@ def ai_chat_page(request):
 @csrf_exempt
 def chat_api(request):
     if request.method == "POST":
+        source = request.GET.get('source', 'unknown')
+        user_status = f"User ID: {request.user.id}" if request.user.is_authenticated else "User ID: Guest"
+        print(f" DEBUG: Request มาจาก [{source}] | {user_status}")
+
         try:
             data = json.loads(request.body)
             user_message = data.get('message', '')
-            
+            history = data.get('history', [])
+
+            # 1. เช็กก่อนว่ามีข้อความไหม ถ้าไม่มีให้ error เลย ไม่ต้องเรียก AI
             if not user_message:
                 return JsonResponse({'error': 'No message provided'}, status=400)
 
-            ai_response = rag_service.ask_ai(user_message)
-            
+            # 2. เรียก AI แค่รอบเดียว (ส่ง user ไปด้วย)
+            ai_response = rag_service.ask_ai(user_message, user=request.user, history=history)
+
+            # 3. ส่งคำตอบกลับ
             return JsonResponse({'response': ai_response})
-        
+
         except Exception as e:
             print("Chat API error:", e)
             return JsonResponse({'error': str(e)}, status=500)
-            
+
     return JsonResponse({'error': 'Invalid method'}, status=405)
 
 @login_required
@@ -667,11 +678,19 @@ def train_ai_basic(request):
     posts = Post.objects.filter(is_active=True)
     count = 0
     for post in posts:
+        post_url = request.build_absolute_uri(reverse('post_detail', args=[post.pk]))
+        
+        post.ai_link = post_url 
+        
+        # ส่งเข้า RAG Service
         rag_service.add_post_to_rag(post)
         count += 1
-        time.sleep(2) 
+        # time.sleep(0.5) # ลดเวลาลงหน่อยก็ได้ครับถ้าข้อมูลเยอะ
+    pets = Pet.objects.all() # ดึงสัตว์เลี้ยงทั้งหมดในระบบ
+    for pet in pets:
+        rag_service.add_pet_to_rag(pet)
 
-    messages.success(request, f"AI เรียนรู้ข้อมูลโพสต์จำนวน {count} รายการเรียบร้อยแล้ว!")
+    messages.success(request, f"AI เรียนรู้ข้อมูลโพสต์และสัตว์เลี้ยงส่วนตัวเรียบร้อยแล้ว!")
     return redirect('landing')
 
 @login_required

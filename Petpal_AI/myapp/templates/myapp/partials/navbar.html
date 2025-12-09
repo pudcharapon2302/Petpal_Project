@@ -13,6 +13,7 @@
           <span class="hidden sm:block font-semibold text-white tracking-wide">Petpal AI</span>
         </a>
 
+        {% if '/ai-chat/' not in request.path %}
         <div x-data="chatApp()" class="relative" @keydown.escape.window="isOpen = false">
           <button @click="toggleChat()" 
                   class="flex items-center gap-2 bg-white/20 hover:bg-white/30 text-white px-3 py-2 rounded-full transition backdrop-blur-sm border border-white/30 shadow-sm group">
@@ -76,7 +77,8 @@
 
           </div>
         </div>
-        </div>
+        {% endif %} </div>
+
       <div class="hidden md:flex items-center gap-6">
         <a href="{% url 'landing' %}" class="text-white/90 hover:text-white hover:underline underline-offset-4">home</a>
         <a href="{% url 'adoption_list' %}" class="text-white/90 hover:text-white hover:underline underline-offset-4">สัตว์หาบ้าน</a>
@@ -179,6 +181,7 @@
   </div>
 </nav>
 
+{% if request.resolver_match.url_name != 'ai_chat_page' %}
 <script>
 function chatApp() {
     return {
@@ -204,6 +207,7 @@ function chatApp() {
             fetch('/api/chat/', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
+                credentials: 'same-origin', // เพิ่มบรรทัดนี้ด้วย (เผื่อไว้ถ้าอยู่ในหน้าอื่น)
                 body: JSON.stringify({ message: text })
             })
             .then(res => res.json())
@@ -230,3 +234,4 @@ function chatApp() {
     }
 }
 </script>
+{% endif %}

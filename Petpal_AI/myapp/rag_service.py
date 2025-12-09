@@ -13,21 +13,16 @@ class RAGService:
     def __init__(self):
         self.api_key = os.environ.get("GOOGLE_API_KEY")
         
-        # ---------------------------------------------------------
         # 1. ตั้งค่า Local Embedding (CPU)
-        # ---------------------------------------------------------
         print(" Loading Local Embedding Model (CPU)...")
-        # รุ่นนี้ (paraphrase-multilingual) เก่งภาษาไทยและเบา
         self.embeddings = HuggingFaceEmbeddings(
             model_name="sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
-            model_kwargs={'device': 'cpu'}, # บังคับใช้ CPU
+            model_kwargs={'device': 'cpu'},
             encode_kwargs={'normalize_embeddings': False}
         )
         print(" Local Model Loaded!")
 
-        # ---------------------------------------------------------
         # 2. ตั้งค่า Gemini Chat (LLM)
-        # ---------------------------------------------------------
         if self.api_key:
             self.llm = GoogleGenerativeAI(
                 model="gemini-2.5-flash",
@@ -44,7 +39,10 @@ class RAGService:
                 host=os.environ.get("CHROMA_HOST", "chroma_db"), 
                 port=int(os.environ.get("CHROMA_PORT", 8000))
             )
+            # ใช้ Collection โดยตรงเพื่อความยืดหยุ่นในการใส่ Metadata
+            self.collection = self.chroma_client.get_or_create_collection(name="petpal_collection")
             
+            # (Optional) เก็บ vector_store ไว้เผื่อใช้ function อื่นของ langchain
             self.vector_store = Chroma(
                 client=self.chroma_client,
                 collection_name="petpal_collection",
@@ -54,94 +52,215 @@ class RAGService:
         except Exception as e:
             print(f" ChromaDB Error: {e}")
             self.vector_store = None
-
-    def ask_ai(self, user_query):
-        try:
-            context_text = ""
-            try:
-                if self.vector_store:
-                    # ค้นหาข้อมูล (ใช้ Local Embedding ทำงานในเครื่อง)
-                    docs = self.vector_store.similarity_search(user_query, k=3)
-                    if docs:
-                        context_text = "\n".join([d.page_content for d in docs])
-            except Exception as e:
-                print(f"Search Error: {e}")
-
-            intro = "ข้อมูลอ้างอิงจากระบบ:" if context_text else ""
-            prompt = f"""
-            คุณคือ 'Petpal AI' ผู้ช่วยอัจฉริยะ
-            {intro}
-            {context_text}
-            คำถาม: {user_query}
-            ตอบคำถามอย่างเป็นมิตรและสุภาพ:
-            """
-            
-            # ให้ Gemini ตอบ (ใช้โควตา Chat ซึ่งไม่ค่อยเต็ม)
-            if self.llm:
-                return self.llm.invoke(prompt)
-            return "ระบบยังไม่พร้อมใช้งาน (No API Key)"
-            
-        except Exception as e:
-            return "ขออภัย ระบบขัดข้องชั่วคราว"
+            self.collection = None
 
     def add_post_to_rag(self, post):
+        """ เพิ่มโพสต์สาธารณะลงใน AI Memory """
         try:
-            # สร้างข้อความที่อยู่ (จัดการกรณีเป็นค่าว่างด้วย)
+            # สร้างข้อความที่อยู่
             location_parts = [
                 post.tambon, 
                 post.amphoe, 
                 f"จ.{post.province}" if post.province else None
             ]
-            # ตัดค่า None ออก แล้วเอามาต่อกัน (เช่น "ต.ในเมือง อ.เมือง จ.อุบลราชธานี")
-            location_text = " ".join(filter(None, location_parts))
-            
-            if not location_text:
-                location_text = "ไม่ระบุพิกัด"
+            location_text = " ".join(filter(None, location_parts)) or "ไม่ระบุพิกัด"
 
-            # รวมเข้าไปใน Text หลักเพื่อให้ AI จำ
-            text = f"""
-            ประเภทประกาศ: {post.get_post_type_display()}
-            ชื่อสัตว์เลี้ยง: {post.pet.name}
-            สายพันธุ์: {post.pet.animal.breed if post.pet.animal else 'ไม่ระบุ'}
-            เพศ: {post.pet.get_gender_display()}
-            
-             ที่อยู่/พิกัด: {location_text}
-            
-            รายละเอียดเพิ่มเติม: {post.description or '-'}
-            ช่องทางติดต่อ: {post.contact_phone} / {post.contact_social}
+            # ดึงลิงก์ (ถ้ามี)
+            url = getattr(post, 'ai_link', f"http://localhost:8000/post/{post.pk}/")
+
+            content = f"""
+            (ประกาศสาธารณะ)
+            ประเภท: {post.post_type}
+            ชื่อน้อง: {post.pet.name}
+            สายพันธุ์: {post.pet.animal.breed}
+            รายละเอียด: {post.description}
+            สถานที่: {location_text}
+            เบอร์ติดต่อ: {post.contact_phone}
+            👉 ลิงก์ดูรายละเอียด: {url}
             """
             
-            # สร้าง Document และบันทึก
-            doc = Document(page_content=text, metadata={"id": str(post.id)})
-            self.vector_store.add_documents([doc])
+            # Embed ข้อมูลเป็น Vector
+            embedding = self.embeddings.embed_query(content)
+
+            # บันทึกลง ChromaDB พร้อม Metadata "public"
+            self.collection.add(
+                documents=[content],
+                embeddings=[embedding],
+                metadatas=[{
+                    "source": "post", 
+                    "access": "public",   # 👈 ระบุว่าเป็นสาธารณะ
+                    "owner_id": "public"  # 👈 ID เจ้าของเป็น public
+                }],
+                ids=[f"post_{post.id}"]
+            )
+            print(f" Added Post {post.id} to AI memory.")
             
         except Exception as e:
              print(f" Error adding post: {e}")
-    
-    def clear_knowledge(self):
-        try: self.vector_store.delete_collection() 
-        except: pass
-        
+
+    def add_pet_to_rag(self, pet):
+        """ เพิ่มข้อมูลสัตว์เลี้ยงส่วนตัวลงใน AI Memory """
         try:
-            self.vector_store = Chroma(
-                client=self.chroma_client,
-                collection_name="petpal_collection",
-                embedding_function=self.embeddings,
+            # ✅ เพิ่มการเช็กตรงนี้: ถ้าสถานะไม่ใช่ 'OWNED' ให้จบฟังก์ชันเลย (ไม่ต้องจำ)
+            # (พวกประกาศ Lost/Adoption จะถูกเก็บใน add_post_to_rag อยู่แล้ว)
+            if getattr(pet, 'status', 'OWNED') != 'OWNED':
+                return
+
+            # --- (โค้ดดึงวัคซีน/ภูมิแพ้ แบบเดิมที่คุณมี) ---
+            vaccines_qs = getattr(pet, 'vaccine_records', None)
+            if vaccines_qs is None:
+                vaccines_qs = getattr(pet, 'vaccine_record_set', None)
+            
+            if vaccines_qs:
+                vaccines = ", ".join([f"{v.vaccine_name} ({v.vaccinated_on})" for v in vaccines_qs.all()])
+            else:
+                vaccines = "ไม่มีข้อมูล"
+
+            allergies_qs = getattr(pet, 'allergies', None)
+            if allergies_qs is None:
+                allergies_qs = getattr(pet, 'pet_allergy_set', None)
+
+            if allergies_qs:
+                allergies = ", ".join([f"{a.allergy_name} ({a.severity})" for a in allergies_qs.all()])
+            else:
+                allergies = "ไม่มีข้อมูล"
+            # -----------------------------------------------
+
+            content = f"""
+            (ข้อมูลสัตว์เลี้ยงส่วนตัว)
+            ชื่อ: {pet.name}
+            พันธุ์: {pet.animal.breed if pet.animal else 'ไม่ระบุ'}
+            เพศ: {pet.get_gender_display()}
+            วันเกิด: {pet.birth_date}
+            ประวัติวัคซีน: {vaccines}
+            ประวัติการแพ้: {allergies}
+            เจ้าของ: {pet.owner.first_name or pet.owner.username}
+            """
+
+            embedding = self.embeddings.embed_query(content)
+
+            self.collection.add(
+                documents=[content],
+                embeddings=[embedding],
+                metadatas=[{
+                    "source": "my_pet", 
+                    "access": "private",           
+                    "owner_id": str(pet.owner.id)  
+                }],
+                ids=[f"pet_{pet.id}"]
             )
+            print(f"✅ Added Pet {pet.name} to AI memory.")
+
+        except Exception as e:
+            print(f"❌ Error adding pet {pet.name}: {e}")
+
+    def ask_ai(self, user_query, user=None, history=[]):
+        user_id = user.id if user and user.is_authenticated else 'Guest'
+        print(f"DEBUG: กำลังค้นหาข้อมูลให้ User ID: {user_id}")
+        try:
+            context_text = ""
+            history_text = ""
+            if history:
+                # เอาแค่ 5 ข้อความล่าสุดพอ (ประหยัด Token และกัน AI งงเรื่องเก่าเกินไป)
+                recent_history = history[-5:] 
+                for msg in recent_history:
+                    sender = "User" if msg.get('sender') == 'user' else "AI"
+                    message = msg.get('message', '')
+                    history_text += f"{sender}: {message}\n"
+            else:
+                history_text = "ไม่มีประวัติการสนทนา (เริ่มต้นคุยใหม่)"
+
+            # 1. สร้างเงื่อนไขการค้นหา (Filter)
+            # กฎ: หาข้อมูลที่เป็น Public หรือ (Private และเป็นของ User คนนี้)
+            where_filter = {"access": "public"} # Default: เอาแค่ Public
+
+            if user and user.is_authenticated:
+                # ถ้าล็อกอิน ให้หาของตัวเองได้ด้วย
+                # เนื่องจาก ChromaDB รุ่นฟรี (Local) อาจไม่รองรับ $or operator ที่ซับซ้อนในบาง version
+                # วิธีที่ปลอดภัยที่สุดคือดึงข้อมูล 2 รอบ แล้วมารวมกัน (Public + Private)
+                pass 
+
+            try:
+                # Query รอบที่ 1: ข้อมูลสาธารณะ (Public)
+                public_results = self.collection.query(
+                    query_texts=[user_query],
+                    n_results=3,
+                    where={"access": "public"}
+                )
+                
+                docs = public_results['documents'][0]
+
+                # Query รอบที่ 2: ข้อมูลส่วนตัว (Private) - ถ้ามี user
+                if user and user.is_authenticated:
+                    private_results = self.collection.query(
+                        query_texts=[user_query],
+                        n_results=10, # เอาข้อมูลส่วนตัวมาเสริม 2 อัน
+                        where={"owner_id": str(user.id)}
+                    )
+                    docs.extend(private_results['documents'][0])
+
+                if docs:
+                    context_text = "\n".join(docs)
+                    # 🔥 ปริ้นท์ออกมาดูเลยว่า AI เห็นอะไรบ้าง (เช็กตรงนี้ใน Terminal)
+                    print(f"---- AI Context ({len(docs)} docs) ----")
+                    print(context_text)
+                    print("------------------------------------------")
+
+            except Exception as e:
+                print(f"Search Error: {e}")
+
+            # 2. สร้าง Prompt ส่งให้ Gemini
+            prompt = f"""
+            คุณคือ 'Petpal AI' ผู้ช่วยอัจฉริยะสำหรับคนรักสัตว์ คุณมีนิสัยร่าเริง สุภาพ และขี้เล่นนิดๆ
+
+            ประวัติการสนทนาล่าสุด:
+            {history_text}
+
+            ข้อมูลที่หาเจอ (จากฐานข้อมูล):
+            {context_text}
+            
+            คำถามล่าสุดจากผู้ใช้: {user_query}
+            
+            คำแนะนำการตอบ:
+            1. ตอบคำถามโดยใช้ข้อมูลข้างต้น
+            2. เน้นความเป็นกันเอง สุภาพ และช่วยเหลือ
+            3. ❌ ห้ามใช้สัญลักษณ์ Markdown (เช่น **ตัวหนา**, - รายการ) เด็ดขาด 
+            4. ให้ตอบเป็นข้อความธรรมดา (Plain Text) เหมือนเพื่อนคุยกัน
+            5. ถ้ามีการแบ่งหัวข้อ ให้ใช้การเว้นบรรทัด หรือใช้ Emoji แทน
+            6. ✅ **สำคัญมาก: ถ้าแนะนำน้องตัวไหน (ที่เป็นประกาศสาธารณะ) ให้แนบ "ลิงก์ดูรายละเอียด" ของน้องตัวนั้นต่อท้ายด้วยเสมอ**
+            7. ถ้าข้อมูลมาจาก "ข้อมูลสัตว์เลี้ยงส่วนตัว" ให้ตอบในลักษณะ "น้อง... ของคุณ" (ไม่ต้องแนบลิงก์)
+            8. ข้อมูลที่มี Tag [สัตว์เลี้ยงของ User] คือสัตว์เลี้ยงของผู้ใช้โดยตรง
+            9. ข้อมูลที่มี Tag [ประกาศสาธารณะ] คือโพสต์หาบ้านหรือสัตว์หายของคนอื่น
+            10. **ถ้าผู้ใช้ถามว่า "มีสัตว์กี่ตัว" หรือ "สัตว์เลี้ยงของฉัน" ให้ตอบเฉพาะข้อมูลจาก [สัตว์เลี้ยงของ User] เท่านั้น**
+            11. หากเป็นข้อมูลสัตว์เลี้ยงส่วนตัว ให้ใช้คำแทนตัวว่า "น้อง..." หรือชื่อของสัตว์เลี้ยง
+            12. ⚠️ หากเป็นเรื่องอาการป่วย ให้แนะนำเบื้องต้นและย้ำว่า "ควรปรึกษาสัตวแพทย์" เสมอ
+            13. หากไม่พบข้อมูล ให้ตอบว่า "ขอโทษด้วยครับ ผมไม่ข้อมูลเรื่องนี้ในระบบเลย" อย่างสุภาพ
+            """
+            
+            # ให้ Gemini ตอบ
+            if self.llm:
+                return self.llm.invoke(prompt)
+            return "ระบบยังไม่พร้อมใช้งาน (No API Key)"
+            
+        except Exception as e:
+            print(f"Ask AI Error: {e}")
+            return "ขออภัย ระบบขัดข้องชั่วคราว"
+
+    def clear_knowledge(self):
+        try: 
+            # ลบและสร้างใหม่ (Reset)
+            self.chroma_client.delete_collection("petpal_collection")
+            self.collection = self.chroma_client.get_or_create_collection(name="petpal_collection")
             print(" Re-initialized Collection")
         except Exception as e:
             print(f" Error re-initializing: {e}")
 
     def delete_post_from_rag(self, post_id):
-        """ ลบข้อมูลโพสต์ออกจากสมอง AI """
         try:
-            if not self.vector_store: return
-            self.vector_store._collection.delete(
-                where={"id": str(post_id)}
-            )
-            print(f"🗑️ Deleted post {post_id} from AI memory.")
-            
+            if self.collection:
+                self.collection.delete(ids=[f"post_{post_id}"])
+                print(f" Deleted post {post_id} from AI memory.")
         except Exception as e:
-            print(f"⚠️ Delete Error: {e}")
+            print(f" Delete Error: {e}")
 
 rag_service = RAGService()

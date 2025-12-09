@@ -118,7 +118,7 @@
                 {% else %}
                   <img src="{% static 'img/default-avatar.jpg' %}" class="w-8 h-8 rounded-full object-cover" alt="">
                 {% endif %}
-                <h4 class="font-semibold">{{ pet.name }}</h4>
+                <h4 class="font-semibold text-black ">{{ pet.name }}</h4>
               </div>
               <p class="text-sm text-gray-600 mt-2">
                 Type : {% if pet.animal %}{{ pet.animal.get_species_display|default:pet.animal.species }}{% else %}-{% endif %}<br>
