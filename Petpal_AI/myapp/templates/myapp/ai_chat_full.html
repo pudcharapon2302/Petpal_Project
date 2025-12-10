@@ -101,10 +101,9 @@
   <script>
     let isSubmitting = false;
     let currentController = null;
-    
-    // ✅ 1. เพิ่มตัวแปรเก็บประวัติการคุย
-    let chatHistory = []; 
+    let chatHistory = [];
 
+    // ฟังก์ชันจัดรูปแบบข้อความ (แปลง Link เป็น <a>)
     function formatMessage(text) {
         let formatted = text.replace(/\*\*(.*?)\*\*/g, '$1');
         let urlRegex = /(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/ig;
@@ -114,6 +113,7 @@
         return formatted.replace(/\n/g, '<br>');
     }
 
+    // เพิ่มข้อความลง Chat Window (คืนค่า Element <div> เนื้อหา เพื่อให้อัปเดตได้ภายหลัง)
     function addMsg(text, sender) {
         const chatWindow = document.getElementById('chat-window');
         const msgClass = sender === 'user' ? 'chat-message-user' : 'chat-message-ai';
@@ -122,13 +122,20 @@
             ? 'bg-orange-500 text-white rounded-3xl rounded-tr-none' 
             : 'bg-white text-gray-700 border border-gray-200 rounded-2xl rounded-tl-none';
         const maxWidth = sender === 'user' ? 'max-w-2xl' : 'max-w-md';
-        const formattedText = sender === 'ai' ? formatMessage(text) : text;
 
         const div = document.createElement('div');
         div.className = `${justifyClass} ${msgClass}`;
-        div.innerHTML = `<div class="${bgClass} px-5 py-3 shadow-sm ${maxWidth} text-sm leading-relaxed break-words">${formattedText}</div>`;
+        
+        // สร้างเนื้อหาภายใน
+        const innerDiv = document.createElement('div');
+        innerDiv.className = `${bgClass} px-5 py-3 shadow-sm ${maxWidth} text-sm leading-relaxed break-words`;
+        innerDiv.innerHTML = sender === 'ai' ? formatMessage(text) : text; // ใส่ข้อความเริ่มต้น
+
+        div.appendChild(innerDiv);
         chatWindow.appendChild(div);
         chatWindow.scrollTop = chatWindow.scrollHeight;
+
+        return innerDiv; // 👈 ส่งคืน Element นี้เพื่อให้เราอัปเดตข้อความแบบ Stream ได้
     }
 
     const chatForm = document.getElementById('chat-form');
@@ -136,9 +143,7 @@
     chatForm.addEventListener('submit', async function(e) {
         e.preventDefault();
         
-        if (currentController) {
-            currentController.abort();
-        }
+        if (currentController) currentController.abort();
         currentController = new AbortController();
 
         const msgInput = document.getElementById('message');
@@ -152,25 +157,14 @@
         submitBtn.disabled = true;
         submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
 
+        // 1. แสดงข้อความ User
         const userSafeMsg = msg.replace(/</g, '&lt;').replace(/>/g, '&gt;');
         addMsg(userSafeMsg, 'user');
         msgInput.value = "";
 
-        const chatWindow = document.getElementById('chat-window');
-        const typingDiv = document.createElement('div');
-        typingDiv.className = 'flex justify-start chat-message-ai';
-        typingDiv.id = 'typing-indicator';
-        typingDiv.innerHTML = `
-            <div class="bg-white border border-gray-200 text-gray-600 rounded-2xl rounded-tl-none px-5 py-3 shadow-sm">
-            <div class="flex gap-1">
-                <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
-                <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 0.1s"></div>
-                <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 0.2s"></div>
-            </div>
-            </div>
-        `;
-        chatWindow.appendChild(typingDiv);
-        chatWindow.scrollTop = chatWindow.scrollHeight;
+        // 2. สร้างกล่องข้อความ AI รอไว้ (ยังว่างเปล่า หรือใส่ ... ไว้ก่อน)
+        // เราจะใช้ตัวแปร aiContentDiv นี้ในการ "เติม" ข้อความทีละนิด
+        const aiContentDiv = addMsg("...", 'ai'); 
 
         try {
             const res = await fetch("{% url 'chat_api' %}?source=fullpage", {
@@ -180,36 +174,45 @@
                     "X-CSRFToken": "{{ csrf_token }}"
                 },
                 credentials: 'same-origin',
-                // ✅ 2. ส่งประวัติ chatHistory ไปพร้อมกับข้อความ
                 body: JSON.stringify({
                     message: msg,
-                    history: chatHistory 
+                    history: chatHistory
                 }),
                 signal: currentController.signal
             });
 
             if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
 
-            const data = await res.json();
-            
-            const typingMsg = document.getElementById('typing-indicator');
-            if (typingMsg) typingMsg.remove();
-            
-            const aiResponseText = data.response || 'ขออภัย ไม่มีคำตอบ';
-            addMsg(aiResponseText, 'ai');
+            // ✅ เริ่มกระบวนการอ่าน Stream
+            const reader = res.body.getReader();
+            const decoder = new TextDecoder("utf-8");
+            let fullResponse = "";
+            aiContentDiv.innerHTML = ""; // ล้าง ... ออกก่อนเริ่มพิมพ์
 
-            // ✅ 3. อัปเดตประวัติการคุย (เก็บทั้ง User และ AI ลง Array)
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+
+                // แปลง Byte เป็น Text
+                const chunk = decoder.decode(value, { stream: true });
+                fullResponse += chunk;
+
+                // อัปเดตหน้าจอทันที! ⚡
+                aiContentDiv.innerHTML = formatMessage(fullResponse);
+                
+                // Auto scroll ตาม
+                const chatWindow = document.getElementById('chat-window');
+                chatWindow.scrollTop = chatWindow.scrollHeight;
+            }
+
+            // จบการทำงาน: บันทึกประวัติ
             chatHistory.push({ sender: 'user', message: msg });
-            chatHistory.push({ sender: 'ai', message: aiResponseText });
+            chatHistory.push({ sender: 'ai', message: fullResponse });
             
         } catch (error) {
-            if (error.name === 'AbortError') {
-                console.log('Request cancelled');
-            } else {
+            if (error.name !== 'AbortError') {
                 console.error('Error:', error);
-                const typingMsg = document.getElementById('typing-indicator');
-                if (typingMsg) typingMsg.remove();
-                addMsg(`❌ เกิดข้อผิดพลาด: ${error.message}`, 'ai');
+                aiContentDiv.innerHTML += `<br><span class="text-red-500">❌ เกิดข้อผิดพลาด: ${error.message}</span>`;
             }
         } finally {
             isSubmitting = false;

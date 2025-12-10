@@ -1,6 +1,6 @@
 # myapp/views.py
 from django.shortcuts import get_object_or_404, render, redirect
-from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
+from django.http import HttpResponse, HttpResponseRedirect, JsonResponse, StreamingHttpResponse
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib import messages
 from django.urls import NoReverseMatch, reverse
@@ -8,6 +8,7 @@ from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import csrf_exempt
 import json
 from .models import Animal, User , Profile, Pet , Post, Foundation , AdoptionRequest, ChatMessage
+from django.db.models import Q
 from .forms import CommentForm, CustomUserCreationForm ,LoginForm, PetForm, RegisterForm , VaccineFormSet, AllergyFormSet , PublicPostForm,PublicPostEditForm
 from django.contrib.auth import authenticate, login, logout, get_user_model
 from django.utils.http import url_has_allowed_host_and_scheme
@@ -275,30 +276,39 @@ def pet_delete(request, pk: int):
 
 @login_required
 def adoption_list_view(request):
-    
+    query = request.GET.get('q', '') # รับค่าคำค้นหา
+
+    # 1. ดึงข้อมูลแมว
     cat_posts = Post.objects.filter(
         post_type='ADOPTION', 
         is_active=True,
         pet__animal__species__iexact='CAT'
     ).select_related('pet', 'pet__animal').order_by('-created_at')
 
+    # 2. ดึงข้อมูลหมา
     dog_posts = Post.objects.filter(
         post_type='ADOPTION', 
         is_active=True,
         pet__animal__species__iexact='DOG'
     ).select_related('pet', 'pet__animal').order_by('-created_at')
-    
+
+    # 3. กรองข้อมูลถ้ามีการค้นหา
+    cat_posts = filter_posts(cat_posts, request)
+    dog_posts = filter_posts(dog_posts, request)
+
     context = {
         'cat_posts': cat_posts,
         'dog_posts': dog_posts,
         'page_type': 'adoption_all',
         'page_title': 'น้องๆที่อยากได้บ้านใหม่',
+        'search_query': query # ส่งกลับไปแสดงในช่อง input
     }
     return render(request, 'myapp/pet_list.html', context)
 
 @login_required
 def lost_list_view(request):
-    # ... (โค้ด lost_list_view ... ถูกต้องแล้ว) ...
+    query = request.GET.get('q', '')
+
     cat_posts = Post.objects.filter(
         post_type='LOST', 
         is_active=True,
@@ -310,12 +320,17 @@ def lost_list_view(request):
         is_active=True,
         pet__animal__species__iexact='DOG'
     ).select_related('pet', 'pet__animal', 'user').order_by('-created_at')
-    
+
+    # กรองข้อมูล
+    cat_posts = filter_posts(cat_posts, request)
+    dog_posts = filter_posts(dog_posts, request)
+
     context = {
         'cat_posts': cat_posts,   
         'dog_posts': dog_posts,   
         'page_title': 'สัตว์เลี้ยงหาย',
-        'page_type': 'lost_all'
+        'page_type': 'lost_all',
+        'search_query': query
     }
     return render(request, 'myapp/pet_list.html', context)
 
@@ -384,34 +399,46 @@ def foundation_list_view(request):
     return render(request, 'myapp/contact_list.html', context)
 
 def cat_list_view(request):
-    
+    query = request.GET.get('q', '')
+
     posts = Post.objects.filter(
         post_type='ADOPTION', 
         is_active=True,
         pet__animal__species__iexact='CAT'
     ).select_related('pet', 'pet__animal').order_by('-created_at')
-    
+
+    # กรองข้อมูล
+    cat_posts = filter_posts(cat_posts, request)
+    dog_posts = filter_posts(dog_posts, request)
+
     context = {
         'cat_posts': posts,
         'dog_posts': [],
         'page_title': 'น้องแมวหาบ้าน',
-        'page_type': 'cats_only'
+        'page_type': 'cats_only',
+        'search_query': query
     }
     return render(request, 'myapp/pet_list.html', context)
 
 def dog_list_view(request):
-    # ... (โค้ด dog_list_view ... ถูกต้องแล้ว) ...
+    query = request.GET.get('q', '')
+
     posts = Post.objects.filter(
         post_type='ADOPTION', 
         is_active=True,
         pet__animal__species__iexact='DOG'
     ).select_related('pet', 'pet__animal').order_by('-created_at')
-    
+
+    # กรองข้อมูล
+    cat_posts = filter_posts(cat_posts, request)
+    dog_posts = filter_posts(dog_posts, request)
+
     context = {
         'dog_posts': posts,
         'cat_posts': [],
         'page_title': 'น้องหมาหาบ้าน',
-        'page_type': 'dogs_only'
+        'page_type': 'dogs_only',
+        'search_query': query
     }
     return render(request, 'myapp/pet_list.html', context)
 
@@ -656,6 +683,18 @@ def chat_api(request):
             if not user_message:
                 return JsonResponse({'error': 'No message provided'}, status=400)
 
+            if source == 'fullpage':
+                response_generator = rag_service.ask_ai_stream(user_message, user=request.user, history=history)
+                response = StreamingHttpResponse(response_generator, content_type='text/plain; charset=utf-8')
+                response['Cache-Control'] = 'no-cache'
+                response['X-Accel-Buffering'] = 'no'
+                return response
+
+            # ✅ กรณี 2: ถ้ามาจาก Widget หรืออื่นๆ -> ใช้ JSON แบบเดิม (รอจนเสร็จค่อยตอบ)
+            else:
+                ai_response = rag_service.ask_ai(user_message, user=request.user, history=history)
+                return JsonResponse({'response': ai_response})
+
             # 2. เรียก AI แค่รอบเดียว (ส่ง user ไปด้วย)
             ai_response = rag_service.ask_ai(user_message, user=request.user, history=history)
 
@@ -723,3 +762,28 @@ def generate_poster(request, pk):
         'post': post,
         'qr_code_url': qr_code_url
     })
+
+def filter_posts(queryset, request):
+    query = request.GET.get('q', '')
+    gender = request.GET.get('gender')     # รับค่าเพศ
+    province = request.GET.get('province') # รับค่าจังหวัด
+
+    # 1. กรองด้วยคำค้นหา (เหมือนเดิม)
+    if query:
+        queryset = queryset.filter(
+            Q(pet__name__icontains=query) |
+            Q(pet__animal__breed__icontains=query) |
+            Q(description__icontains=query) |
+            Q(province__icontains=query) |
+            Q(amphoe__icontains=query)
+        )
+    
+    # 2. กรองเพศ (ถ้ามีการส่งมา)
+    if gender:
+        queryset = queryset.filter(pet__gender=gender)
+
+    # 3. กรองจังหวัด (ถ้ามีการส่งมา)
+    if province:
+        queryset = queryset.filter(province__icontains=province)
+
+    return queryset

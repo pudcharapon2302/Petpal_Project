@@ -3152,9 +3152,6 @@
   .bg-gray-300 {
     background-color: var(--color-gray-300);
   }
-  .bg-gray-400 {
-    background-color: var(--color-gray-400);
-  }
   .bg-gray-800 {
     background-color: var(--color-gray-800);
   }
@@ -3722,6 +3719,9 @@
   }
   .text-orange-900 {
     color: var(--color-orange-900);
+  }
+  .text-red-500 {
+    color: var(--color-red-500);
   }
   .text-red-600 {
     color: var(--color-red-600);

@@ -246,6 +246,77 @@ class RAGService:
             print(f"Ask AI Error: {e}")
             return "ขออภัย ระบบขัดข้องชั่วคราว"
 
+    def ask_ai_stream(self, user_query, user=None, history=[]):
+        """ ฟังก์ชันสำหรับ Streaming Response (Generator) """
+        user_id = user.id if user and user.is_authenticated else 'Guest'
+        
+        # 1. เตรียม Context (ใช้ Logic เดียวกับ ask_ai เดิม)
+        context_text = ""
+        try:
+            # Query ข้อมูล Public
+            public_docs = []
+            public_results = self.collection.query(query_texts=[user_query], n_results=3, where={"access": "public"})
+            if public_results['documents']:
+                public_docs = [f"[ประกาศสาธารณะ]: {d}" for d in public_results['documents'][0]]
+
+            # Query ข้อมูล Private
+            private_docs = []
+            if user and user.is_authenticated:
+                private_results = self.collection.query(query_texts=[user_query], n_results=5, where={"owner_id": str(user.id)})
+                if private_results['documents']:
+                    private_docs = [f"[สัตว์เลี้ยงของ User]: {d}" for d in private_results['documents'][0]]
+            
+            context_text = "\n\n".join(public_docs + private_docs)
+            
+        except Exception as e:
+            print(f"Stream Search Error: {e}")
+
+        # 2. เตรียม History
+        history_text = ""
+        if history:
+            for msg in history[-5:]:
+                sender = "User" if msg.get('sender') == 'user' else "AI"
+                history_text += f"{sender}: {msg.get('message', '')}\n"
+
+        # 3. สร้าง Prompt (เหมือนเดิม)
+        prompt = f"""
+        คุณคือ 'Petpal AI' ผู้ช่วยอัจฉริยะสำหรับคนรักสัตว์ 
+        
+        📜 ประวัติการสนทนา:
+        {history_text}
+        
+        📚 ข้อมูลอ้างอิง:
+        {context_text}
+        
+        💬 คำถาม: {user_query}
+        
+        คำแนะนำ:
+        1. ตอบคำถามโดยใช้ข้อมูลข้างต้น
+        2. เน้นความเป็นกันเอง สุภาพ และช่วยเหลือ
+        3. ❌ ห้ามใช้สัญลักษณ์ Markdown (เช่น **ตัวหนา**, - รายการ) เด็ดขาด 
+        4. ให้ตอบเป็นข้อความธรรมดา (Plain Text) เหมือนเพื่อนคุยกัน
+        5. ถ้ามีการแบ่งหัวข้อ ให้ใช้การเว้นบรรทัด หรือใช้ Emoji แทน
+        6. ✅ **สำคัญมาก: ถ้าแนะนำน้องตัวไหน (ที่เป็นประกาศสาธารณะ) ให้แนบ "ลิงก์ดูรายละเอียด" ของน้องตัวนั้นต่อท้ายด้วยเสมอ**
+        7. ถ้าข้อมูลมาจาก "ข้อมูลสัตว์เลี้ยงส่วนตัว" ให้ตอบในลักษณะ "น้อง... ของคุณ" (ไม่ต้องแนบลิงก์)
+        8. ข้อมูลที่มี Tag [สัตว์เลี้ยงของ User] คือสัตว์เลี้ยงของผู้ใช้โดยตรง
+        9. ข้อมูลที่มี Tag [ประกาศสาธารณะ] คือโพสต์หาบ้านหรือสัตว์หายของคนอื่น
+        10. **ถ้าผู้ใช้ถามว่า "มีสัตว์กี่ตัว" หรือ "สัตว์เลี้ยงของฉัน" ให้ตอบเฉพาะข้อมูลจาก [สัตว์เลี้ยงของ User] เท่านั้น**
+        11. หากเป็นข้อมูลสัตว์เลี้ยงส่วนตัว ให้ใช้คำแทนตัวว่า "น้อง..." หรือชื่อของสัตว์เลี้ยง
+        12. ⚠️ หากเป็นเรื่องอาการป่วย ให้แนะนำเบื้องต้นและย้ำว่า "ควรปรึกษาสัตวแพทย์" เสมอ
+        13. หากไม่พบข้อมูล ให้ตอบว่า "ขอโทษด้วยครับ ผมไม่ข้อมูลเรื่องนี้ในระบบเลย" อย่างสุภาพ
+        """
+
+        # 4. เรียก LLM แบบ Streaming (สำคัญ! ใช้ .stream แทน .invoke)
+        if self.llm:
+            try:
+                # ส่งข้อมูลทีละก้อน (Chunk)
+                for chunk in self.llm.stream(prompt):
+                    yield chunk 
+            except Exception as e:
+                yield f"เกิดข้อผิดพลาด: {str(e)}"
+        else:
+            yield "ระบบยังไม่พร้อมใช้งาน (No API Key)"
+
     def clear_knowledge(self):
         try: 
             # ลบและสร้างใหม่ (Reset)
