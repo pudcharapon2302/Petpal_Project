@@ -391,10 +391,16 @@ def report_select_category(request):
 
 @login_required
 def foundation_list_view(request):
-    foundations = Foundation.objects.filter(is_active=True).order_by('name')
+    foundations = Foundation.objects.filter(is_active=True)
+
+    # ✅ ส่วนสำคัญ: รับค่า q จากช่องค้นหามากรองชื่อ
+    query = request.GET.get('q')
+    if query:
+        foundations = foundations.filter(name__icontains=query)
+
     context = {
         'foundations': foundations,
-        'page_title': 'ติดต่อหน่วยงาน/มูลนิธิ'
+        'page_title': 'ติดต่อหน่วยงาน',
     }
     return render(request, 'myapp/contact_list.html', context)
 

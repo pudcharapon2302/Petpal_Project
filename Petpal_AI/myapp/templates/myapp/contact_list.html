@@ -7,6 +7,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>{{ page_title|default:"ติดต่อ" }} — Petpal AI</title>
   {% tailwind_css %}
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;600;700&display=swap" rel="stylesheet">
   <style>
     html, body { font-family: "Noto Sans Thai", system_ui; }
@@ -24,11 +25,19 @@
         <p class="mt-2 text-gray-500 text-extralight">รวมรายชื่อมูลนิธิและองค์กรที่ให้ความช่วยเหลือสัตว์เลี้ยง</p>
       </div>
       
-      <div class="relative w-full md:w-72">
+      <form method="GET" action="" class="relative w-full md:w-72">
+        
+        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+          <svg class="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+            <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
+          </svg>
+        </div>
+
         <input type="search" name="q" id="search"
+               value="{{ request.GET.q|default:'' }}"
                class="block w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-full leading-5 bg-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent shadow-sm text-sm transition"
                placeholder="ค้นหาชื่อมูลนิธิ...">
-      </div>
+      </form>
     </header>
 
     <div class="grid gap-6">

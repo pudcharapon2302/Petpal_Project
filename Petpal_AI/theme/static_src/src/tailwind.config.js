@@ -10,7 +10,16 @@ module.exports = {
       '../../myapp/templates/myapp/partials/**/*.html',
   ],
   theme: {
-    extend: {},
+    extend: {
+      keyframes: {
+        shimmer: {
+          '100%': { backgroundPosition: '-200% center' },
+        }
+      },
+      animation: {
+        shimmer: 'shimmer 1.5s linear infinite',
+      }
+    },
   },
   plugins: [],
 }
