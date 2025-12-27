@@ -1,97 +1,184 @@
 {% load static %}
-{% load tailwind_tags %}  <!doctype html>
+{% load tailwind_tags %}
+<!doctype html>
 <html lang="th" x-data="{}">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>เข้าสู่ระบบ • Petpal AI</title>
 
-  <!-- Alpine (ไม่จำเป็นมากสำหรับหน้านี้) -->
-  {% tailwind_css %} <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  {% tailwind_css %}
+  <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;600;700&display=swap" rel="stylesheet">
+  
   <style>
-    html,body{font-family:"Noto Sans Thai",system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial}
+    html, body { 
+        font-family: "Noto Sans Thai", system-ui, -apple-system, sans-serif; 
+        height: 100%;
+        margin: 0;
+    }
+
+    /* --- Uiverse Modern Login Card (Big Version) --- */
+    .container-card {
+      max-width: 480px; 
+      width: 100%;
+      background: #f8f9fd;
+      background: linear-gradient(0deg, rgb(255, 255, 255) 0%, rgb(244, 247, 251) 100%);
+      border-radius: 40px;
+      padding: 45px 50px; 
+      border: 5px solid rgb(255, 255, 255);
+      box-shadow: rgba(234, 88, 12, 0.2) 0px 30px 30px -20px;
+      margin: 0 auto;
+      position: relative;
+      z-index: 10;
+    }
+
+    .heading {
+      text-align: center;
+      font-weight: 900;
+      font-size: 36px; 
+      color: #ea580c;
+      margin-bottom: 15px;
+    }
+
+    .form { margin-top: 25px; }
+
+    .form .input {
+      width: 100%;
+      background: white;
+      border: none;
+      padding: 18px 25px; 
+      font-size: 16px;
+      border-radius: 20px;
+      margin-top: 20px;
+      box-shadow: #ffedd5 0px 10px 10px -5px;
+      border-inline: 2px solid transparent;
+      font-family: inherit;
+    }
+
+    .form .input:focus {
+      outline: none;
+      border-inline: 2px solid #ea580c;
+      background-color: #fff7ed;
+    }
+
+    .form .forgot-password {
+      display: block;
+      margin-top: 20px;
+      margin-left: 10px;
+      text-align: right;
+    }
+
+    .form .forgot-password a {
+      font-size: 14px; 
+      color: #ea580c;
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    .form .login-button {
+      display: block;
+      width: 100%;
+      font-weight: bold;
+      background: linear-gradient(45deg, #ea580c 0%, #f97316 100%);
+      color: white;
+      padding-block: 18px; 
+      margin: 30px auto;
+      border-radius: 20px;
+      box-shadow: rgba(234, 88, 12, 0.4) 0px 20px 10px -15px;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s ease-in-out;
+      font-size: 18px; 
+    }
+
+    .form .login-button:hover {
+      transform: scale(1.03);
+      box-shadow: rgba(234, 88, 12, 0.5) 0px 23px 10px -20px;
+    }
+
+    .form .login-button:active {
+      transform: scale(0.95);
+    }
+    
+    .agreement {
+      display: block;
+      text-align: center;
+      margin-top: 25px;
+      font-size: 15px; 
+    }
+    .agreement a {
+      text-decoration: none;
+      color: #ea580c;
+      font-size: 15px;
+      font-weight: 600;
+    }
+    
+    .bg-image {
+        position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;
+        filter: brightness(0.4); z-index: 0;
+    }
   </style>
 </head>
-<body class="min-h-screen bg-neutral-900 text-neutral-900">
+<body class="bg-neutral-900 text-neutral-900">
 
   {% include "myapp/partials/navbar.html" %}
 
-  <!-- พื้นหลัง -->
-  <div class="relative min-h-[calc(100vh-4rem)]">
-    <img src="{% static 'images/login-bg.jpg' %}"
-         alt="พื้นไม้และแมวนอนหลับ"
-         class="absolute inset-0 w-full h-full object-cover" />
-    <div class="absolute inset-0 bg-white/70"></div>
+  <div class="relative min-h-[calc(100vh-4rem)] flex items-center justify-center p-4">
+    
+    <img src="{% static 'images/login-bg.jpg' %}" alt="Background" class="bg-image">
 
-    <!-- คอนเทนต์กึ่งกลาง -->
-    <div class="relative mx-auto max-w-3xl px-4 py-12 sm:py-16">
+    <div class="container-card animate-fade-in-up">
+      <div class="heading">Petpal AI</div>
+      <p class="text-center text-gray-500 text-base mb-6">ยินดีต้อนรับกลับมา! กรุณาเข้าสู่ระบบ</p>
+      
+      <form class="form" method="POST">
+        {% csrf_token %}
+        
+        {% if form.non_field_errors %}
+            <div class="mb-4 text-center">
+                {% for error in form.non_field_errors %}
+                    <p class="text-xs text-red-500 font-bold bg-red-100 py-1 px-2 rounded-lg inline-block">{{ error }}</p>
+                {% endfor %}
+            </div>
+        {% endif %}
 
-      <!-- โลโก้เล็กด้านบน -->
-      <div class="w-full flex justify-center mb-6">
-        <div class="">
-          <img src="{% static 'images/logo.png' %}" alt="Petpal AI" class="h-30 w-30">
-        </div>
-      </div>
+        <input placeholder="ชื่อผู้ใช้ หรือ อีเมล" 
+               id="id_username" 
+               name="username" 
+               type="text" 
+               class="input" 
+               required 
+               autofocus>
 
-        <form method="post" class="space-y-4">
-          {% csrf_token %}
+        <input placeholder="รหัสผ่าน" 
+               id="id_password" 
+               name="password" 
+               type="password" 
+               class="input" 
+               required>
 
-          {# ถ้ามี next จาก query string ก็ใช้, ถ้าไม่มีให้ส่งไป landing เป็นค่าเริ่มต้น #}
-          {% if next %}
-            <input type="hidden" name="next" value="{{ next }}">
-          {% else %}
-            <input type="hidden" name="next" value="{% url 'landing' %}">
-          {% endif %}
-
-          <!-- USERNAME -->
-          {% if form.username.errors %}
-            <p class="text-sm text-red-600 mb-1">{{ form.username.errors|join:", " }}</p>
-          {% endif %}
-          <input name="username" value="{{ form.username.value|default_if_none:'' }}"
-                 placeholder="Username"
-                 class="w-full rounded-full bg-white px-6 py-4 text-base shadow ring-1 ring-black/10 focus:outline-none focus:ring-2 focus:ring-orange-400"
-                 required />
-
-          <!-- PASSWORD -->
-          {% if form.password.errors %}
-            <p class="text-sm text-red-600 mb-1">{{ form.password.errors|join:", " }}</p>
-          {% endif %}
-          <input type="password" name="password"
-                 placeholder="Password"
-                 class="w-full rounded-full bg-white px-6 py-4 text-base shadow ring-1 ring-black/10 focus:outline-none focus:ring-2 focus:ring-orange-400"
-                 required />
-
-          <div class="flex items-center justify-between">
-            <label class="inline-flex items-center gap-2 text-sm text-neutral-700">
-              <input type="checkbox" name="remember" class="h-4 w-4 rounded border-neutral-300 text-orange-500 focus:ring-orange-400">
+        <div class="flex justify-between items-center mt-4 px-1">
+            <label class="inline-flex items-center gap-2 text-sm text-gray-500 cursor-pointer">
+              <input type="checkbox" name="remember" class="w-4 h-4 rounded text-orange-500 focus:ring-orange-500 border-gray-300">
               จดจำฉัน
             </label>
-            <a href="{% url 'password_reset' %}" class="text-sm text-neutral-700 hover:underline">ลืมรหัสผ่าน</a>
-          </div>
-        
-          <!-- NON FIELD ERRORS -->
-          {% if form.non_field_errors %}
-            <div class="rounded-md bg-red-50 text-red-700 px-4 py-3 text-sm">
-              {{ form.non_field_errors }}
-            </div>
-          {% endif %}
-          
-          <div class="pt-2 grid gap-3">
-            <button type="submit"
-                    class="mx-auto w-64 rounded-full bg-neutral-900 px-6 py-3 text-white font-medium shadow hover:opacity-90">
-              Login
-            </button>
-            <a href="{% url 'register' %}"
-               class="mx-auto w-64 text-center rounded-full bg-white px-6 py-3 text-neutral-900 font-medium shadow ring-1 ring-black/10 hover:bg-neutral-50">
-              Sign up
-            </a>
-          </div>
-        </form>
-      </div>
+            <span class="forgot-password">
+                <a href="{% url 'password_reset' %}">ลืมรหัสผ่าน?</a>
+            </span>
+        </div>
+
+        <button type="submit" class="login-button">เข้าสู่ระบบ</button>
+      </form>
+      
+      <span class="agreement">
+        ยังไม่มีบัญชี? <a href="{% url 'register' %}">สมัครสมาชิกใหม่</a>
+      </span>
     </div>
+
   </div>
+
 </body>
 </html>
