@@ -15,18 +15,54 @@
   <style>
     html, body { font-family: "Noto Sans Thai", system-ui, -apple-system, sans-serif; }
     
-    /* --- CSS Universal Hover Card (แก้ไขแล้ว) --- */
+    /* --- 1. Soft Cute Pattern (ปรับปรุงใหม่: สบายตาขึ้น) --- */
+    body {
+        background-color: #fff7ed; /* สีส้มครีมอ่อนๆ */
+        
+        /* ✅ แก้ไข: ปรับสีจุดให้จางลงมาก (rgba) และขยายระยะห่าง (60px) */
+        background-image:  
+            radial-gradient(rgba(253, 186, 116, 0.2) 2px, transparent 2px), 
+            radial-gradient(rgba(253, 186, 116, 0.2) 2px, transparent 2px);
+        background-size: 60px 60px;
+        background-position: 0 0, 30px 30px;
+        
+        color: #1f2937;
+        overflow-x: hidden;
+    }
+
+    /* Animation ฉากหลัง */
+    .shape-blob {
+        position: absolute;
+        background: linear-gradient(180deg, #fdba74 0%, #fed7aa 100%);
+        border-radius: 50%;
+        /* ✅ แก้ไข: ลดความทึบลงเหลือ 0.15 ให้ดูเป็นแสงนวลๆ ไม่กวนสายตา */
+        opacity: 0.15; 
+        filter: blur(60px); /* เบลอมากขึ้น */
+        z-index: -1;
+        animation: float 25s infinite ease-in-out;
+    }
+    .shape-1 { top: -10%; left: -5%; width: 400px; height: 400px; animation-delay: 0s; background: #fed7aa; }
+    .shape-2 { bottom: 10%; right: -10%; width: 500px; height: 500px; animation-delay: -5s; background: #fdba74; }
+    .shape-3 { top: 40%; right: 20%; width: 200px; height: 200px; animation-delay: -10s; background: #fcd34d; opacity: 0.1; }
+
+    @keyframes float {
+        0% { transform: translate(0, 0) rotate(0deg); }
+        33% { transform: translate(30px, 50px) rotate(120deg); }
+        66% { transform: translate(-20px, 20px) rotate(240deg); }
+        100% { transform: translate(0, 0) rotate(360deg); }
+    }
+
+    /* --- CSS Universal Hover Card --- */
     .hover-card-container {
       width: 100%;
-      height: 340px; /* เพิ่มความสูงนิดหน่อยให้ดูโปร่ง */
+      height: 340px; 
       position: relative;
       border-radius: 20px;
       overflow: hidden;
-      box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+      box-shadow: 0 10px 20px rgba(0,0,0,0.05); /* ลดเงาลงนิดนึง */
       background: #f3f4f6;
     }
 
-    /* แสง Glow ด้านหลัง */
     .hover-card-container::before {
       content: ""; z-index: -1; position: absolute; inset: 0;
       background: linear-gradient(-45deg, #f97316 0%, #fbbf24 100%);
@@ -42,13 +78,12 @@
     }
     .hover-card .img-content img { width: 100%; height: 100%; object-fit: cover; transition: all 0.6s cubic-bezier(0.23, 1, 0.320, 1); }
 
-    /* Overlay เนื้อหา */
     .hover-card .content {
       position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-      display: flex; flex-direction: column; justify-content: flex-end; /* ให้เนื้อหาเริ่มจากด้านล่าง */
+      display: flex; flex-direction: column; justify-content: flex-end; 
       padding: 24px; 
-      background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.4) 60%, rgba(0,0,0,0) 100%); /* ไล่สีดำจากล่างขึ้นบน */
-      opacity: 1; /* ให้โชว์ตลอดเวลา แต่อาจจะจางๆ */
+      background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.4) 60%, rgba(0,0,0,0) 100%);
+      opacity: 1; 
       transition: all 0.4s ease-in-out;
     }
     
@@ -59,11 +94,10 @@
     
     .hover-card .content .desc-box {
         color: #e5e5e5; font-size: 14px;
-        max-height: 0; overflow: hidden; opacity: 0; /* ซ่อนรายละเอียดไว้ก่อน */
+        max-height: 0; overflow: hidden; opacity: 0; 
         transition: all 0.5s cubic-bezier(0.23, 1, 0.320, 1);
     }
 
-    /* ✅ แก้ไข: บังคับขนาดไอคอน SVG ให้เล็กเสมอ */
     .hover-card .content svg {
         width: 16px !important;
         height: 16px !important;
@@ -71,16 +105,14 @@
         display: inline-block;
     }
 
-    /* Hover States */
     .hover-card:hover .img-content { scale: 1.1; rotate: 1deg; filter: blur(2px); }
     
-    /* ตอน Hover ให้รายละเอียดเลื่อนขึ้นมา */
     .hover-card:hover .content .desc-box {
         max-height: 150px; opacity: 1; margin-top: 8px;
     }
     .hover-card:hover .content {
         background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.6) 100%);
-        justify-content: center; /* ย้ายมาตรงกลางตอน Hover */
+        justify-content: center;
     }
     
     /* --- CSS View All Button --- */
@@ -112,11 +144,17 @@
     .soft-card { box-shadow: 0 10px 20px -10px rgba(0,0,0,.15); }
   </style>
 </head>
-<body class="bg-white text-neutral-900">
+<body class="text-neutral-900">
 
     {% include "myapp/partials/navbar.html" %}
+
+    <div class="fixed inset-0 overflow-hidden pointer-events-none -z-10">
+        <div class="shape-blob shape-1"></div>
+        <div class="shape-blob shape-2"></div>
+        <div class="shape-blob shape-3"></div>
+    </div>
   
-  <main class="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-10">
+  <main class="relative z-10 mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-10">
 
     <header class="mb-8">
       <h1 class="text-4xl sm:text-5xl font-extrabold tracking-tight">
