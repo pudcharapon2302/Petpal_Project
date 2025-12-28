@@ -61,41 +61,64 @@
           <p class="text-gray-500 mt-2 text-base">คุยกับ AI ผู้ช่วยเรื่องสัตว์เลี้ยง</p>
         </div>
 
-        <div id="chat-window" class="flex-1 overflow-y-auto px-4 py-6 space-y-4">
-          <div class="chat-message-ai flex justify-start">
-            <div class="bg-white border border-gray-200 text-gray-700 rounded-2xl rounded-tl-none px-5 py-3 shadow-sm max-w-md text-sm leading-relaxed">
-              <p class="font-semibold text-base mb-2">สวัสดีครับ! 😊</p>
-              <p>ผมคือ Petpal AI ผู้ช่วยเรื่องสัตว์เลี้ยง</p>
-              <p class="mt-2">ยินดีที่จะตอบคำถาม แนะนำ และช่วยดูแลสัตว์เลี้ยงของคุณ 🐕🐈</p>
-              <p class="mt-2">มีอะไรให้ผมช่วยไหมครับ?</p>
-            </div>
-          </div>
-        </div>
+        {% if request.user.is_authenticated %}
 
-        <div class="bg-white border-t border-gray-200 p-6 shadow-lg rounded-t-3xl">
-          <form id="chat-form" class="flex gap-3 max-w-3xl mx-auto">
-            <input 
-              type="text" 
-              id="message" 
-              placeholder="ถามเรื่องสัตว์เลี้ยงที่นี่..." 
-              class="flex-1 bg-gray-100 border border-gray-300 text-gray-900 rounded-full px-5 py-3 text-base focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition placeholder-gray-400" 
-              required
-              autocomplete="off">
-            <button 
-              type="submit" 
-              class="bg-orange-500 hover:bg-orange-600 active:bg-orange-700 text-white px-6 py-3 rounded-full font-medium transition duration-200 flex items-center justify-center shadow-md hover:shadow-lg">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5">
-                <path d="M3.478 2.404a.75.75 0 00-.926.941l2.432 7.905H13.5a.75.75 0 010 1.5H4.984l-2.432 7.905a.75.75 0 00.926.94 60.519 60.519 0 0018.445-8.986.75.75 0 000-1.218A60.517 60.517 0 003.478 2.404z" />
-              </svg>
-            </button>
-          </form>
-          <p class="text-xs text-gray-400 text-center mt-3">Petpal AI อาจมีข้อมูลที่ไม่ถูกต้องบ้าง โปรดตรวจสอบเพิ่มเติม</p>
-        </div>
+            <div id="chat-window" class="flex-1 overflow-y-auto px-4 py-6 space-y-4">
+              <div class="chat-message-ai flex justify-start">
+                <div class="bg-white border border-gray-200 text-gray-700 rounded-2xl rounded-tl-none px-5 py-3 shadow-sm max-w-md text-sm leading-relaxed">
+                  <p class="font-semibold text-base mb-2">สวัสดีครับ K.{{ request.user.username }}! 😊</p>
+                  <p>ผมคือ Petpal AI ผู้ช่วยเรื่องสัตว์เลี้ยง ยินดีให้บริการครับ</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="bg-white border-t border-gray-200 p-6 shadow-lg rounded-t-3xl">
+              <form id="chat-form" class="flex gap-3 max-w-3xl mx-auto">
+                <input 
+                  type="text" 
+                  id="message" 
+                  placeholder="ถามเรื่องสัตว์เลี้ยงที่นี่..." 
+                  class="flex-1 bg-gray-100 border border-gray-300 text-gray-900 rounded-full px-5 py-3 text-base focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition placeholder-gray-400" 
+                  required
+                  autocomplete="off">
+                <button 
+                  type="submit" 
+                  class="bg-orange-500 hover:bg-orange-600 active:bg-orange-700 text-white px-6 py-3 rounded-full font-medium transition duration-200 flex items-center justify-center shadow-md hover:shadow-lg">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5">
+                    <path d="M3.478 2.404a.75.75 0 00-.926.941l2.432 7.905H13.5a.75.75 0 010 1.5H4.984l-2.432 7.905a.75.75 0 00.926.94 60.519 60.519 0 0018.445-8.986.75.75 0 000-1.218A60.517 60.517 0 003.478 2.404z" />
+                  </svg>
+                </button>
+              </form>
+              <p class="text-xs text-gray-400 text-center mt-3">Petpal AI อาจมีข้อมูลที่ไม่ถูกต้องบ้าง โปรดตรวจสอบเพิ่มเติม</p>
+            </div>
+
+        {% else %}
+
+            <div class="flex-1 flex flex-col items-center justify-center text-center space-y-6 bg-white/50 rounded-3xl border-2 border-dashed border-gray-200 p-10 m-4">
+                <div class="w-20 h-20 bg-orange-100 text-orange-500 rounded-full flex items-center justify-center mb-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-10 h-10">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
+                    </svg>
+                </div>
+                <h2 class="text-2xl font-bold text-gray-800">กรุณาเข้าสู่ระบบ</h2>
+                <p class="text-gray-500 max-w-sm">
+                    ฟีเจอร์ AI Assistant สงวนสิทธิ์สำหรับสมาชิกเท่านั้น <br>
+                    กรุณาล็อกอินเพื่อเริ่มสนทนากับผู้ช่วยอัจฉริยะ
+                </p>
+                <div class="flex gap-4 pt-2">
+                    <a href="{% url 'login' %}?next={% url 'ai_chat_page' %}" class="bg-orange-500 text-white px-8 py-3 rounded-full font-bold shadow-lg hover:bg-orange-600 transition hover:-translate-y-1">
+                        เข้าสู่ระบบ
+                    </a>
+                    <a href="{% url 'register' %}" class="bg-white text-orange-500 border-2 border-orange-100 px-8 py-3 rounded-full font-bold hover:bg-orange-50 transition">
+                        สมัครสมาชิก
+                    </a>
+                </div>
+            </div>
+
+        {% endif %}
 
       </div>
-
     </div>
-
   </main>
 
   <script>

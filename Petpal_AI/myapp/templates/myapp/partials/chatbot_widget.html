@@ -1,4 +1,4 @@
-<div x-data="chatApp()" class="z-[100]">
+{% if request.user.is_authenticated %} <div x-data="chatApp()" class="z-[100]">
 
   <button @click="toggleChat()"
           class="fixed bottom-24 right-6 z-[100] flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-tr from-orange-500 to-yellow-400 text-white shadow-2xl hover:scale-110 transition duration-300 group border-4 border-white">
@@ -140,3 +140,5 @@ function chatApp() {
     }
 }
 </script>
+
+{% endif %}

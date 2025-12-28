@@ -10,34 +10,32 @@
   {% tailwind_css %}
   <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
   <script src="https://unpkg.com/htmx.org@1.9.12"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   
   <style>
     html, body { font-family: "Noto Sans Thai", system-ui, -apple-system, sans-serif; }
     
-    /* --- 1. Soft Cute Pattern (ปรับปรุงใหม่: สบายตาขึ้น) --- */
+    /* =========================================
+       1. ส่วน Background & Pattern
+       ========================================= */
     body {
-        background-color: #fff7ed; /* สีส้มครีมอ่อนๆ */
-        
-        /* ✅ แก้ไข: ปรับสีจุดให้จางลงมาก (rgba) และขยายระยะห่าง (60px) */
+        background-color: #fff7ed;
         background-image:  
             radial-gradient(rgba(253, 186, 116, 0.2) 2px, transparent 2px), 
             radial-gradient(rgba(253, 186, 116, 0.2) 2px, transparent 2px);
         background-size: 60px 60px;
         background-position: 0 0, 30px 30px;
-        
         color: #1f2937;
         overflow-x: hidden;
     }
 
-    /* Animation ฉากหลัง */
+    /* Animation Blobs */
     .shape-blob {
         position: absolute;
         background: linear-gradient(180deg, #fdba74 0%, #fed7aa 100%);
         border-radius: 50%;
-        /* ✅ แก้ไข: ลดความทึบลงเหลือ 0.15 ให้ดูเป็นแสงนวลๆ ไม่กวนสายตา */
         opacity: 0.15; 
-        filter: blur(60px); /* เบลอมากขึ้น */
+        filter: blur(60px); 
         z-index: -1;
         animation: float 25s infinite ease-in-out;
     }
@@ -52,23 +50,80 @@
         100% { transform: translate(0, 0) rotate(360deg); }
     }
 
-    /* --- CSS Universal Hover Card --- */
-    .hover-card-container {
-      width: 100%;
-      height: 340px; 
-      position: relative;
-      border-radius: 20px;
-      overflow: hidden;
-      box-shadow: 0 10px 20px rgba(0,0,0,0.05); /* ลดเงาลงนิดนึง */
-      background: #f3f4f6;
+    /* =========================================
+       2. ส่วน Hero Section
+       ========================================= */
+    .hero-curve-bg {
+        position: absolute;
+        top: 0; left: 0; right: 0;
+        height: 700px; 
+        background: linear-gradient(180deg, #ffffff 0%, rgba(255,255,255,0.9) 70%, rgba(255,255,255,0) 100%);
+        border-bottom-left-radius: 50% 80px;
+        border-bottom-right-radius: 50% 80px;
+        z-index: -1;
     }
 
-    .hover-card-container::before {
-      content: ""; z-index: -1; position: absolute; inset: 0;
-      background: linear-gradient(-45deg, #f97316 0%, #fbbf24 100%);
-      transform: translate3d(0, 0, 0) scale(0.95); filter: blur(20px); opacity: 0; transition: opacity 0.5s;
+    .organic-shape-box {
+        border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%;
+        overflow: hidden;
+        box-shadow: 20px 20px 60px rgba(0,0,0,0.1), -20px -20px 60px rgba(255,255,255,0.5);
+        animation: morph 8s ease-in-out infinite;
+        background: white;
+        border: 4px solid rgba(255,255,255,0.6);
+        position: relative;
     }
-    .hover-card-container:hover::before { opacity: 0.6; }
+    
+    @keyframes morph {
+        0% { border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%; }
+        50% { border-radius: 30% 60% 70% 40% / 50% 60% 30% 60%; }
+        100% { border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%; }
+    }
+
+    .btn-hero-primary {
+        background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+        color: white; padding: 0.8rem 2rem; border-radius: 50px; font-weight: 600;
+        box-shadow: 0 10px 20px -5px rgba(249, 115, 22, 0.4);
+        transition: all 0.3s ease; display: inline-flex; align-items: center; gap: 0.5rem;
+    }
+    .btn-hero-primary:hover { transform: translateY(-3px); box-shadow: 0 15px 25px -5px rgba(249, 115, 22, 0.5); }
+    
+    .btn-hero-outline {
+        background: white; color: #f97316; border: 2px solid #fdba74;
+        padding: 0.8rem 2rem; border-radius: 50px; font-weight: 600;
+        transition: all 0.3s ease; display: inline-flex; align-items: center; gap: 0.5rem;
+    }
+    .btn-hero-outline:hover { border-color: #f97316; background: #fff7ed; transform: translateY(-3px); }
+
+
+    /* =========================================
+       3. ส่วน Card Animations (แก้ไขเป็น Neumorphism)
+       ========================================= */
+    .hover-card-container {
+      width: 100%; 
+      height: 340px; 
+      position: relative;
+      
+      /* ✅ ปรับสไตล์เป็นนูนต่ำ */
+      border-radius: 30px; 
+      background: #ffffff; /* พื้นขาว */
+      
+      /* เงาแบบ Neumorphism */
+      box-shadow: 15px 15px 30px #bebebe, 
+                 -15px -15px 30px #ffffff;
+                 
+      overflow: hidden;
+      transition: all 0.3s ease;
+    }
+    
+    /* เอฟเฟกต์ตอน Hover ที่ตัวการ์ด */
+    .hover-card-container:hover {
+        transform: translateY(-5px);
+        box-shadow: 20px 20px 40px #bebebe, 
+                   -20px -20px 40px #ffffff;
+    }
+
+    /* ❌ เอาแสง Glow เดิมออก */
+    /* .hover-card-container::before { ... } */ 
 
     .hover-card { width: 100%; height: 100%; border-radius: inherit; overflow: hidden; position: relative; }
     
@@ -77,45 +132,27 @@
       transition: all 0.6s cubic-bezier(0.23, 1, 0.320, 1);
     }
     .hover-card .img-content img { width: 100%; height: 100%; object-fit: cover; transition: all 0.6s cubic-bezier(0.23, 1, 0.320, 1); }
-
+    
     .hover-card .content {
       position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-      display: flex; flex-direction: column; justify-content: flex-end; 
-      padding: 24px; 
+      display: flex; flex-direction: column; justify-content: flex-end; padding: 24px; 
       background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.4) 60%, rgba(0,0,0,0) 100%);
-      opacity: 1; 
-      transition: all 0.4s ease-in-out;
+      opacity: 1; transition: all 0.4s ease-in-out;
     }
-    
     .hover-card .content .heading { 
         font-size: 20px; font-weight: 700; line-height: 1.3; color: white; margin-bottom: 4px;
         text-shadow: 0 2px 4px rgba(0,0,0,0.3);
     }
-    
     .hover-card .content .desc-box {
-        color: #e5e5e5; font-size: 14px;
-        max-height: 0; overflow: hidden; opacity: 0; 
+        color: #e5e5e5; font-size: 14px; max-height: 0; overflow: hidden; opacity: 0; 
         transition: all 0.5s cubic-bezier(0.23, 1, 0.320, 1);
     }
-
-    .hover-card .content svg {
-        width: 16px !important;
-        height: 16px !important;
-        min-width: 16px;
-        display: inline-block;
-    }
-
+    .hover-card .content svg { width: 16px !important; height: 16px !important; min-width: 16px; display: inline-block; }
     .hover-card:hover .img-content { scale: 1.1; rotate: 1deg; filter: blur(2px); }
+    .hover-card:hover .content .desc-box { max-height: 150px; opacity: 1; margin-top: 8px; }
+    .hover-card:hover .content { background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.6) 100%); justify-content: center; }
     
-    .hover-card:hover .content .desc-box {
-        max-height: 150px; opacity: 1; margin-top: 8px;
-    }
-    .hover-card:hover .content {
-        background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.6) 100%);
-        justify-content: center;
-    }
-    
-    /* --- CSS View All Button --- */
+    /* View All Button */
     .view-all-btn {
       padding: 0; margin: 0; border: none; background: none; cursor: pointer;
       --primary-color: #4b5563; --hovered-color: #ea580c;
@@ -136,12 +173,6 @@
     .view-all-btn:hover svg { transform: translateX(4px); color: var(--hovered-color); }
     .view-all-btn svg { color: var(--primary-color); transition: 0.2s; position: relative; width: 18px; height: 18px; transition-delay: 0.2s; }
 
-    /* Misc */
-    .hover-underline-animation { display: inline-block; position: relative; cursor: pointer; color: #171717; transition: color 0.4s; }
-    .hover-underline-animation:hover { color: #ea580c; }
-    .hover-underline-animation::after { content: ""; position: absolute; bottom: -4px; left: 50%; width: 0%; height: 4px; background-color: #ea580c; transition: all 400ms cubic-bezier(0.25, 0.8, 0.25, 1); }
-    .hover-underline-animation:hover::after { width: 100%; left: 0%; }
-    .soft-card { box-shadow: 0 10px 20px -10px rgba(0,0,0,.15); }
   </style>
 </head>
 <body class="text-neutral-900">
@@ -149,6 +180,7 @@
     {% include "myapp/partials/navbar.html" %}
 
     <div class="fixed inset-0 overflow-hidden pointer-events-none -z-10">
+        <div class="hero-curve-bg"></div>
         <div class="shape-blob shape-1"></div>
         <div class="shape-blob shape-2"></div>
         <div class="shape-blob shape-3"></div>
@@ -156,25 +188,55 @@
   
   <main class="relative z-10 mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-10">
 
-    <header class="mb-8">
-      <h1 class="text-4xl sm:text-5xl font-extrabold tracking-tight">
-        <span class="hover-underline-animation">Petpal AI</span>
-      </h1>
-      <p class="mt-3 max-w-3xl text-neutral-600">
-        ผู้ช่วยอัจฉริยะเพื่อสัตว์เลี้ยงของคุณ<br class="hidden sm:block">
-        ติดตามสัตว์หาย หาบ้านให้เพื่อนใหม่ รับคำปรึกษาด้านสุขภาพ พร้อมเชื่อมต่อกับมูลนิธิช่วยเหลือสัตว์
-      </p>
-    </header>
+    <section class="grid grid-cols-1 md:grid-cols-2 gap-10 items-center mb-24 min-h-[550px]">
+        
+        <div class="text-center md:text-left order-2 md:order-1 space-y-6">
+            
+            <h1 class="text-4xl sm:text-5xl lg:text-7xl font-extrabold tracking-tight leading-[1.2] text-gray-900">
+                ดูแลน้องแมว <br>
+                <span class="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-amber-500 relative">
+                    ด้วยรักและ AI
+                    <svg class="absolute w-full h-3 -bottom-1 left-0 text-orange-300 -z-10 opacity-50" viewBox="0 0 100 10" preserveAspectRatio="none">
+                        <path d="M0 5 Q 50 10 100 5" stroke="currentColor" stroke-width="8" fill="none" />
+                    </svg>
+                </span>
+            </h1>
+            
+            <p class="text-lg sm:text-xl text-gray-600 leading-relaxed max-w-lg mx-auto md:mx-0">
+                เพราะสัตว์เลี้ยงคือครอบครัว Petpal AI ช่วยคุณติดตามสัตว์หาย หาบ้านใหม่ให้น้อง และวิเคราะห์สุขภาพเบื้องต้นได้ทันที
+            </p>
 
-    <section class="mb-16">
-      <figure class="overflow-hidden rounded-2xl soft-card">
-        <img src="{% static 'images/cat-main.jpg' %}" alt="Main" class="w-full h-[320px] sm:h-[420px] object-cover" loading="lazy"/>
-      </figure>
+            <div class="flex flex-col sm:flex-row gap-4 justify-center md:justify-start pt-4">
+                <a href="{% url 'adoption_list' %}" class="btn-hero-primary">
+                    เริ่มต้นใช้งาน ->
+                </a>
+                <a href="{% url 'ai_chat_page' %}" class="btn-hero-outline">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+                    ปรึกษา AI Assistant
+                </a>
+            </div>
+        </div>
+
+        <div class="relative order-1 md:order-2 flex justify-center">
+            <div class="relative w-full max-w-[450px] aspect-square">
+                
+                <div class="absolute inset-0 bg-orange-100 rounded-full opacity-60 transform translate-x-6 translate-y-6 scale-95 -z-10"></div>
+                
+                <div class="w-full h-full organic-shape-box ">
+                    <img src="{% static 'images/landing.png' %}" alt="Hero Cat" class="w-full h-full object-cover transform scale-105 hover:scale-110 transition duration-700 ease-in-out" loading="eager"/>
+                </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </section>
 
-    <section class="mb-16">
-      <div class="flex justify-between items-center mb-6">
-        <h2 class="text-2xl sm:text-3xl font-extrabold">น้องๆที่อยากได้บ้านใหม่</h2>
+    <section class="mb-20">
+      <div class="flex justify-between items-center mb-8">
+        <div>
+            <h2 class="text-3xl font-extrabold text-gray-800">น้องๆที่อยากได้บ้านใหม่</h2>
+            <p class="text-gray-500 mt-1">เลือกรับอุปการะและเป็นโลกทั้งใบให้พวกเขา</p>
+        </div>
         <a href="{% url 'adoption_list' %}" class="view-all-btn">
           <p data-text="ดูทั้งหมด">ดูทั้งหมด</p>
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="4"><path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
@@ -231,9 +293,12 @@
       </div>
     </section>
 
-    <section class="mb-16">
-      <div class="flex justify-between items-center mb-6">
-        <h2 class="text-2xl sm:text-3xl font-extrabold">สัตว์เลี้ยงหาย</h2>
+    <section class="mb-20">
+      <div class="flex justify-between items-center mb-8">
+        <div>
+            <h2 class="text-3xl font-extrabold text-gray-800">สัตว์เลี้ยงหาย</h2>
+            <p class="text-gray-500 mt-1">ช่วยกันเป็นหูเป็นตา พาน้องกลับบ้าน</p>
+        </div>
         <a href="{% url 'lost_list' %}" class="view-all-btn">
           <p data-text="ดูทั้งหมด">ดูทั้งหมด</p>
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="4"><path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
@@ -288,13 +353,12 @@
       </div>
     </section>
     
-    <section class="mb-16">
-      <div class="flex justify-between items-center mb-6">
-        <h2 class="text-2xl sm:text-3xl font-extrabold">หน่วยงานช่วยเหลือ/มูลนิธิ</h2>
+    <section class="mb-24">
+      <div class="flex justify-between items-center mb-8">
+        <h2 class="text-3xl font-extrabold text-gray-800">หน่วยงานช่วยเหลือ/มูลนิธิ</h2>
       </div>
 
       <div class="grid gap-8 md:grid-cols-2">
-        
         <div class="hover-card-container">
           <div class="hover-card">
             <div class="img-content">
@@ -328,7 +392,6 @@
             </div>
           </div>
         </div>
-
       </div>
       
       <div class="mt-12 flex justify-center">

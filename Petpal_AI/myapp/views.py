@@ -407,19 +407,20 @@ def foundation_list_view(request):
 def cat_list_view(request):
     query = request.GET.get('q', '')
 
-    posts = Post.objects.filter(
+    # 1. เปลี่ยนชื่อตัวแปรจาก posts เป็น cat_posts ให้ชัดเจน
+    cat_posts = Post.objects.filter(
         post_type='ADOPTION', 
         is_active=True,
-        pet__animal__species__iexact='CAT'
+        pet__animal__species__iexact='CAT' # หรือ 'แมว' แล้วแต่ Database คุณเก็บ
     ).select_related('pet', 'pet__animal').order_by('-created_at')
 
-    # กรองข้อมูล
+    # 2. ส่ง cat_posts ที่ได้มา เข้าไปกรอง
+    # (ลบบรรทัด dog_posts = ... ทิ้งไป เพราะหน้านี้แสดงแค่แมว)
     cat_posts = filter_posts(cat_posts, request)
-    dog_posts = filter_posts(dog_posts, request)
 
     context = {
-        'cat_posts': posts,
-        'dog_posts': [],
+        'cat_posts': cat_posts, # ส่งตัวแปรที่กรองแล้วไป
+        'dog_posts': [],        # หมาเป็น list ว่าง
         'page_title': 'น้องแมวหาบ้าน',
         'page_type': 'cats_only',
         'search_query': query
@@ -429,19 +430,20 @@ def cat_list_view(request):
 def dog_list_view(request):
     query = request.GET.get('q', '')
 
-    posts = Post.objects.filter(
+    # 1. เปลี่ยนชื่อตัวแปรจาก posts เป็น dog_posts
+    dog_posts = Post.objects.filter(
         post_type='ADOPTION', 
         is_active=True,
         pet__animal__species__iexact='DOG'
     ).select_related('pet', 'pet__animal').order_by('-created_at')
 
-    # กรองข้อมูล
-    cat_posts = filter_posts(cat_posts, request)
+    # 2. ส่ง dog_posts ที่ได้มา เข้าไปกรอง
+    # (ลบบรรทัด cat_posts = ... ทิ้งไป)
     dog_posts = filter_posts(dog_posts, request)
 
     context = {
-        'dog_posts': posts,
-        'cat_posts': [],
+        'dog_posts': dog_posts, # ส่งตัวแปรที่กรองแล้วไป
+        'cat_posts': [],        # แมวเป็น list ว่าง
         'page_title': 'น้องหมาหาบ้าน',
         'page_type': 'dogs_only',
         'search_query': query

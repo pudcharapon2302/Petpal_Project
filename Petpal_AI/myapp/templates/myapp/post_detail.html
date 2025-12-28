@@ -13,50 +13,89 @@
   <style>
     html { scroll-behavior: smooth; } 
     body { font-family: "Noto Sans Thai", system_ui; }
-    .soft-card { box-shadow: 0 10px 20px -10px rgba(0,0,0,.15); }
+    
+    /* --- Background Style --- */
+    body {
+        background-color: #fff7ed;
+        background-image:  
+            radial-gradient(rgba(253, 186, 116, 0.2) 2px, transparent 2px), 
+            radial-gradient(rgba(253, 186, 116, 0.2) 2px, transparent 2px);
+        background-size: 60px 60px;
+        background-position: 0 0, 30px 30px;
+        color: #1f2937;
+        overflow-x: hidden;
+    }
+
+    /* Animation Blobs */
+    .shape-blob {
+        position: absolute;
+        background: linear-gradient(180deg, #fdba74 0%, #fed7aa 100%);
+        border-radius: 50%;
+        opacity: 0.15; 
+        filter: blur(60px); 
+        z-index: -1;
+        animation: float 25s infinite ease-in-out;
+    }
+    .shape-1 { top: -10%; left: -5%; width: 400px; height: 400px; animation-delay: 0s; background: #fed7aa; }
+    .shape-2 { bottom: 10%; right: -10%; width: 500px; height: 500px; animation-delay: -5s; background: #fdba74; }
+    .shape-3 { top: 40%; right: 20%; width: 200px; height: 200px; animation-delay: -10s; background: #fcd34d; opacity: 0.1; }
+
+    @keyframes float {
+        0% { transform: translate(0, 0) rotate(0deg); }
+        33% { transform: translate(30px, 50px) rotate(120deg); }
+        66% { transform: translate(-20px, 20px) rotate(240deg); }
+        100% { transform: translate(0, 0) rotate(360deg); }
+    }
+    
+    /* --- ✅ สไตล์การ์ดนูน (Neumorphism) --- */
+    .neumorphic-card {
+        border-radius: 30px; /* ตามโค้ดต้นฉบับ */
+        background: #ffffff;
+        border: none; /* เอาขอบเดิมออก */
+        /* เงาตามโค้ดต้นฉบับ */
+        box-shadow: 15px 15px 30px #bebebe, -15px -15px 30px #ffffff;
+    }
+    
     .custom-scrollbar::-webkit-scrollbar { width: 6px; }
     .custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; }
     .custom-scrollbar::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 10px; }
     .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #9ca3af; }
   </style>
 </head>
-<body class="bg-gray-50 text-neutral-900">
+<body class="text-neutral-900">
 
   {% include "myapp/partials/navbar.html" %}
 
+  <div class="fixed inset-0 overflow-hidden pointer-events-none -z-10">
+      <div class="shape-blob shape-1"></div>
+      <div class="shape-blob shape-2"></div>
+      <div class="shape-blob shape-3"></div>
+  </div>
+
   <main class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 pb-24">
 
-    <!-- Header Section -->
     <header class="mb-6 flex flex-wrap justify-between items-center gap-4">
-      
       <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight text-gray-900">
         รายละเอียดโพสต์
       </h1>
-
       <div class="flex items-center gap-3">
-        
         <button onclick="history.back()"
            class="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 shadow-sm transition flex items-center gap-1">
           <span>&larr;</span> ย้อนกลับ
         </button>
-
         {% if post.post_type == 'LOST' %}
           <a href="{% url 'generate_poster' post.pk %}" target="_blank"
             class="inline-flex border border-gray-300 items-center gap-2 bg-gray-100 text-gray-600 px-4 py-2 rounded-lg hover:bg-gray-900 transition shadow-sm text-sm font-medium">
             <span>🖨️</span> สร้างโปสเตอร์
           </a>
         {% endif %}
-        
       </div>
-
     </header>
 
-    <!-- Main Content -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
       
-      <!-- Left Section: Pet Details -->
       <div class="lg:col-span-1 space-y-6">
-        <article class="rounded-2xl overflow-hidden bg-white shadow-md border border-gray-200">
+        <article class="neumorphic-card overflow-hidden">
           <div class="relative bg-gray-100">
             {% if post.pet.image %}
               <img src="{{ post.pet.image.url }}" alt="{{ post.pet.name }}" class="w-full max-h-[500px] object-contain mx-auto">
@@ -104,10 +143,9 @@
         </article>
       </div>
 
-      <!-- Right Section: Comments -->
       <div class="lg:col-span-2 space-y-6">
-        <div class="bg-white rounded-2xl shadow-lg border border-gray-200 flex flex-col h-full">
-          <div class="p-4 border-b border-gray-100 flex justify-between items-center bg-gray-50 rounded-t-2xl">
+        <div class="neumorphic-card flex flex-col h-full overflow-hidden">
+          <div class="p-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
             <h3 class="text-lg font-bold text-gray-800 flex items-center gap-2">
               💬 ความคิดเห็น
             </h3>
@@ -140,7 +178,7 @@
               </div>
             {% endfor %}
           </div>
-          <div class="p-4 border-t border-gray-100 bg-gray-50 rounded-b-2xl">
+          <div class="p-4 border-t border-gray-100 bg-gray-50">
             {% if request.user.is_authenticated %}
               <form action="{% url 'add_comment' post.pk %}" method="POST" class="flex gap-2 items-center">
                 {% csrf_token %}
@@ -164,6 +202,7 @@
     </div>
 
   </main>
+  
   <footer class="fixed bottom-6 right-6 z-50">
     {% if request.user.is_authenticated %}
       

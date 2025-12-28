@@ -65,7 +65,7 @@
           </style>
         </a>
 
-        {% if '/ai-chat/' not in request.path %}
+        {% if '/ai-chat/' not in request.path and request.user.is_authenticated %}
         <div x-data="chatApp()" class="relative" @keydown.escape.window="isOpen = false">
           <button @click="toggleChat()" 
                   class="flex items-center gap-2 bg-white/20 hover:bg-white/30 text-white px-3 py-2 rounded-full transition backdrop-blur-sm border border-white/30 shadow-sm group">
