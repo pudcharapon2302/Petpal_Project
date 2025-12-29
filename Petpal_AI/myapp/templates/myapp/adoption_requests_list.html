@@ -9,18 +9,138 @@
   {% tailwind_css %}
   <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <style> html, body { font-family: "Noto Sans Thai", system_ui; } </style>
+  <style> 
+    html, body { font-family: "Noto Sans Thai", system_ui; } 
+    
+    /* --- Background Pattern --- */
+    body {
+        background-color: #fff7ed;
+        background-image:  
+            radial-gradient(rgba(253, 186, 116, 0.2) 2px, transparent 2px), 
+            radial-gradient(rgba(253, 186, 116, 0.2) 2px, transparent 2px);
+        background-size: 60px 60px;
+        background-position: 0 0, 30px 30px;
+        color: #1f2937;
+        overflow-x: hidden;
+    }
+
+    /* Animation Blobs */
+    .shape-blob {
+        position: absolute;
+        background: linear-gradient(180deg, #fdba74 0%, #fed7aa 100%);
+        border-radius: 50%;
+        opacity: 0.15; 
+        filter: blur(60px); 
+        z-index: -1;
+        animation: float 25s infinite ease-in-out;
+    }
+    .shape-1 { top: -10%; left: -5%; width: 400px; height: 400px; animation-delay: 0s; background: #fed7aa; }
+    .shape-2 { bottom: 10%; right: -10%; width: 500px; height: 500px; animation-delay: -5s; background: #fdba74; }
+    .shape-3 { top: 40%; right: 20%; width: 200px; height: 200px; animation-delay: -10s; background: #fcd34d; opacity: 0.1; }
+
+    @keyframes float {
+        0% { transform: translate(0, 0) rotate(0deg); }
+        33% { transform: translate(30px, 50px) rotate(120deg); }
+        66% { transform: translate(-20px, 20px) rotate(240deg); }
+        100% { transform: translate(0, 0) rotate(360deg); }
+    }
+
+    /* --- Neumorphism Card --- */
+    .neu-card {
+        background: #ffffff;
+        border-radius: 20px;
+        box-shadow: 6px 6px 12px #d1d5db, -6px -6px 12px #ffffff;
+        border: 1px solid rgba(255,255,255,0.5);
+        transition: all 0.3s ease;
+        padding: 24px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+    .neu-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 10px 10px 20px #d1d5db, -10px -10px 20px #ffffff;
+    }
+
+    /* --- Expanding Button (Accept/Reject) --- */
+    .btn-expand {
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      width: 40px;
+      height: 40px;
+      border: none;
+      border-radius: 50%;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      transition-duration: .3s;
+      box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
+    }
+    .btn-green { background-color: #22c55e; }
+    .btn-red { background-color: #ef4444; }
+    .sign {
+      width: 100%; height: 100%;
+      transition-duration: .3s;
+      display: flex; align-items: center; justify-content: center;
+      position: absolute; left: 0; top: 0;
+    }
+    .sign svg { width: 16px; }
+    .sign svg path { fill: white; }
+    .text {
+      position: absolute; right: 0%; width: 0%; opacity: 0;
+      color: white; font-size: 0.9em; font-weight: 600;
+      transition-duration: .3s; white-space: nowrap;
+      line-height: 40px; text-align: center; pointer-events: none;
+    }
+    .btn-expand:hover { width: 110px; border-radius: 40px; }
+    .btn-expand:hover .sign { width: 30%; }
+    .btn-expand:hover .text { opacity: 1; width: 70%; padding-right: 15px; }
+    .btn-expand:active { transform: translate(2px ,2px); }
+
+    /* --- Fly Button (Chat) --- */
+    .btn-fly {
+      font-family: inherit; font-size: 16px; background: #ea580c; color: white;
+      padding: 0.6em 1.3em; display: flex; align-items: center; justify-content: center;
+      border: none; border-radius: 16px; overflow: hidden; transition: all 0.2s;
+      cursor: pointer; box-shadow: 0 4px 6px rgba(234, 88, 12, 0.3); text-decoration: none; height: 42px;
+    }
+    .btn-fly-blue { background: #3b82f6; box-shadow: 0 4px 6px rgba(59, 130, 246, 0.3); }
+    .btn-fly span { display: block; margin-left: 0.4em; font-weight: 600; transition: all 0.3s ease-in-out; }
+    .btn-fly svg { display: block; transform-origin: center center; transition: transform 0.3s ease-in-out; }
+    .btn-fly:hover .svg-wrapper { animation: fly-1 0.6s ease-in-out infinite alternate; }
+    .btn-fly:hover svg { transform: translateX(2px) rotate(45deg) scale(1.1); }
+    .btn-fly:hover span { transform: translateX(4px); }
+    .btn-fly:active { transform: scale(0.95); }
+    @keyframes fly-1 { from { transform: translateY(1px); } to { transform: translateY(-1px); } }
+
+    /* Section Header */
+    .section-header {
+        @apply flex items-center justify-between mb-8 p-4 rounded-2xl backdrop-blur-sm shadow-sm;
+        transition: all 0.3s ease;
+    }
+    .header-orange { @apply bg-orange-50/80 border-l-4 border-orange-400; }
+    .header-blue { @apply bg-blue-50/80 border-l-4 border-blue-400; }
+    .header-icon-box { @apply p-2 bg-white rounded-full shadow-sm; }
+
+  </style>
 </head>
-<body class="bg-gray-50 text-neutral-900">
+<body class="text-neutral-900">
 
   {% include "myapp/partials/navbar.html" %}
 
+  <div class="fixed inset-0 overflow-hidden pointer-events-none -z-10">
+      <div class="shape-blob shape-1"></div>
+      <div class="shape-blob shape-2"></div>
+      <div class="shape-blob shape-3"></div>
+  </div>
+
   <main class="mx-auto max-w-6xl px-4 py-10 space-y-12">
     
-    <div class="flex items-center justify-between border-b border-gray-200 pb-6">
+    <div class="flex items-center justify-between border-b border-gray-200/50 pb-6">
       <div>
         <h1 class="text-3xl font-extrabold text-gray-900 flex items-center gap-3">
-          <span class="bg-orange-100 text-orange-600 p-2 rounded-xl">
+          <span class="bg-orange-100 text-orange-600 p-2 rounded-xl shadow-sm">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-8 h-8">
               <path d="M1.5 8.67v8.58a3 3 0 003 3h15a3 3 0 003-3V8.67l-8.928 5.493a3 3 0 01-3.144 0L1.5 8.67z" />
               <path d="M22.5 6.908V6.75a3 3 0 00-3-3h-15a3 3 0 00-3 3v.158l9.714 5.978a1.5 1.5 0 001.572 0L22.5 6.908z" />
@@ -28,12 +148,8 @@
           </span>
           กล่องข้อความ
         </h1>
-        <p class="text-gray-500 mt-1 text-sm">จัดการคำขอรับเลี้ยงและการติดต่อสื่อสารทั้งหมดของคุณ</p>
+        <p class="text-gray-500 mt-1 text-sm pl-1">จัดการคำขอรับเลี้ยงและการติดต่อสื่อสารทั้งหมดของคุณ</p>
       </div>
-      <a href="{% url 'profile' %}" class="text-sm font-medium text-gray-500 hover:text-orange-600 transition flex items-center gap-1">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4"><path fill-rule="evenodd" d="M17 10a.75.75 0 01-.75.75H5.612l4.158 3.96a.75.75 0 11-1.04 1.08l-5.5-5.25a.75.75 0 010-1.08l5.5-5.25a.75.75 0 111.04 1.08L5.612 9.25H16.25A.75.75 0 0117 10z" clip-rule="evenodd" /></svg>
-        กลับไปโปรไฟล์
-      </a>
     </div>
 
     <section>
@@ -45,63 +161,105 @@
           คำขอที่ได้รับ (สำหรับสัตว์เลี้ยงของคุณ)
         </h2>
         {% if received_requests.count > 0 %}
-          <span class="bg-red-100 text-red-700 text-xs font-bold px-2.5 py-1 rounded-full shadow-sm">{{ received_requests.count }} รายการ</span>
+          <span class="bg-red-100 text-red-700 text-xs font-bold px-3 py-1 rounded-full shadow-inner">{{ received_requests.count }} รายการ</span>
         {% endif %}
       </div>
 
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {% for req in received_requests %}
-        <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition group">
-          <div class="p-5 flex gap-5">
+        <div class="neu-card flex flex-col justify-between h-full">
+          
+          <div class="flex gap-5">
             <div class="shrink-0 relative">
               {% if req.post.pet.image %}
-                <img src="{{ req.post.pet.image.url }}" class="h-24 w-24 rounded-xl object-cover shadow-sm">
+                <img src="{{ req.post.pet.image.url }}" class="h-24 w-24 rounded-2xl object-cover shadow-inner bg-gray-100 border border-white">
               {% else %}
-                <div class="h-24 w-24 rounded-xl bg-gray-100 flex items-center justify-center text-gray-400 text-xs">No Pic</div>
+                <div class="h-24 w-24 rounded-2xl bg-gray-100 flex items-center justify-center text-gray-400 text-xs shadow-inner">No Pic</div>
               {% endif %}
-              <span class="absolute -top-2 -right-2 w-4 h-4 rounded-full border-2 border-white
+              
+              <span class="absolute -top-1 -right-1 w-4 h-4 rounded-full border-2 border-white shadow-sm
                 {% if req.status == 'APPROVED' %} bg-green-500
                 {% elif req.status == 'REJECTED' %} bg-red-500
                 {% else %} bg-yellow-400 animate-pulse {% endif %}">
               </span>
             </div>
 
-            <div class="flex-1 min-w-0">
-              <div class="flex justify-between items-start">
-                <div>
-                  <h3 class="font-bold text-gray-900 truncate text-lg">
-                    น้อง {{ req.post.pet.name }}
-                  </h3>
-                  <p class="text-sm text-gray-600 mt-1">
-                    จากคุณ <span class="text-orange-600 font-medium">{{ req.requester.username }}</span>
-                  </p>
-                </div>
-                <span class="text-xs text-gray-400 whitespace-nowrap">{{ req.created_at|date:"d M" }}</span>
-              </div>
+            <div class="flex-1 min-w-0 flex flex-col justify-between">
+              <div>
+                  <div class="flex justify-between items-start">
+                    <div>
+                      <h3 class="font-bold text-gray-900 truncate text-lg">
+                        น้อง {{ req.post.pet.name }}
+                      </h3>
+                      <p class="text-sm text-gray-600 mt-1 flex items-center gap-1">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4 text-gray-400"><path d="M10 8a3 3 0 100-6 3 3 0 000 6zM3.465 14.493a1.23 1.23 0 00.41 1.412A9.957 9.957 0 0010 18c2.31 0 4.438-.784 6.131-2.1.43-.333.604-.903.408-1.41a7.002 7.002 0 00-13.074.003z" /></svg>
+                        จาก <span class="text-orange-600 font-medium ml-1">{{ req.requester.username }}</span>
+                      </p>
+                    </div>
+                    <span class="text-xs text-gray-400 whitespace-nowrap bg-gray-50 px-2 py-1 rounded-lg">{{ req.created_at|date:"d M" }}</span>
+                  </div>
 
-              <div class="mt-3 flex items-center gap-2">
-                <span class="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-medium
-                  {% if req.status == 'APPROVED' %} bg-green-100 text-green-800
-                  {% elif req.status == 'REJECTED' %} bg-red-100 text-red-800
-                  {% else %} bg-yellow-100 text-yellow-800 {% endif %}">
-                  {{ req.get_status_display }}
-                </span>
+                  <div class="mt-3 flex items-center gap-2">
+                    {% if req.status == 'PENDING' %}
+                       <span class="text-xs font-bold text-yellow-600 bg-yellow-50 px-2 py-1 rounded border border-yellow-100">รอการตอบรับ</span>
+                    {% else %}
+                       <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-bold uppercase tracking-wide
+                          {% if req.status == 'APPROVED' %} bg-green-50 text-green-700 border border-green-100
+                          {% elif req.status == 'REJECTED' %} bg-red-50 text-red-700 border border-red-100
+                          {% else %} bg-yellow-50 text-yellow-700 border border-yellow-100 {% endif %}">
+                          {{ req.get_status_display }}
+                       </span>
+                    {% endif %}
+                  </div>
               </div>
             </div>
           </div>
 
-          <div class="bg-gray-50 px-5 py-3 border-t border-gray-100 flex justify-end">
-            <a href="{% url 'chat_room' req.id %}" 
-               class="inline-flex items-center gap-2 text-sm font-semibold text-orange-600 hover:text-orange-700 transition group-hover:translate-x-1 duration-200">
-               พูดคุยและตรวจสอบ &rarr;
-            </a>
+          <div class="mt-5 pt-4 border-t border-gray-100 flex items-center justify-between">
+             
+             <div class="flex gap-3">
+                 {% if req.status == 'PENDING' %}
+                    <form method="post" action="{% url 'update_adoption_status' req.id 'APPROVED' %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn-expand btn-green" title="ยอมรับ">
+                            <div class="sign">
+                                <svg viewBox="0 0 512 512"><path d="M438.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L160 338.7 393.4 105.4c12.5-12.5 32.8-12.5 45.3 0z"/></svg>
+                            </div>
+                            <div class="text">ยอมรับ</div>
+                        </button>
+                    </form>
+                    <form method="post" action="{% url 'update_adoption_status' req.id 'REJECTED' %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn-expand btn-red" title="ปฏิเสธ">
+                            <div class="sign">
+                                <svg viewBox="0 0 512 512"><path d="M342.6 150.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L192 210.7 86.6 105.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L146.7 256 41.4 361.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L192 301.3 297.4 406.6c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L237.3 256 342.6 150.6z"/></svg>
+                            </div>
+                            <div class="text">ปฏิเสธ</div>
+                        </button>
+                    </form>
+                 {% endif %}
+             </div>
+
+             <a href="{% url 'chat_room' req.id %}" class="btn-fly">
+                <div class="svg-wrapper-1">
+                  <div class="svg-wrapper">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20">
+                      <path fill="none" d="M0 0h24v24H0z"></path>
+                      <path fill="currentColor" d="M1.946 9.315c-.522-.174-.527-.455.01-.634l19.087-6.362c.529-.176.832.12.684.638l-5.454 19.086c-.15.529-.455.547-.679.045L12 14l6-8-8 6-8.054-2.685z"></path>
+                    </svg>
+                  </div>
+                </div>
+                <span>ตรวจสอบ</span>
+             </a>
           </div>
+
         </div>
         {% empty %}
-          <div class="col-span-full flex flex-col items-center justify-center py-16 bg-white rounded-2xl border-2 border-dashed border-gray-200">
-            <div class="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center text-3xl mb-3">📭</div>
+          <div class="col-span-full flex flex-col items-center justify-center py-16 neu-card text-center">
+            <div class="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-4 shadow-inner">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" /></svg>
+            </div>
             <p class="text-gray-500 font-medium">ยังไม่มีคำขอใหม่เข้ามา</p>
-            <p class="text-sm text-gray-400">เมื่อมีคนสนใจสัตว์เลี้ยงของคุณ จะปรากฏที่นี่</p>
           </div>
         {% endfor %}
       </div>
@@ -119,53 +277,72 @@
 
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {% for req in sent_requests %}
-        <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition group">
-          <div class="p-5 flex gap-5">
+        <div class="neu-card flex flex-col justify-between h-full">
+          <div class="flex gap-5">
             <div class="shrink-0">
               {% if req.post.pet.image %}
-                <img src="{{ req.post.pet.image.url }}" class="h-24 w-24 rounded-xl object-cover shadow-sm">
+                <img src="{{ req.post.pet.image.url }}" class="h-24 w-24 rounded-2xl object-cover shadow-inner bg-gray-100 border border-white">
               {% else %}
-                <div class="h-24 w-24 rounded-xl bg-gray-100 flex items-center justify-center text-gray-400 text-xs">No Pic</div>
+                <div class="h-24 w-24 rounded-2xl bg-gray-100 flex items-center justify-center text-gray-400 text-xs shadow-inner">No Pic</div>
               {% endif %}
             </div>
 
-            <div class="flex-1 min-w-0">
-              <div class="flex justify-between items-start">
-                <div>
-                  <h3 class="font-bold text-gray-900 truncate text-lg">
-                    น้อง {{ req.post.pet.name }}
-                  </h3>
-                  <p class="text-sm text-gray-600 mt-1">
-                    เจ้าของ: <span class="font-medium text-gray-800">{{ req.post.user.username }}</span>
-                  </p>
-                </div>
-                <span class="text-xs text-gray-400 whitespace-nowrap">{{ req.created_at|date:"d M" }}</span>
-              </div>
+            <div class="flex-1 min-w-0 flex flex-col justify-between">
+              <div>
+                  <div class="flex justify-between items-start">
+                    <div>
+                      <h3 class="font-bold text-gray-900 truncate text-lg">
+                        น้อง {{ req.post.pet.name }}
+                      </h3>
+                      {% if req.post.is_active %}
+                        <a href="{% url 'post_detail' req.post.id %}" target="_blank" class="text-xs font-medium text-gray-500 hover:text-orange-600 underline decoration-gray-300 hover:decoration-orange-400 transition mt-1 flex items-center gap-1">
+                            ดูประกาศเดิม <span class="text-lg leading-none">&nearr;</span>
+                        </a>
+                      {% else %}
+                        <span class="text-xs font-medium text-gray-400 mt-1 flex items-center gap-1 cursor-not-allowed" title="โพสต์นี้ถูกปิดหรือลบไปแล้ว">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-3 h-3"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clip-rule="evenodd" /></svg>
+                            ประกาศถูกปิดแล้ว
+                        </span>
+                      {% endif %}
+                    </div>
+                    <span class="text-xs text-gray-400 whitespace-nowrap bg-gray-50 px-2 py-1 rounded-lg">{{ req.created_at|date:"d M" }}</span>
+                  </div>
 
-              <div class="mt-3">
-                <span class="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-medium
-                  {% if req.status == 'APPROVED' %} bg-green-100 text-green-800
-                  {% elif req.status == 'REJECTED' %} bg-red-100 text-red-800
-                  {% else %} bg-blue-50 text-blue-700 {% endif %}">
-                  สถานะ: {{ req.get_status_display }}
-                </span>
+                  <div class="mt-2 text-sm text-gray-600">
+                    เจ้าของ: <span class="font-medium text-gray-800">{{ req.post.user.username }}</span>
+                  </div>
               </div>
             </div>
           </div>
 
-          <div class="bg-gray-50 px-5 py-3 border-t border-gray-100 flex justify-between items-center">
-            <a href="{% url 'post_detail' req.post.id %}" class="text-xs text-gray-500 hover:underline">ดูประกาศเดิม</a>
-            <a href="{% url 'chat_room' req.id %}" 
-               class="inline-flex items-center gap-2 text-sm font-semibold text-blue-600 hover:text-blue-700 transition group-hover:translate-x-1 duration-200">
-               ทักแชทเจ้าของ &rarr;
-            </a>
+          <div class="mt-5 pt-4 border-t border-gray-100 flex items-center justify-between">
+             <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-bold uppercase tracking-wide
+                {% if req.status == 'APPROVED' %} bg-green-50 text-green-700 border border-green-100
+                {% elif req.status == 'REJECTED' %} bg-red-50 text-red-700 border border-red-100
+                {% else %} bg-blue-50 text-blue-700 border border-blue-100 {% endif %}">
+                สถานะ: {{ req.get_status_display }}
+             </span>
+
+             <a href="{% url 'chat_room' req.id %}" class="btn-fly btn-fly-blue">
+                <div class="svg-wrapper-1">
+                  <div class="svg-wrapper">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20">
+                      <path fill="none" d="M0 0h24v24H0z"></path>
+                      <path fill="currentColor" d="M1.946 9.315c-.522-.174-.527-.455.01-.634l19.087-6.362c.529-.176.832.12.684.638l-5.454 19.086c-.15.529-.455.547-.679.045L12 14l6-8-8 6-8.054-2.685z"></path>
+                    </svg>
+                  </div>
+                </div>
+                <span>ทักแชท</span>
+             </a>
           </div>
         </div>
         {% empty %}
-          <div class="col-span-full flex flex-col items-center justify-center py-16 bg-white rounded-2xl border-2 border-dashed border-gray-200">
-            <div class="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center text-3xl mb-3">🔍</div>
+          <div class="col-span-full flex flex-col items-center justify-center py-16 neu-card text-center">
+            <div class="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-4 shadow-inner">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+            </div>
             <p class="text-gray-500 font-medium">คุณยังไม่ได้ส่งคำขอรับเลี้ยง</p>
-            <a href="{% url 'adoption_list' %}" class="mt-2 text-sm text-orange-600 hover:underline">ไปดูน้องๆ ที่หาบ้าน</a>
+            <a href="{% url 'adoption_list' %}" class="mt-2 text-sm font-bold text-orange-600 hover:underline">ไปดูน้องๆ ที่หาบ้าน</a>
           </div>
         {% endfor %}
       </div>
