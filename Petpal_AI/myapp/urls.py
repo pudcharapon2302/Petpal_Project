@@ -1,7 +1,7 @@
 from django.urls import path
 from django.contrib.auth.views import LoginView, LogoutView
 from django.contrib.auth import views as auth_views
-from .views import Landing_Page, account_delete, add_comment, adoption_requests_list, chat_api, delete_post, generate_poster, my_posts_list, pet_add, pet_create, pet_delete, pet_detail, pet_edit, pet_report_edit, profile_page, profile_update, register , adoption_list_view, lost_list_view, pet_report_create, renew_post , report_select_category , foundation_list_view , cat_list_view, dog_list_view, post_detail_view, send_adoption_request, chat_room, toggle_post_status, train_ai_basic, update_adoption_status , ai_chat_page
+from .views import Landing_Page, account_delete, add_comment, adoption_requests_list, api_generate_description, chat_api, delete_post, generate_poster, my_posts_list, pet_add, pet_create, pet_delete, pet_detail, pet_edit, pet_report_edit, profile_page, profile_update, register , adoption_list_view, lost_list_view, pet_report_create, renew_post , report_select_category , foundation_list_view , cat_list_view, dog_list_view, post_detail_view, send_adoption_request, chat_room, toggle_post_status, train_ai_basic, update_adoption_status , ai_chat_page
 
 urlpatterns = [
     path('', Landing_Page, name='landing'),
@@ -89,4 +89,6 @@ urlpatterns = [
     path('accounts/reset/done/', 
          auth_views.PasswordResetCompleteView.as_view(template_name='myapp/registration/password_reset_complete.html'),
          name='password_reset_complete'),
+
+     path('api/generate-desc/', api_generate_description, name='api_generate_desc'),
 ]

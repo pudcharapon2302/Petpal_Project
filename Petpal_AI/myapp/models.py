@@ -249,7 +249,8 @@ class AdoptionRequest(models.Model):
         PENDING = 'PENDING', 'รอการตอบรับ'
         APPROVED = 'APPROVED', 'อนุมัติให้รับเลี้ยง'
         REJECTED = 'REJECTED', 'ปฏิเสธ'
-
+        
+    is_read = models.BooleanField(default=False)
     post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name="adoption_requests")
     requester = models.ForeignKey(User, on_delete=models.CASCADE, related_name="my_requests")
     message = models.TextField(blank=True, null=True) 

@@ -114,12 +114,17 @@ def profile_page(request):
     profile, _ = Profile.objects.get_or_create(user=request.user)
     pets = Pet.objects.filter(owner=request.user, status='OWNED').order_by("-id")
     animals = Animal.objects.all().order_by("species", "breed")
-    adoption_notifications = AdoptionRequest.objects.filter(post__user=request.user).select_related('requester', 'post', 'post__pet')
+    
+    adoption_notifications = AdoptionRequest.objects.filter(
+        post__user=request.user, 
+        is_read=False
+    ).select_related('requester', 'post', 'post__pet')
+
     return render(request, "myapp/profile.html", {
         "profile": profile, 
         "pets": pets, 
         "animals": animals,
-        "adoption_notifications": adoption_notifications # <-- ส่งไปหน้าเว็บ
+        "adoption_notifications": adoption_notifications 
     })
 
 @require_POST
@@ -406,22 +411,22 @@ def foundation_list_view(request):
 
 def cat_list_view(request):
     query = request.GET.get('q', '')
+    post_type_filter = request.GET.get('type', 'ADOPTION') 
 
-    # 1. เปลี่ยนชื่อตัวแปรจาก posts เป็น cat_posts ให้ชัดเจน
     cat_posts = Post.objects.filter(
-        post_type='ADOPTION', 
+        post_type=post_type_filter,
         is_active=True,
-        pet__animal__species__iexact='CAT' # หรือ 'แมว' แล้วแต่ Database คุณเก็บ
+        pet__animal__species__iexact='CAT'
     ).select_related('pet', 'pet__animal').order_by('-created_at')
 
-    # 2. ส่ง cat_posts ที่ได้มา เข้าไปกรอง
-    # (ลบบรรทัด dog_posts = ... ทิ้งไป เพราะหน้านี้แสดงแค่แมว)
     cat_posts = filter_posts(cat_posts, request)
 
+    page_title = 'น้องแมวหาบ้าน' if post_type_filter == 'ADOPTION' else 'รวมประกาศแมวหาย'
+
     context = {
-        'cat_posts': cat_posts, # ส่งตัวแปรที่กรองแล้วไป
-        'dog_posts': [],        # หมาเป็น list ว่าง
-        'page_title': 'น้องแมวหาบ้าน',
+        'cat_posts': cat_posts,
+        'dog_posts': [],
+        'page_title': page_title,
         'page_type': 'cats_only',
         'search_query': query
     }
@@ -429,27 +434,26 @@ def cat_list_view(request):
 
 def dog_list_view(request):
     query = request.GET.get('q', '')
+    post_type_filter = request.GET.get('type', 'ADOPTION')
 
-    # 1. เปลี่ยนชื่อตัวแปรจาก posts เป็น dog_posts
     dog_posts = Post.objects.filter(
-        post_type='ADOPTION', 
+        post_type=post_type_filter,
         is_active=True,
         pet__animal__species__iexact='DOG'
     ).select_related('pet', 'pet__animal').order_by('-created_at')
 
-    # 2. ส่ง dog_posts ที่ได้มา เข้าไปกรอง
-    # (ลบบรรทัด cat_posts = ... ทิ้งไป)
     dog_posts = filter_posts(dog_posts, request)
 
+    page_title = 'น้องหมาหาบ้าน' if post_type_filter == 'ADOPTION' else 'รวมประกาศสุนัขหาย'
+
     context = {
-        'dog_posts': dog_posts, # ส่งตัวแปรที่กรองแล้วไป
-        'cat_posts': [],        # แมวเป็น list ว่าง
-        'page_title': 'น้องหมาหาบ้าน',
+        'dog_posts': dog_posts,
+        'cat_posts': [],
+        'page_title': page_title,
         'page_type': 'dogs_only',
         'search_query': query
     }
     return render(request, 'myapp/pet_list.html', context)
-
 @login_required
 def post_detail_view(request, pk):
     # ดึง Post 1 ชิ้น โดยใช้ pk (ID) จาก URL
@@ -510,6 +514,10 @@ def adoption_requests_list(request):
         .select_related('requester', 'post', 'post__pet')\
         .order_by('-created_at')
     
+    unread_items = received_requests.filter(is_read=False)
+    if unread_items.exists():
+        unread_items.update(is_read=True)
+
     sent_requests = AdoptionRequest.objects.filter(requester=request.user)\
         .select_related('post__user', 'post', 'post__pet')\
         .order_by('-created_at')
@@ -795,3 +803,28 @@ def filter_posts(queryset, request):
         queryset = queryset.filter(province__icontains=province)
 
     return queryset
+
+@login_required
+def api_generate_description(request):
+    if request.method == "POST":
+        user_prompt = request.POST.get('prompt', '')
+        pet_name = request.POST.get('pet_name', 'น้อง')
+        breed = request.POST.get('animal', 'ไม่ระบุ')
+        image = request.FILES.get('image')
+        
+        post_type = request.POST.get('post_type', 'ADOPTION') 
+
+        if not user_prompt and not image:
+            return JsonResponse({'error': 'กรุณาพิมพ์ข้อมูลหรือแนบรูปภาพ'}, status=400)
+
+        generated_text = rag_service.generate_creative_description(
+            user_prompt=user_prompt,
+            pet_name=pet_name,
+            breed=breed,
+            image_field=image,
+            post_type=post_type
+        )
+        
+        return JsonResponse({'text': generated_text})
+    
+    return JsonResponse({'error': 'Method not allowed'}, status=405)

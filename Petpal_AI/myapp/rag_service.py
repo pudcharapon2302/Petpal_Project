@@ -2,10 +2,12 @@ import os
 import chromadb
 from django.conf import settings
 from langchain_huggingface import HuggingFaceEmbeddings
-from langchain_google_genai import GoogleGenerativeAI
+from langchain_google_genai import GoogleGenerativeAI, ChatGoogleGenerativeAI
+from langchain_core.messages import HumanMessage
 from langchain_chroma import Chroma
 from langchain_core.documents import Document
 from dotenv import load_dotenv
+import base64
 
 load_dotenv()
 
@@ -29,9 +31,15 @@ class RAGService:
                 google_api_key=self.api_key,
                 temperature=0.7
             )
+            self.vision_model = ChatGoogleGenerativeAI(
+                model="gemini-2.5-flash",
+                google_api_key=self.api_key,
+                temperature=0.3
+            )
         else:
             print(" Warning: GOOGLE_API_KEY not found.")
             self.llm = None
+            self.vision_model = None
 
         # 3. เชื่อมต่อ ChromaDB
         try:
@@ -83,7 +91,7 @@ class RAGService:
             embedding = self.embeddings.embed_query(content)
 
             # บันทึกลง ChromaDB พร้อม Metadata "public"
-            self.collection.add(
+            self.collection.upsert(
                 documents=[content],
                 embeddings=[embedding],
                 metadatas=[{
@@ -101,12 +109,9 @@ class RAGService:
     def add_pet_to_rag(self, pet):
         """ เพิ่มข้อมูลสัตว์เลี้ยงส่วนตัวลงใน AI Memory """
         try:
-            # ✅ เพิ่มการเช็กตรงนี้: ถ้าสถานะไม่ใช่ 'OWNED' ให้จบฟังก์ชันเลย (ไม่ต้องจำ)
-            # (พวกประกาศ Lost/Adoption จะถูกเก็บใน add_post_to_rag อยู่แล้ว)
             if getattr(pet, 'status', 'OWNED') != 'OWNED':
                 return
 
-            # --- (โค้ดดึงวัคซีน/ภูมิแพ้ แบบเดิมที่คุณมี) ---
             vaccines_qs = getattr(pet, 'vaccine_records', None)
             if vaccines_qs is None:
                 vaccines_qs = getattr(pet, 'vaccine_record_set', None)
@@ -126,12 +131,12 @@ class RAGService:
                 allergies = "ไม่มีข้อมูล"
             # -----------------------------------------------
 
+
             content = f"""
             (ข้อมูลสัตว์เลี้ยงส่วนตัว)
             ชื่อ: {pet.name}
             พันธุ์: {pet.animal.breed if pet.animal else 'ไม่ระบุ'}
             เพศ: {pet.get_gender_display()}
-            วันเกิด: {pet.birth_date}
             ประวัติวัคซีน: {vaccines}
             ประวัติการแพ้: {allergies}
             เจ้าของ: {pet.owner.first_name or pet.owner.username}
@@ -139,7 +144,7 @@ class RAGService:
 
             embedding = self.embeddings.embed_query(content)
 
-            self.collection.add(
+            self.collection.upsert(
                 documents=[content],
                 embeddings=[embedding],
                 metadatas=[{
@@ -154,6 +159,69 @@ class RAGService:
         except Exception as e:
             print(f"❌ Error adding pet {pet.name}: {e}")
 
+    def generate_creative_description(self, user_prompt, pet_name, breed, post_type, image_field=None):
+        """ 
+        ผสมผสาน User Prompt + AI Vision เพื่อเขียนคำบรรยาย 
+        """
+        if not self.vision_model: # ใช้ vision_model ที่เราประกาศไว้รอบที่แล้ว
+            return "ระบบ AI ไม่พร้อมใช้งาน (API Key Missing)"
+
+        # 1. เตรียมรูปภาพ (ถ้ามี)
+        image_part = None
+        if image_field:
+            try:
+                import base64
+                image_path = image_field.path if hasattr(image_field, 'path') else image_field
+                # กรณีรับมาจาก InMemoryUploadedFile (ตอนยังไม่ Save ลง Disk)
+                if hasattr(image_field, 'read'): 
+                    image_field.seek(0)
+                    image_data = base64.b64encode(image_field.read()).decode("utf-8")
+                else:
+                    with open(image_path, "rb") as img:
+                        image_data = base64.b64encode(img.read()).decode("utf-8")
+                
+                image_part = {"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{image_data}"}}
+            except Exception as e:
+                print(f"Image Error: {e}")
+
+        if post_type == 'LOST':
+            role_desc = "ผู้ช่วยเขียนประกาศตามหาสัตว์เลี้ยงหาย"
+            tone_desc = "เร่งด่วน, ขอความช่วยเหลือ, เห็นใจ, ชัดเจน"
+            objective = "เน้นจุดสังเกตตำหนิที่ชัดเจนที่สุด เพื่อให้คนช่วยมองหา"
+        else: # ADOPTION
+            role_desc = "นักเขียนประกาศหาบ้านให้สัตว์เลี้ยง"
+            tone_desc = "น่ารัก, ขี้อ้อน, อบอุ่น, เชิญชวน"
+            objective = "บรรยายความน่ารักและนิสัย เพื่อให้คนอยากรับไปเลี้ยง"
+
+        # 2. สร้าง Prompt
+        prompt_text = f"""
+        คุณคือ: {role_desc}
+        
+        ข้อมูลสัตว์เลี้ยง:
+        - ชื่อ: {pet_name} ({breed})
+        - ข้อมูลจากเจ้าของ: "{user_prompt}"
+        - บริบท: {objective}
+        
+        คำสั่ง:
+        1. ดูรูปภาพประกอบ (ถ้ามี) เพื่อบรรยายลักษณะกายภาพ (สีขน, ลวดลาย, ปลอกคอ)
+        2. เขียนคำบรรยายโดยใช้น้ำเสียงแบบ: {tone_desc}
+        3. เรียบเรียงให้สั้นกระชับ (3-5 บรรทัด) ภาษาไทยธรรมชาติ
+        4. ใส่ Emoji ให้เหมาะสมกับอารมณ์ของประกาศ
+        5. หากไม่ได้บอกชื่อน้อง {pet_name} ใช้คำว่า "น้อง" แทน
+        """
+
+        content_parts = [{"type": "text", "text": prompt_text}]
+        if image_part:
+            content_parts.append(image_part)
+
+        message = HumanMessage(content=content_parts)
+
+        try:
+            response = self.vision_model.invoke([message])
+            return response.content
+        except Exception as e:
+            return f"เกิดข้อผิดพลาด: {str(e)}"
+        
     def ask_ai(self, user_query, user=None, history=[]):
         user_id = user.id if user and user.is_authenticated else 'Guest'
         print(f"DEBUG: กำลังค้นหาข้อมูลให้ User ID: {user_id}")
@@ -211,7 +279,7 @@ class RAGService:
 
             # 2. สร้าง Prompt ส่งให้ Gemini
             prompt = f"""
-            คุณคือ 'Petpal AI' ผู้ช่วยอัจฉริยะสำหรับคนรักสัตว์ คุณมีนิสัยร่าเริง สุภาพ และขี้เล่นนิดๆ
+            คุณคือ 'Petpal AI' ผู้ช่วยอัจฉริยะสำหรับคนรักสัตว์ คุณมีนิสัยร่าเริง สุภาพ และขี้เล่นนิดๆ พูดจาเหมือนเพื่อนที่รักสัตว์ด้วยกัน พูดจาไพเราะเสมอ คุณเป็นผู้หญิง
 
             ประวัติการสนทนาล่าสุด:
             {history_text}
