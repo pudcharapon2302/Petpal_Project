@@ -4,156 +4,362 @@
 <html lang="th">
 <head>
     <meta charset="UTF-8">
-    <title>ประกาศตามหา {{ post.pet.name }}</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;600;800;900&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>โปสเตอร์ {{ post.post_type_display }} - {{ post.pet.name }}</title>
+    {% tailwind_css %}
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;800&display=swap" rel="stylesheet">
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    
     <style>
-        @page { size: A4; margin: 0; }
+        /* --- ตั้งค่า Font และตัวแปรสี --- */
+        body { font-family: 'Sarabun', sans-serif; }
+
+        {% if post.post_type == 'LOST' %}
+            :root {
+                --theme-color: #dc2626; /* แดงเข้ม */
+                --theme-light: #fee2e2; /* แดงอ่อน */
+            }
+        {% else %}
+            :root {
+                --theme-color: #ea580c; /* ส้มเข้ม */
+                --theme-light: #ffedd5; /* ส้มอ่อน */
+            }
+        {% endif %}
+
+        /* ================= SCREEN VIEW (มุมมองหน้าจอปกติ) ================= */
         body { 
-            font-family: 'Kanit', sans-serif; 
-            -webkit-print-color-adjust: exact !important; 
-            print-color-adjust: exact !important;
-            background-color: #e5e7eb;
-        }
-        .page {
-            width: 210mm;
-            height: 296mm;
-            background: white;
-            position: relative;
-            overflow: hidden;
-            margin: 20px auto;
-            box-shadow: 0 0 20px rgba(0,0,0,0.2);
+            background-color: #374151; 
+            min-height: 100vh;
             display: flex;
             flex-direction: column;
+            align-items: center;
+            justify-content: flex-start; /* ให้เริ่มแสดงจากด้านบน */
+            padding: 20px;
+            /* ✅ แก้ไข 1: เพิ่มพื้นที่ด้านล่างสำหรับปุ่มควบคุม ไม่ให้บังโปสเตอร์ */
+            padding-bottom: 100px; 
+            overflow-y: auto; /* ยอมให้ scroll ได้ถ้าโปสเตอร์ล้นจอ */
         }
-        @media print {
-            body { background: none; margin: 0; }
-            .page { margin: 0; width: 210mm; height: 296mm; box-shadow: none; page-break-after: always; border: none; }
-            .no-print { display: none !important; }
-        }
-        
-        /* เส้นประตกแต่ง */
-        .dashed-line {
-            background-image: linear-gradient(to right, #f97316 50%, rgba(255,255,255,0) 0%);
-            background-position: bottom;
-            background-size: 20px 4px;
-            background-repeat: repeat-x;
-            height: 4px;
+
+        .poster-wrapper {
+            background: white;
             width: 100%;
+            /* ✅ แก้ไข 2: จำกัดความกว้าง และให้สูงตามสัดส่วน A4 แทนการฟิกซ์ height */
+            max-width: 800px; 
+            aspect-ratio: 210/297; 
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            position: relative;
+            margin: auto; /* จัดกึ่งกลาง */
+            display: flex;
+            flex-direction: column;
+            /* overflow: hidden; <-- เอาออก เพื่อให้เห็นส่วนที่เกิน */
         }
+
+        /* ================= PRINT VIEW (มุมมองตอนสั่งพิมพ์/PDF) ================= */
+        @media print {
+            @page { 
+                size: A4; 
+                margin: 0; /* ขอบกระดาษเป็น 0 */
+            }
+            
+            html, body {
+                /* ✅ แก้ไข 3: บังคับให้พอดี 1 หน้ากระดาษ */
+                height: 100% !important;
+                width: 100% !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                background: none; 
+                display: block; 
+                -webkit-print-color-adjust: exact; 
+                print-color-adjust: exact;
+                overflow: hidden !important; /* ป้องกันส่วนเกินหลุดไปหน้าที่ 2 */
+            }
+
+            /* ซ่อนปุ่มกดและ UI อื่นๆ */
+            .no-print, .controls-bar { 
+                display: none !important; 
+            }
+
+            /* ขยายโปสเตอร์ให้เต็มกระดาษ A4 */
+            .poster-wrapper {
+                width: 100% !important;
+                height: 100% !important;
+                max-width: none !important;
+                aspect-ratio: auto !important;
+                box-shadow: none;
+                margin: 0;
+                position: static;
+                page-break-after: avoid;
+            }
+        }
+
+        /* --- Styles เดิมของโปสเตอร์ --- */
+        .poster-container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1; /* ให้ขยายเต็ม wrapper */
+        }
+
+        .poster-header {
+            background-color: var(--theme-color);
+            color: white;
+            padding: 3% 2%; /* ลด padding นิดหน่อย */
+            text-align: center;
+            flex-shrink: 0;
+        }
+        .header-title {
+            font-size: 3.5cqh; 
+            font-weight: 800;
+            line-height: 1;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        @media (max-width: 1000px) { .header-title { font-size: 1.8rem; } }
+
+        .header-subtitle {
+            font-size: 1.5cqh;
+            font-weight: 600;
+            margin-top: 0.5em;
+            opacity: 0.95;
+        }
+
+        .image-section {
+            padding: 2%; /* ลด padding นิดหน่อย */
+            background-color: var(--theme-light);
+            flex-grow: 1; 
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 30%; /* กำหนดความสูงขั้นต่ำให้ส่วนรูปภาพ */
+        }
+        .pet-image-frame {
+            width: 90%;
+            height: auto;
+            aspect-ratio: 4/3; /* กำหนดสัดส่วนกรอบรูป */
+            max-height: 45vh;
+            border: 6px solid var(--theme-color);
+            background-color: #d1d5db;
+            overflow: hidden;
+            position: relative;
+        }
+        .pet-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block; 
+        }
+
+        .info-section {
+            padding: 2% 5%; /* ลด padding */
+            text-align: center;
+            background: white;
+            flex-shrink: 0;
+        }
+        .pet-name {
+            font-size: 4cqh;
+            font-weight: 800;
+            color: #1f2937;
+            line-height: 1.1;
+            margin-bottom: 0.2em;
+        }
+        .pet-details {
+            font-size: 1.8cqh;
+            color: #4b5563;
+            font-weight: 600;
+            background: #f3f4f6;
+            display: inline-block;
+            padding: 0.2em 1em;
+            border-radius: 99px;
+        }
+
+        {% if post.post_type == 'LOST' and post.reward_amount %}
+        .reward-container {
+            margin-top: 0.5em;
+            background-color: var(--theme-color);
+            color: white;
+            display: inline-block;
+            padding: 0.5em 2em;
+            border-radius: 0.5em;
+            transform: rotate(-2deg);
+        }
+        .reward-label { font-size: 1.2cqh; font-weight: 600; text-transform: uppercase; }
+        .reward-value { font-size: 3cqh; font-weight: 800; line-height: 1; }
+        {% endif %}
+
+        .details-grid {
+            display: grid;
+            grid-template-cols: 1fr 1fr;
+            gap: 0.8em; /* ลด gap */
+            margin-top: 1em;
+            text-align: left;
+            padding: 1em;
+            background-color: #fff7ed;
+            border: 2px dashed var(--theme-color);
+            border-radius: 1em;
+        }
+        .detail-block h3 {
+            font-size: 1.2cqh;
+            font-weight: 800;
+            color: #6b7280;
+            display: flex;
+            align-items: center;
+            gap: 0.5em;
+        }
+        .detail-block p {
+            font-size: 1.6cqh;
+            font-weight: 700;
+            color: #1f2937;
+            line-height: 1.3;
+        }
+        .description-block { grid-column: span 2; border-top: 1px solid #e5e7eb; padding-top: 0.5em; margin-top: 0.5em; }
+        .description-block p { font-weight: 500; color: #4b5563; }
+
+        .poster-footer {
+            background-color: #1f2937;
+            color: white;
+            padding: 2% 5%;
+            margin-top: auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-top: 6px solid var(--theme-color);
+            flex-shrink: 0; /* ห้ามหดส่วน footer */
+        }
+        .footer-left { text-align: left; flex-grow: 1; }
+        .footer-label { font-size: 1.4cqh; font-weight: 500; opacity: 0.8; margin-bottom: 0.2em; text-transform: uppercase; letter-spacing: 1px; }
+        .contact-phone { font-size: 4.5cqh; font-weight: 800; line-height: 1; letter-spacing: 0.05em; color: var(--theme-color); text-shadow: 0 2px 4px rgba(0,0,0,0.3); }
+        .contact-social { font-size: 1.4cqh; margin-top: 0.5em; display: flex; align-items: center; gap: 1em; }
+        .footer-right { background: white; padding: 5px; border-radius: 8px; flex-shrink: 0; margin-left: 20px; }
+        #qrcode img { display: block; }
     </style>
 </head>
 <body>
 
-    <div class="fixed top-4 right-4 no-print flex gap-2 z-50">
-        <button onclick="window.print()" class="bg-gray-900 text-white px-6 py-3 rounded-full shadow-lg font-bold hover:bg-black transition flex items-center gap-2 border-2 border-white">
-            🖨️ สั่งพิมพ์
+    <div class="poster-wrapper" style="container-type: size;">
+        <div class="poster-container">
+            
+            <header class="poster-header">
+                <h1 class="header-title">
+                    {% if post.post_type == 'LOST' %}
+                        ประกาศตามหาสัตว์หาย
+                    {% else %}
+                        ประกาศหาบ้านใหม่
+                    {% endif %}
+                </h1>
+                <p class="header-subtitle">
+                    {% if post.post_type == 'LOST' %}
+                        ใครพบเห็นโปรดแจ้งด่วน
+                    {% else %}
+                        น้องกำลังรอครอบครัวที่อบอุ่น
+                    {% endif %}
+                </p>
+            </header>
+
+            <section class="image-section">
+                <div class="pet-image-frame">
+                    {% if post.pet.image %}
+                        <img src="{{ post.pet.image.url }}" alt="{{ post.pet.name }}" class="pet-image">
+                    {% else %}
+                        <div class="w-full h-full flex items-center justify-center text-gray-500 font-bold text-2xl bg-gray-200">
+                            NO IMAGE
+                        </div>
+                    {% endif %}
+                </div>
+            </section>
+
+            <section class="info-section">
+                <h2 class="pet-name">น้อง{{ post.pet.name }}</h2>
+                <div class="pet-details">
+                    พันธุ์: {{ post.pet.animal.breed|default:"ไม่ระบุ" }} | เพศ: {{ post.pet.get_gender_display }}
+                </div>
+
+                {% if post.post_type == 'LOST' and post.reward_amount %}
+                <div class="reward-container">
+                    <div class="reward-label">รางวัลนำจับ</div>
+                    <div class="reward-value">{{ post.reward_amount|floatformat:0 }} บาท</div>
+                </div>
+                {% endif %}
+
+                <div class="details-grid">
+                    <div class="detail-block">
+                        <h3><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg> {% if post.post_type == 'LOST' %}วันที่หาย{% else %}วันที่ลงประกาศ{% endif %}</h3>
+                        <p>
+                            {% if post.post_type == 'LOST' %}
+                                {{ post.created_at|date:"d M Y" }}
+                            {% else %}
+                                {{ post.created_at|date:"d M Y" }}
+                            {% endif %}
+                        </p>
+                    </div>
+                    <div class="detail-block">
+                        <h3><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg> {% if post.post_type == 'LOST' %}บริเวณที่หาย{% else %}พิกัดปัจจุบัน{% endif %}</h3>
+                        <p>
+                            {% if post.post_type == 'LOST' and post.lost_location %}
+                                {{ post.tambon }} {{ post.amphoe }}<br>จ.{{ post.province }}
+                            {% else %}
+                                {{ post.tambon }} {{ post.amphoe }}<br>จ.{{ post.province }}
+                            {% endif %}
+                        </p>
+                    </div>
+                    {% if post.description %}
+                    <div class="detail-block description-block">
+                        <h3>จุดสังเกต / รายละเอียดเพิ่มเติม</h3>
+                        <p>{{ post.description|truncatechars:120 }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </section>
+
+            <footer class="poster-footer">
+                <div class="footer-left">
+                    <p class="footer-label">พบเห็นโปรดติดต่อ (24 ชม.)</p>
+                    <div class="flex items-end gap-4">
+                        <div>
+                            <div class="text-xs opacity-70 mb-1">เบอร์โทรศัพท์</div>
+                            <h2 class="contact-phone">{{ post.contact_phone }}</h2>
+                        </div>
+                        <div class="mb-2">
+                            {% if post.contact_social %}
+                            <div class="text-xs opacity-70">Line / Social Media</div>
+                            <div class="font-bold text-lg">{{ post.contact_social }}</div>
+                            {% endif %}
+                            <div class="text-xs opacity-70 mt-1">ผู้ติดต่อ: {{ post.pet.owner.first_name|default:post.pet.owner.username }}</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="footer-right">
+                    <div id="qrcode"></div>
+                </div>
+            </footer>
+        </div>
+    </div>
+
+    <div class="controls-bar no-print fixed bottom-0 left-0 w-full bg-white/90 backdrop-blur border-t p-4 flex justify-center gap-4 shadow-lg z-50">
+        
+        <button onclick="window.print()" 
+            class="px-8 py-2 {% if post.post_type == 'LOST' %}bg-red-600 hover:bg-red-700{% else %}bg-orange-600 hover:bg-orange-700{% endif %} text-white rounded-lg font-bold shadow-md transition flex items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2.4-9h6m-6 0h6m-6 0a2 2 0 100 4h6a2 2 0 100-4M9 21H5a2 2 0 01-2-2v-5a2 2 0 012-2h14a2 2 0 012 2v5a2 2 0 01-2 2h-9m0-3h6m-6 0a2 2 0 100 4h6a2 2 0 100-4M9 21V9a2 2 0 012-2h2a2 2 0 012 2v12" /></svg>
+            พิมพ์ / บันทึก PDF
         </button>
     </div>
 
-    <div class="page">
-        
-        <div class="bg-orange-600 text-white pt-6 pb-10 px-8 relative overflow-hidden shrink-0">
-            <div class="absolute top-4 left-6 border-2 border-white rounded-[50%] px-4 py-0.5 transform -rotate-6 opacity-80">
-                <span class="text-lg font-bold tracking-widest">SOS</span>
-            </div>
-            <div class="absolute top-4 right-6 border-2 border-white rounded-[50%] px-4 py-0.5 transform rotate-6 opacity-80">
-                <span class="text-lg font-bold tracking-widest">SOS</span>
-            </div>
-            
-            <div class="text-center relative z-10">
-                <h2 class="text-2xl font-bold mb-[-5px] tracking-widest opacity-90">ช่วยด้วย!</h2>
-                <h1 class="text-[110px] leading-[0.85] font-black uppercase tracking-tighter drop-shadow-md">
-                    {{ post.post_type_display|default:"ตามหา !" }}
-                </h1>
-            </div>
-            
-            <div class="absolute -bottom-12 left-[-10%] right-[-10%] h-24 bg-white rounded-[50%]"></div>
-        </div>
-
-        <div class="relative px-8 -mt-8 text-center flex justify-center shrink-0">
-            
-            <div class="relative z-10 w-full max-w-[450px]"> <div class="absolute -top-6 left-1/2 transform -translate-x-1/2 z-20 w-max">
-                    <div class="inline-block bg-gray-900 text-white px-8 py-2 rounded-full shadow-xl border-4 border-white transform -rotate-1">
-                        <h3 class="text-3xl font-black tracking-wide">น้อง {{ post.pet.name }}</h3>
-                    </div>
-                </div>
-
-                <div class="rounded-3xl overflow-hidden border-[6px] border-white shadow-xl aspect-square bg-gray-200">
-                    {% if post.pet.image %}
-                        <img src="{{ post.pet.image.url }}" class="w-full h-full object-cover">
-                    {% else %}
-                        <div class="w-full h-full flex items-center justify-center text-gray-400 font-bold text-2xl">NO IMAGE</div>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
-
-        <div class="flex-1 px-12 pt-6 pb-4 flex flex-col justify-start mt-4">
-            
-            <div class="flex justify-between items-start mb-6">
-                <div class="w-[55%] text-left border-l-8 border-orange-500 pl-5 py-2">
-                    <div class="mb-5">
-                        <p class="text-gray-500 font-bold text-base uppercase flex items-center gap-1 mb-1">
-                            <svg class="w-5 h-5 text-orange-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"/></svg>
-                            หายจากบริเวณ
-                        </p>
-                        <p class="text-4xl font-black text-gray-900 leading-tight">
-                            {{ post.lost_location|default:"ไม่ระบุ" }}
-                        </p>
-                    </div>
-                    <div>
-                        <p class="text-gray-500 font-bold text-base uppercase mb-1">วันที่ / เวลา</p>
-                        <p class="text-3xl font-bold text-gray-800">
-                            {{ post.lost_date|date:"j F Y" }}
-                        </p>
-                    </div>
-                </div>
-
-                <div class="w-[40%] bg-orange-100 p-5 rounded-2xl border-2 border-orange-200 text-center transform rotate-1 shadow-sm self-center">
-                    <h4 class="text-2xl font-black text-orange-800 leading-tight mb-2">
-                        ถ้าหาก<br>พบเห็น<br>โปรดติดต่อ
-                    </h4>
-                    <div class="text-5xl"></div>
-                </div>
-            </div>
-            
-            <div class="dashed-line mb-6 opacity-50"></div>
-
-            <div class="text-center px-4">
-                <p class="text-2xl font-bold text-gray-800 mb-2 bg-gray-100 inline-block px-4 py-1 rounded-full">
-                    {{ post.pet.get_gender_display }}  •  {{ post.pet.animal.breed|default:"ไม่ระบุพันธุ์" }}
-                </p>
-                <p class="text-2xl font-medium text-gray-600 leading-normal mt-2">
-                    "{{ post.description|default:"-"|truncatechars:150 }}"
-                </p>
-            </div>
-
-        </div>
-
-        <div class="px-8 pb-8 shrink-0">
-            <div class="bg-white border-[4px] border-orange-600 rounded-2xl p-5 shadow-lg relative overflow-hidden">
-                <div class="absolute top-0 right-0 w-40 h-full bg-orange-100 transform skew-x-12 translate-x-10"></div>
-                
-                <div class="relative z-10 flex items-center justify-between px-2">
-                    <div class="text-left">
-                        <p class="text-base font-semibold text-orange-600 uppercase tracking-widest mb-1">CONTACT</p>
-                        <h2 class="text-[5rem] font-light leading-none font-black text-gray-900 tracking-tighter">
-                            {{ post.contact_phone }}
-                        </h2>
-                    </div>
-                    <div class="bg-white p-1 border-2 border-gray-200 rounded-xl shadow-sm">
-                        <img src="{{ qr_code_url }}" alt="QR" class="w-24 h-24 object-contain">
-                    </div>
-                </div>
-            </div>
-            
-            <p class="text-center text-gray-500 font-bold mt-4 text-sm uppercase tracking-widest">
-                THANK YOU FOR YOUR HELP
-            </p>
-        </div>
-
-    </div>
+    <script>
+        // สร้าง QR Code อัตโนมัติเมื่อโหลดหน้า
+        window.onload = function() {
+            const currentUrl = window.location.href;
+            new QRCode(document.getElementById("qrcode"), {
+                text: currentUrl,
+                width: 90,
+                height: 90,
+                colorDark : "#000000",
+                colorLight : "#ffffff",
+                correctLevel : QRCode.CorrectLevel.H
+            });
+        };
+    </script>
 
 </body>
 </html>

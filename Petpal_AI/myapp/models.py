@@ -157,7 +157,8 @@ class Post(models.Model):
 
     pet = models.ForeignKey(Pet, on_delete=models.CASCADE, related_name="posts")
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="posts")
-
+    birth_date = models.DateField(null=True, blank=True, verbose_name="วันเกิด (ประมาณ)")
+    
     province = models.CharField(max_length=100, blank=True, null=True, verbose_name="จังหวัด")
     amphoe = models.CharField(max_length=100, blank=True, null=True, verbose_name="อำเภอ/เขต")
     tambon = models.CharField(max_length=100, blank=True, null=True, verbose_name="ตำบล/แขวง")

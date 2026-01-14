@@ -63,45 +63,52 @@ class RAGService:
             self.collection = None
 
     def add_post_to_rag(self, post):
-        """ เพิ่มโพสต์สาธารณะลงใน AI Memory """
+        """ เพิ่มโพสต์สาธารณะลงใน AI Memory พร้อมวิเคราะห์รูปภาพ """
         try:
-            # สร้างข้อความที่อยู่
+            # 1. ให้ AI Vision ช่วยดูรูป (ถ้ามี)
+            visual_tags = ""
+            if post.pet.image:
+                print(f" Analyzing image for post {post.id}...")
+                visual_tags = self.analyze_pet_image(post.pet.image)
+
+            # 2. เตรียมข้อมูล (เพิ่ม visual_tags เข้าไป)
             location_parts = [
                 post.tambon, 
                 post.amphoe, 
                 f"จ.{post.province}" if post.province else None
             ]
             location_text = " ".join(filter(None, location_parts)) or "ไม่ระบุพิกัด"
-
-            # ดึงลิงก์ (ถ้ามี)
             url = getattr(post, 'ai_link', f"http://localhost:8000/post/{post.pk}/")
 
+            # รวมร่างข้อมูล (ใส่สิ่งที่ AI เห็นลงไปด้วย!)
             content = f"""
             (ประกาศสาธารณะ)
             ประเภท: {post.post_type}
             ชื่อน้อง: {post.pet.name}
             สายพันธุ์: {post.pet.animal.breed}
-            รายละเอียด: {post.description}
+            รายละเอียดจากเจ้าของ: {post.description}
+            
+            ลักษณะที่ AI มองเห็นจากรูปภาพ: {visual_tags} 
+            
             สถานที่: {location_text}
             เบอร์ติดต่อ: {post.contact_phone}
             👉 ลิงก์ดูรายละเอียด: {url}
             """
             
-            # Embed ข้อมูลเป็น Vector
+            # 3. Embed และ Save ตามเดิม
             embedding = self.embeddings.embed_query(content)
 
-            # บันทึกลง ChromaDB พร้อม Metadata "public"
             self.collection.upsert(
                 documents=[content],
                 embeddings=[embedding],
                 metadatas=[{
                     "source": "post", 
-                    "access": "public",   # 👈 ระบุว่าเป็นสาธารณะ
-                    "owner_id": "public"  # 👈 ID เจ้าของเป็น public
+                    "access": "public",
+                    "owner_id": "public"
                 }],
                 ids=[f"post_{post.id}"]
             )
-            print(f" Added Post {post.id} to AI memory.")
+            print(f" Added Post {post.id} to AI memory (with Vision).")
             
         except Exception as e:
              print(f" Error adding post: {e}")
@@ -154,10 +161,10 @@ class RAGService:
                 }],
                 ids=[f"pet_{pet.id}"]
             )
-            print(f"✅ Added Pet {pet.name} to AI memory.")
+            print(f" Added Pet {pet.name} to AI memory.")
 
         except Exception as e:
-            print(f"❌ Error adding pet {pet.name}: {e}")
+            print(f" Error adding pet {pet.name}: {e}")
 
     def generate_creative_description(self, user_prompt, pet_name, breed, post_type, image_field=None):
         """ 
@@ -221,7 +228,55 @@ class RAGService:
             return response.content
         except Exception as e:
             return f"เกิดข้อผิดพลาด: {str(e)}"
-        
+    
+    def analyze_pet_image(self, image_field):
+        """ ให้ AI ดูรูปแล้วบอกลักษณะเด่นออกมาเป็น Text เพื่อเอาไปทำ Index """
+        if not self.vision_model or not image_field:
+            return ""
+
+        try:
+            # แปลงรูปเป็น Base64 (รองรับทั้ง Path และ InMemory)
+            import base64
+            image_data = None
+            
+            # กรณีเป็นไฟล์ที่ Save ลง Disk แล้ว (มี path)
+            if hasattr(image_field, 'path') and os.path.exists(image_field.path):
+                with open(image_field.path, "rb") as img:
+                    image_data = base64.b64encode(img.read()).decode("utf-8")
+            # กรณีเป็น InMemory (เช่นตอน Test หรือยังไม่ Save)
+            elif hasattr(image_field, 'read'):
+                image_field.seek(0)
+                image_data = base64.b64encode(image_field.read()).decode("utf-8")
+            
+            if not image_data:
+                return ""
+
+            # Prompt สั่งให้ AI ดึง Key Visual ออกมา
+            prompt = """
+            จงวิเคราะห์รูปภาพสัตว์เลี้ยงนี้เพื่อใช้ในระบบค้นหา:
+            1. ระบุชนิดสัตว์ (หมา, แมว, ฯลฯ)
+            2. ระบุสีขนและลวดลายอย่างละเอียด (เช่น สีส้มลายสลิด, สีขาวดำลายวัว, สามสี)
+            3. ระบุลักษณะเด่น (เช่น หูพับ, หางกุด, ใส่ปลอกคอสีแดง, ตาบอดข้างหนึ่ง)
+            4. ไม่ต้องเขียนเป็นประโยคสวยงาม ขอแค่ Keyword สำคัญคั่นด้วย comma
+            ตัวอย่าง: "แมว, สีส้ม, ลายสลิด, หางยาว, ปลอกคอสีเขียว"
+            """
+
+            message = HumanMessage(
+                content=[
+                    {"type": "text", "text": prompt},
+                    {"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{image_data}"}}
+                ]
+            )
+            
+            # ส่งให้ Gemini Vision
+            response = self.vision_model.invoke([message])
+            print(f" AI Vision Analysis: {response.content}") # Debug ดูว่า AI เห็นอะไร
+            return response.content
+
+        except Exception as e:
+            print(f" Vision Analysis Failed: {e}")
+            return ""
+
     def ask_ai(self, user_query, user=None, history=[]):
         user_id = user.id if user and user.is_authenticated else 'Guest'
         print(f"DEBUG: กำลังค้นหาข้อมูลให้ User ID: {user_id}")
@@ -243,9 +298,6 @@ class RAGService:
             where_filter = {"access": "public"} # Default: เอาแค่ Public
 
             if user and user.is_authenticated:
-                # ถ้าล็อกอิน ให้หาของตัวเองได้ด้วย
-                # เนื่องจาก ChromaDB รุ่นฟรี (Local) อาจไม่รองรับ $or operator ที่ซับซ้อนในบาง version
-                # วิธีที่ปลอดภัยที่สุดคือดึงข้อมูล 2 รอบ แล้วมารวมกัน (Public + Private)
                 pass 
 
             try:
@@ -269,7 +321,7 @@ class RAGService:
 
                 if docs:
                     context_text = "\n".join(docs)
-                    # 🔥 ปริ้นท์ออกมาดูเลยว่า AI เห็นอะไรบ้าง (เช็กตรงนี้ใน Terminal)
+                    # ปริ้นท์ออกมาดูเลยว่า AI เห็นอะไรบ้าง (เช็กตรงนี้ใน Terminal)
                     print(f"---- AI Context ({len(docs)} docs) ----")
                     print(context_text)
                     print("------------------------------------------")
@@ -303,6 +355,7 @@ class RAGService:
             11. หากเป็นข้อมูลสัตว์เลี้ยงส่วนตัว ให้ใช้คำแทนตัวว่า "น้อง..." หรือชื่อของสัตว์เลี้ยง
             12. ⚠️ หากเป็นเรื่องอาการป่วย ให้แนะนำเบื้องต้นและย้ำว่า "ควรปรึกษาสัตวแพทย์" เสมอ
             13. หากไม่พบข้อมูล ให้ตอบว่า "ขอโทษด้วยครับ ผมไม่ข้อมูลเรื่องนี้ในระบบเลย" อย่างสุภาพ
+            14. ตอบสั้นๆ ไม่เกิน 3 ประโยค และ ไม่ต้องเอาลิงค์ดูรายละเอียดมาให้ แนะนำให้ผู้ใช้งานกดปุ่มเอไอเต็มจอแทน
             """
             
             # ให้ Gemini ตอบ
@@ -315,7 +368,7 @@ class RAGService:
             return "ขออภัย ระบบขัดข้องชั่วคราว"
 
     def ask_ai_stream(self, user_query, user=None, history=[]):
-        """ ฟังก์ชันสำหรับ Streaming Response (Generator) """
+        """ ฟังก์ชันสำหรับ Streaming Response (Generator) """    
         user_id = user.id if user and user.is_authenticated else 'Guest'
         
         # 1. เตรียม Context (ใช้ Logic เดียวกับ ask_ai เดิม)
@@ -348,7 +401,7 @@ class RAGService:
 
         # 3. สร้าง Prompt (เหมือนเดิม)
         prompt = f"""
-        คุณคือ 'Petpal AI' ผู้ช่วยอัจฉริยะสำหรับคนรักสัตว์ 
+        คุณคือ 'Petpal AI' ผู้ช่วยอัจฉริยะสำหรับคนรักสัตว์ คุณมีนิสัยร่าเริง สุภาพ และขี้เล่นนิดๆ พูดจาเหมือนเพื่อนที่รักสัตว์ด้วยกัน พูดจาไพเราะเสมอ คุณเป็นผู้หญิง
         
         📜 ประวัติการสนทนา:
         {history_text}

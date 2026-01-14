@@ -695,7 +695,6 @@ def chat_api(request):
             user_message = data.get('message', '')
             history = data.get('history', [])
 
-            # 1. เช็กก่อนว่ามีข้อความไหม ถ้าไม่มีให้ error เลย ไม่ต้องเรียก AI
             if not user_message:
                 return JsonResponse({'error': 'No message provided'}, status=400)
 
@@ -706,17 +705,10 @@ def chat_api(request):
                 response['X-Accel-Buffering'] = 'no'
                 return response
 
-            # ✅ กรณี 2: ถ้ามาจาก Widget หรืออื่นๆ -> ใช้ JSON แบบเดิม (รอจนเสร็จค่อยตอบ)
             else:
                 ai_response = rag_service.ask_ai(user_message, user=request.user, history=history)
                 return JsonResponse({'response': ai_response})
-
-            # 2. เรียก AI แค่รอบเดียว (ส่ง user ไปด้วย)
-            ai_response = rag_service.ask_ai(user_message, user=request.user, history=history)
-
-            # 3. ส่งคำตอบกลับ
-            return JsonResponse({'response': ai_response})
-
+            
         except Exception as e:
             print("Chat API error:", e)
             return JsonResponse({'error': str(e)}, status=500)
