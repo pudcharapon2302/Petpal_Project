@@ -62,7 +62,7 @@ class RAGService:
             self.vector_store = None
             self.collection = None
 
-    def add_post_to_rag(self, post):
+    def add_post_to_rag(self, post, post_url=None):
         """ เพิ่มโพสต์สาธารณะลงใน AI Memory พร้อมวิเคราะห์รูปภาพ """
         try:
             # 1. ให้ AI Vision ช่วยดูรูป (ถ้ามี)
@@ -78,7 +78,11 @@ class RAGService:
                 f"จ.{post.province}" if post.province else None
             ]
             location_text = " ".join(filter(None, location_parts)) or "ไม่ระบุพิกัด"
-            url = getattr(post, 'ai_link', f"http://localhost:8000/post/{post.pk}/")
+            
+            # ใช้ post_url ที่ส่งมาจาก views ถ้า None ให้ใช้ SITE_URL จาก settings
+            if post_url is None:
+                base_url = getattr(settings, 'SITE_URL', 'http://localhost:8000')
+                post_url = f"{base_url}/post/{post.pk}/"
 
             # รวมร่างข้อมูล (ใส่สิ่งที่ AI เห็นลงไปด้วย!)
             content = f"""
@@ -92,7 +96,7 @@ class RAGService:
             
             สถานที่: {location_text}
             เบอร์ติดต่อ: {post.contact_phone}
-            👉 ลิงก์ดูรายละเอียด: {url}
+            ลิงก์ดูรายละเอียด: {post_url}
             """
             
             # 3. Embed และ Save ตามเดิม

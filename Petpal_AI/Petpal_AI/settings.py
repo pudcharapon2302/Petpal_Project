@@ -15,10 +15,16 @@ load_dotenv(BASE_DIR / ".env")
 # === Security / Core ===
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "!!-dev-only-fallback-change-me-!!")
 DEBUG = os.getenv("DEBUG", "0") in ("1", "true", "True", "TRUE")
-ALLOWED_HOSTS = [h.strip() for h in os.getenv("ALLOWED_HOSTS", "localhost,127.0.0.1").split(",") if h.strip()]
+ALLOWED_HOSTS = [h.strip() for h in os.getenv("ALLOWED_HOSTS", "localhost,127.0.0.1",).split(",") if h.strip()]
+
+if ".ngrok-free.app" not in ALLOWED_HOSTS:
+    ALLOWED_HOSTS.append(".ngrok-free.app")
 
 # Trust specific origins for CSRF (useful when behind a proxy / custom domains)
 CSRF_TRUSTED_ORIGINS = [o.strip() for o in os.getenv("CSRF_TRUSTED_ORIGINS", "").split(",") if o.strip()]
+
+# === Site URL (สำหรับสร้าง Absolute URL - ใช้ใน AI Link) ===
+SITE_URL = os.getenv("SITE_URL", "http://localhost:8000")
 
 # Application definition
 INSTALLED_APPS = [

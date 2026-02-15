@@ -191,7 +191,7 @@
 
         .details-grid {
             display: grid;
-            grid-template-cols: 1fr 1fr;
+            grid-template-columns: 1fr 1fr;
             gap: 0.8em; /* ลด gap */
             margin-top: 1em;
             text-align: left;
@@ -349,9 +349,16 @@
     <script>
         // สร้าง QR Code อัตโนมัติเมื่อโหลดหน้า
         window.onload = function() {
-            const currentUrl = window.location.href;
+            let postUrl = "{{ post_url }}".trim();
+            
+            if (!postUrl) {
+                postUrl = window.location.href.replace('/poster/', '/');
+            }
+            
+            console.log('QR Code URL:', postUrl);
+            
             new QRCode(document.getElementById("qrcode"), {
-                text: currentUrl,
+                text: postUrl,
                 width: 90,
                 height: 90,
                 colorDark : "#000000",

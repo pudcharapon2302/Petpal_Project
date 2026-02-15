@@ -7,6 +7,7 @@ from django.urls import NoReverseMatch, reverse
 from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import csrf_exempt
 import json
+from urllib.parse import quote
 from .models import Animal, User , Profile, Pet , Post, Foundation , AdoptionRequest, ChatMessage
 from django.db.models import Q
 from .forms import CommentForm, CustomUserCreationForm ,LoginForm, PetForm, RegisterForm , VaccineFormSet, AllergyFormSet , PublicPostForm,PublicPostEditForm
@@ -181,7 +182,6 @@ def profile_update(request):
 
 @login_required
 def pet_create(request):
-    # ... (โค้ด pet_create ... ถูกต้องแล้ว) ...
     if request.method == "POST":
         animal = None
         aid = request.POST.get("animal")
@@ -200,7 +200,6 @@ def pet_create(request):
 
 @login_required
 def pet_add(request):
-    # ... (โค้ด pet_add ... ถูกต้องแล้ว) ...
     if request.method == "POST":
         form = PetForm(request.POST, request.FILES)
         if form.is_valid():
@@ -226,7 +225,6 @@ def pet_add(request):
 
 @login_required
 def pet_detail(request, pk: int):
-    # ... (โค้ด pet_detail ... ถูกต้องแล้ว) ...
     pet = get_object_or_404(
         Pet.objects.select_related("animal"),
         pk=pk, owner=request.user
@@ -341,7 +339,6 @@ def lost_list_view(request):
 
 @login_required
 def pet_report_create(request, post_type):
-    # ... (โค้ด pet_report_create ... ถูกต้องแล้ว) ...
     if post_type.upper() not in [Post.PostType.ADOPTION, Post.PostType.LOST]:
         messages.error(request, "ประเภทโพสต์ไม่ถูกต้อง")
         return redirect('report_select_category')
@@ -375,6 +372,10 @@ def pet_report_create(request, post_type):
                         tambon=cleaned_data.get('tambon'),
                         is_active=True
                     )
+                    # เพิ่มเข้า AI Memory พร้อมกับ ngrok URL
+                    post_url = request.build_absolute_uri(reverse('post_detail', args=[new_post.pk]))
+                    rag_service.add_post_to_rag(new_post, post_url=post_url)
+                    
                 messages.success(request, f"บันทึกประกาศ '{new_pet.name}' เรียบร้อยแล้ว")
                 if new_post.post_type == Post.PostType.LOST:
                     return redirect('lost_list')
@@ -454,6 +455,7 @@ def dog_list_view(request):
         'search_query': query
     }
     return render(request, 'myapp/pet_list.html', context)
+
 @login_required
 def post_detail_view(request, pk):
     # ดึง Post 1 ชิ้น โดยใช้ pk (ID) จาก URL
@@ -530,11 +532,9 @@ def adoption_requests_list(request):
 @login_required
 def chat_room(request, request_id):
     req = get_object_or_404(AdoptionRequest, pk=request_id)
-
     if request.user != req.requester and request.user != req.post.user:
         messages.error(request, "คุณไม่มีสิทธิ์เข้าถึงห้องแชทนี้")
         return redirect('landing')
-
     if request.method == "POST":
         content = request.POST.get('content', '').strip()
         if content:
@@ -544,9 +544,7 @@ def chat_room(request, request_id):
                 content=content
             )
             return redirect('chat_room', request_id=request_id)
-
     chat_messages = req.messages.all().order_by('timestamp')
-
     return render(request, 'myapp/chat_room.html', {
         'adoption_req': req,
         'chat_messages': chat_messages
@@ -727,10 +725,8 @@ def train_ai_basic(request):
     for post in posts:
         post_url = request.build_absolute_uri(reverse('post_detail', args=[post.pk]))
         
-        post.ai_link = post_url 
-        
-        # ส่งเข้า RAG Service
-        rag_service.add_post_to_rag(post)
+        # ส่งเข้า RAG Service พร้อมกับ post_url
+        rag_service.add_post_to_rag(post, post_url=post_url)
         count += 1
         # time.sleep(0.5) # ลดเวลาลงหน่อยก็ได้ครับถ้าข้อมูลเยอะ
     pets = Pet.objects.all() # ดึงสัตว์เลี้ยงทั้งหมดในระบบ
@@ -761,14 +757,13 @@ def generate_poster(request, pk):
     """ สร้างหน้า HTML สำหรับพิมพ์โปสเตอร์ A4 """
     post = get_object_or_404(Post.objects.select_related('pet', 'pet__animal'), pk=pk)
     
-    # สร้าง QR Code URL (ชี้กลับมาที่หน้าเว็บนี้)
-    # ใช้ API ฟรีของ goqr.me หรือ qrserver
-    current_site = request.build_absolute_uri(f'/post/{pk}/')
-    qr_code_url = f"https://api.qrserver.com/v1/create-qr-code/?size=150x150&data={current_site}"
+    current_site = request.build_absolute_uri(reverse('post_detail', args=[pk]))
+    encoded_url = quote(current_site, safe=':/?#[]@!$&\'()*+,;=')
+    qr_code_url = f"https://api.qrserver.com/v1/create-qr-code/?size=150x150&data={encoded_url}"
 
     return render(request, 'myapp/poster.html', {
         'post': post,
-        'qr_code_url': qr_code_url
+        'qr_code_url': qr_code_url  
     })
 
 def filter_posts(queryset, request):
