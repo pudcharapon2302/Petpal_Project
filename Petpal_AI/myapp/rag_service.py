@@ -1,4 +1,5 @@
 import os
+import textwrap
 import chromadb
 from django.conf import settings
 from langchain_huggingface import HuggingFaceEmbeddings
@@ -18,9 +19,9 @@ class RAGService:
         # 1. ตั้งค่า Local Embedding (CPU)
         print(" Loading Local Embedding Model (CPU)...")
         self.embeddings = HuggingFaceEmbeddings(
-            model_name="sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
+            model_name="BAAI/bge-m3",
             model_kwargs={'device': 'cpu'},
-            encode_kwargs={'normalize_embeddings': False}
+            encode_kwargs={'normalize_embeddings': True}
         )
         print(" Local Model Loaded!")
 
@@ -85,19 +86,17 @@ class RAGService:
                 post_url = f"{base_url}/post/{post.pk}/"
 
             # รวมร่างข้อมูล (ใส่สิ่งที่ AI เห็นลงไปด้วย!)
-            content = f"""
-            (ประกาศสาธารณะ)
-            ประเภท: {post.post_type}
-            ชื่อน้อง: {post.pet.name}
-            สายพันธุ์: {post.pet.animal.breed}
-            รายละเอียดจากเจ้าของ: {post.description}
+            content = textwrap.dedent(f"""
+            นี่คือประกาศสาธารณะประเภท {post.post_type} (เช่น ตามหาสัตว์หาย หรือ หาบ้าน)
+            สัตว์เลี้ยงตัวนี้ชื่อน้อง {post.pet.name} เป็นสัตว์สายพันธุ์ {post.pet.animal.breed}
+            รายละเอียดจากเจ้าของบอกว่า: {post.description}
             
-            ลักษณะที่ AI มองเห็นจากรูปภาพ: {visual_tags} 
+            ลักษณะที่เห็นชัดเจน (AI Vision): {visual_tags}
             
-            สถานที่: {location_text}
-            เบอร์ติดต่อ: {post.contact_phone}
-            ลิงก์ดูรายละเอียด: {post_url}
-            """
+            พิกัดและสถานที่ที่เกี่ยวข้องคือ {location_text}
+            ติดต่อเบอร์โทรศัพท์: {post.contact_phone}
+            สามารถดูรูปและรายละเอียดเพิ่มเติมได้ที่ลิงก์นี้: {post_url}
+            """).strip()
             
             # 3. Embed และ Save ตามเดิม
             embedding = self.embeddings.embed_query(content)
@@ -303,21 +302,24 @@ class RAGService:
 
             if user and user.is_authenticated:
                 pass 
-
+            
+            query_vector = self.embeddings.embed_query(user_query)
             try:
+                docs = []
                 # Query รอบที่ 1: ข้อมูลสาธารณะ (Public)
                 public_results = self.collection.query(
-                    query_texts=[user_query],
+                    query_embeddings=[query_vector],
                     n_results=3,
                     where={"access": "public"}
                 )
                 
-                docs = public_results['documents'][0]
+                if public_results and public_results['documents'] and len(public_results['documents'][0]) > 0:
+                    docs.extend([f"[ประกาศสาธารณะ]: {d}" for d in public_results['documents'][0]])
 
                 # Query รอบที่ 2: ข้อมูลส่วนตัว (Private) - ถ้ามี user
                 if user and user.is_authenticated:
                     private_results = self.collection.query(
-                        query_texts=[user_query],
+                        query_embeddings=[query_vector],
                         n_results=10, # เอาข้อมูลส่วนตัวมาเสริม 2 อัน
                         where={"owner_id": str(user.id)}
                     )
@@ -346,6 +348,7 @@ class RAGService:
             คำถามล่าสุดจากผู้ใช้: {user_query}
             
             คำแนะนำการตอบ:
+            คำแนะนำการตอบ:
             1. ตอบคำถามโดยใช้ข้อมูลข้างต้น
             2. เน้นความเป็นกันเอง สุภาพ และช่วยเหลือ
             3. ❌ ห้ามใช้สัญลักษณ์ Markdown (เช่น **ตัวหนา**, - รายการ) เด็ดขาด 
@@ -359,7 +362,7 @@ class RAGService:
             11. หากเป็นข้อมูลสัตว์เลี้ยงส่วนตัว ให้ใช้คำแทนตัวว่า "น้อง..." หรือชื่อของสัตว์เลี้ยง
             12. ⚠️ หากเป็นเรื่องอาการป่วย ให้แนะนำเบื้องต้นและย้ำว่า "ควรปรึกษาสัตวแพทย์" เสมอ
             13. หากไม่พบข้อมูล ให้ตอบว่า "ขอโทษด้วยครับ ผมไม่ข้อมูลเรื่องนี้ในระบบเลย" อย่างสุภาพ
-            14. ตอบสั้นๆ ไม่เกิน 3 ประโยค และ ไม่ต้องเอาลิงค์ดูรายละเอียดมาให้ แนะนำให้ผู้ใช้งานกดปุ่มเอไอเต็มจอแทน
+            14. ตอบสั้นๆ ไม่เกิน 3 ประโยค และต้องแนบลิงก์ดูรายละเอียดมาให้ผู้ใช้กดดูด้วยเสมอ
             """
             
             # ให้ Gemini ตอบ
@@ -378,20 +381,34 @@ class RAGService:
         # 1. เตรียม Context (ใช้ Logic เดียวกับ ask_ai เดิม)
         context_text = ""
         try:
-            # Query ข้อมูล Public
-            public_docs = []
-            public_results = self.collection.query(query_texts=[user_query], n_results=3, where={"access": "public"})
-            if public_results['documents']:
-                public_docs = [f"[ประกาศสาธารณะ]: {d}" for d in public_results['documents'][0]]
-
-            # Query ข้อมูล Private
-            private_docs = []
-            if user and user.is_authenticated:
-                private_results = self.collection.query(query_texts=[user_query], n_results=5, where={"owner_id": str(user.id)})
-                if private_results['documents']:
-                    private_docs = [f"[สัตว์เลี้ยงของ User]: {d}" for d in private_results['documents'][0]]
+            query_vector = self.embeddings.embed_query(user_query)
+            docs = []
             
-            context_text = "\n\n".join(public_docs + private_docs)
+            # Query รอบที่ 1: ข้อมูลสาธารณะ (Public)
+            public_results = self.collection.query(
+                query_embeddings=[query_vector],
+                n_results=5,
+                where={"access": "public"}
+            )
+            
+            if public_results and public_results['documents'] and len(public_results['documents'][0]) > 0:
+                docs.extend([f"[ประกาศสาธารณะ]: {d}" for d in public_results['documents'][0]])
+
+            # Query รอบที่ 2: ข้อมูลส่วนตัว (Private) - ถ้ามี user
+            if user and user.is_authenticated:
+                private_results = self.collection.query(
+                    query_embeddings=[query_vector],
+                    n_results=10,
+                    where={"owner_id": str(user.id)}
+                )
+                if private_results and private_results['documents'] and len(private_results['documents'][0]) > 0:
+                    docs.extend([f"[สัตว์เลี้ยงของ User]: {d}" for d in private_results['documents'][0]])
+
+            if docs:
+                context_text = "\n".join(docs)
+                print(f"---- AI Context ({len(docs)} docs) ----")
+                print(context_text)
+                print("------------------------------------------")
             
         except Exception as e:
             print(f"Stream Search Error: {e}")
@@ -402,6 +419,8 @@ class RAGService:
             for msg in history[-5:]:
                 sender = "User" if msg.get('sender') == 'user' else "AI"
                 history_text += f"{sender}: {msg.get('message', '')}\n"
+        else:
+            history_text = "ไม่มีประวัติการสนทนา (เริ่มต้นคุยใหม่)"
 
         # 3. สร้าง Prompt (เหมือนเดิม)
         prompt = f"""
@@ -416,6 +435,7 @@ class RAGService:
         💬 คำถาม: {user_query}
         
         คำแนะนำ:
+        คำแนะนำการตอบ:
         1. ตอบคำถามโดยใช้ข้อมูลข้างต้น
         2. เน้นความเป็นกันเอง สุภาพ และช่วยเหลือ
         3. ❌ ห้ามใช้สัญลักษณ์ Markdown (เช่น **ตัวหนา**, - รายการ) เด็ดขาด 
@@ -429,6 +449,7 @@ class RAGService:
         11. หากเป็นข้อมูลสัตว์เลี้ยงส่วนตัว ให้ใช้คำแทนตัวว่า "น้อง..." หรือชื่อของสัตว์เลี้ยง
         12. ⚠️ หากเป็นเรื่องอาการป่วย ให้แนะนำเบื้องต้นและย้ำว่า "ควรปรึกษาสัตวแพทย์" เสมอ
         13. หากไม่พบข้อมูล ให้ตอบว่า "ขอโทษด้วยครับ ผมไม่ข้อมูลเรื่องนี้ในระบบเลย" อย่างสุภาพ
+        14. ตอบสั้นๆ ไม่เกิน 3 ประโยค และต้องแนบลิงก์ดูรายละเอียดมาให้ผู้ใช้กดดูด้วยเสมอ
         """
 
         # 4. เรียก LLM แบบ Streaming (สำคัญ! ใช้ .stream แทน .invoke)
