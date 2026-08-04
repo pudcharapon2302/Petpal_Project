@@ -37,7 +37,7 @@ services:
     container_name: petpal_web
     working_dir: /app
     command: >
-      sh -c "python manage.py migrate && python manage.py collectstatic --noinput && python manage.py runserver 0.0.0.0:8000"
+      sh -c "python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
     volumes:
       - .:/app
       - ./data/staticfiles:/app/staticfiles
@@ -47,8 +47,12 @@ services:
       - GOOGLE_API_KEY=${GOOGLE_API_KEY}
       - DB_NAME=${DB_NAME}
       - DB_PASSWORD=${DB_PASSWORD}
+      # Docker network host names override values used when Django runs directly.
+      - DB_HOST=mysql_db
+      - CHROMA_HOST=chroma_db
+      - CHROMA_PORT=8000
     env_file:
-      - .env
+      - .env.local
     ports:
       - "8000:8000"
     depends_on:

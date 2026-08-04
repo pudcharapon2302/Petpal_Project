@@ -175,7 +175,33 @@
       .view-all-btn:hover svg { transform: translateX(4px); color: var(--hovered-color); }
       .view-all-btn svg { color: var(--primary-color); transition: 0.2s; position: relative; width: 18px; height: 18px; transition-delay: 0.2s; }
       
+      .pet-list-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 1.5rem; }
+      .pet-list-card { display: block; width: 100%; min-width: 0; height: 100%; }
+      .pet-list-placeholder { width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .75rem; color: #9a6545; background: linear-gradient(145deg, #fff7ed, #ffedd5); }
+      .pet-list-placeholder .paw { font-size: 3.25rem; line-height: 1; }
+      @media (min-width: 640px) { .pet-list-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+      @media (min-width: 1024px) { .pet-list-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+      @media (min-width: 1280px) { .pet-list-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+      .pet-list-main { width: 100%; align-self: stretch; }
+      .hover-card.is-placeholder .content { background: linear-gradient(to top, rgba(67, 38, 24, .86) 0%, rgba(125, 72, 41, .36) 48%, transparent 76%); }
+      .hover-card.is-placeholder:hover .img-content { scale: 1; rotate: 0deg; filter: none; }
+      .hover-card.is-placeholder:hover .content { justify-content: flex-end; background: linear-gradient(to top, rgba(67, 38, 24, .9) 0%, rgba(125, 72, 41, .4) 52%, transparent 78%); }
+      @media (max-width: 639px) { .hover-card-container { height: 360px; border-radius: 26px; } }
+
+      .pet-map-shell { display: grid; grid-template-columns: minmax(220px, .38fr) minmax(0, 1fr); min-height: 390px; overflow: hidden; border: 1px solid #fed7aa; border-radius: 28px; background: rgba(255,255,255,.94); box-shadow: 0 20px 55px rgba(124,74,45,.12); }
+      .pet-map-list { padding: 1.5rem; border-right: 1px solid #ffedd5; }
+      .pet-map-pins { display: flex; flex-wrap: wrap; gap: .65rem; margin-top: 1rem; }
+      .pet-map-pin { display: inline-flex; align-items: center; gap: .65rem; padding: .7rem 1rem; border: 2px solid #172027; border-radius: 8px; background: #fffdf7; color: #172027; font-weight: 700; box-shadow: 2px 2px 0 rgba(23,32,39,.18); cursor: pointer; transition: .2s ease; }
+      .pet-map-pin:hover, .pet-map-pin.is-active { color: white; border-color: #172027; background: #e84a27; transform: translate(-1px, -1px); box-shadow: 4px 4px 0 #172027; }
+      .pet-map-pin-mark { position: relative; display: inline-block; width: 15px; height: 15px; flex: 0 0 15px; border: 2px solid currentColor; border-radius: 50% 50% 50% 0; color: #e84a27; transform: rotate(-45deg); }
+      .pet-map-pin-mark::after { content: ""; position: absolute; width: 4px; height: 4px; top: 3.5px; left: 3.5px; border-radius: 50%; background: #172027; }
+      .pet-map-pin:hover .pet-map-pin-mark, .pet-map-pin.is-active .pet-map-pin-mark { color: #fff; } .pet-map-pin:hover .pet-map-pin-mark::after, .pet-map-pin.is-active .pet-map-pin-mark::after { background: #fff; }
+      .pet-map-stage { position: relative; min-height: 390px; background: radial-gradient(circle at 25% 30%, #ffedd5, transparent 34%), linear-gradient(135deg,#fffaf5,#f7efe7); }
+      #pet-open-map { width: 100%; height: 100%; min-height: 390px; z-index: 1; }
+      @media (max-width: 767px) { .pet-map-shell { grid-template-columns: 1fr; } .pet-map-list { border-right: 0; border-bottom: 1px solid #ffedd5; } .pet-map-stage, #pet-open-map { min-height: 330px; } }
     </style>
+    <link rel="stylesheet" href="{% static 'vendor/leaflet/leaflet.css' %}">
+    <script src="{% static 'vendor/leaflet/leaflet.js' %}"></script>
   </head>
   <body class="text-neutral-900 flex flex-col min-h-screen">
 
@@ -328,7 +354,42 @@
           </div>
       </div>
       
-      <main class="flex-grow mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12 space-y-16">
+      <main class="pp-container-list pp-page pet-list-main flex-grow mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12 space-y-16">
+
+      <section aria-labelledby="pet-map-title">
+        <div class="mb-6">
+          <span class="inline-flex items-center gap-2 rounded-full bg-orange-100 px-3 py-1 text-xs font-bold text-orange-700">OpenStreetMap</span>
+          <h2 id="pet-map-title" class="mt-3 text-3xl font-extrabold text-gray-900">แผนที่ประกาศสัตว์เลี้ยง</h2>
+          <p class="mt-1 text-gray-500">ดูตำแหน่งประกาศทั้งหมดบนแผนที่ฟรี และเลือกหมุดเพื่อดูรายละเอียด</p>
+        </div>
+        <div class="pet-map-shell">
+          <div class="pet-map-list">
+            <p class="font-bold text-gray-900">ตำแหน่งในรายการนี้</p>
+            <p class="mt-1 text-sm text-gray-500">แผนที่จะโหลดเมื่อคุณเลือกหมุดเท่านั้น</p>
+            <div class="pet-map-pins">
+              {% for post in cat_posts %}
+                <button type="button" class="pet-map-pin" data-map-lat="{{ post.latitude|default:'' }}" data-map-lng="{{ post.longitude|default:'' }}" data-map-name="{{ post.pet.name }}" data-map-url="{% url 'post_detail' pk=post.pk %}">
+                  <span class="pet-map-pin-mark" aria-hidden="true"></span><span>{{ post.pet.name }}</span>
+                </button>
+              {% endfor %}
+              {% for post in dog_posts %}
+                <button type="button" class="pet-map-pin" data-map-lat="{{ post.latitude|default:'' }}" data-map-lng="{{ post.longitude|default:'' }}" data-map-name="{{ post.pet.name }}" data-map-url="{% url 'post_detail' pk=post.pk %}">
+                  <span class="pet-map-pin-mark" aria-hidden="true"></span><span>{{ post.pet.name }}</span>
+                </button>
+              {% endfor %}
+            </div>
+            <div id="pet-map-actions" class="mt-5 hidden">
+              <p id="pet-map-selected" class="text-sm font-semibold text-gray-700"></p>
+              <a id="pet-map-directions" href="#" target="_blank" rel="noopener noreferrer" class="mt-3 inline-flex items-center rounded-full bg-gray-900 px-4 py-2 text-sm font-bold text-white transition hover:bg-orange-600">
+                เปิดใน OpenStreetMap &#8599;
+              </a>
+            </div>
+          </div>
+          <div class="pet-map-stage">
+            <div id="pet-open-map" aria-label="แผนที่ตำแหน่งประกาศสัตว์เลี้ยง"></div>
+          </div>
+        </div>
+      </section>
 
       {% if page_type == 'adoption_all' or page_type == 'lost_all' or page_type == 'cats_only' %}
       <section>
@@ -346,11 +407,11 @@
           {% endif %}
         </div>
 
-        <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <div class="pet-list-grid">
           {% for post in cat_posts %}
-          <a href="{% url 'post_detail' pk=post.pk %}" class="block h-full group">
+          <a href="{% url 'post_detail' pk=post.pk %}" class="pet-list-card group">
             <div class="hover-card-container">
-              <div class="hover-card">
+              <div class="hover-card {% if not post.pet.image %}is-placeholder{% endif %}">
                 
                 {% if page_title == "สัตว์เลี้ยงหาย" %}
                     {% if post.adopted_at %}
@@ -373,7 +434,7 @@
                   {% if post.pet.image %}
                     <img src="{{ post.pet.image.url }}" alt="{{ post.pet.name }}">
                   {% else %}
-                    <div class="w-full h-full bg-gray-200 flex items-center justify-center text-gray-400">No Image</div>
+                    <div class="pet-list-placeholder"><span class="paw" aria-hidden="true">&#128062;</span><span>&#3618;&#3633;&#3591;&#3652;&#3617;&#3656;&#3617;&#3637;&#3619;&#3641;&#3611;&#3616;&#3634;&#3614;</span></div>
                   {% endif %}
                 </div>
 
@@ -442,11 +503,11 @@
           {% endif %}
         </div>
 
-        <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <div class="pet-list-grid">
           {% for post in dog_posts %}
-          <a href="{% url 'post_detail' pk=post.pk %}" class="block h-full group">
+          <a href="{% url 'post_detail' pk=post.pk %}" class="pet-list-card group">
             <div class="hover-card-container">
-              <div class="hover-card">
+              <div class="hover-card {% if not post.pet.image %}is-placeholder{% endif %}">
                 
                 {% if page_title == "สัตว์เลี้ยงหาย" %}
                     {% if post.adopted_at %}
@@ -466,7 +527,7 @@
                   {% if post.pet.image %}
                     <img src="{{ post.pet.image.url }}" alt="{{ post.pet.name }}">
                   {% else %}
-                    <div class="w-full h-full bg-gray-200 flex items-center justify-center text-gray-400">No Image</div>
+                    <div class="pet-list-placeholder"><span class="paw" aria-hidden="true">&#128062;</span><span>&#3618;&#3633;&#3591;&#3652;&#3617;&#3656;&#3617;&#3637;&#3619;&#3641;&#3611;&#3616;&#3634;&#3614;</span></div>
                   {% endif %}
                 </div>
 
@@ -522,6 +583,42 @@
 
       </main>
 
+  <script>
+    (() => {
+      if (!window.L) return;
+      const map = L.map('pet-open-map', { scrollWheelZoom: false }).setView([13.7563, 100.5018], 10);
+      L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+      }).addTo(map);
+      const pins = document.querySelectorAll('.pet-map-pin');
+      const actions = document.getElementById('pet-map-actions');
+      const selected = document.getElementById('pet-map-selected');
+      const directions = document.getElementById('pet-map-directions');
+      const markers = [];
+      pins.forEach((pin) => {
+        const lat = Number(pin.dataset.mapLat);
+        const lng = Number(pin.dataset.mapLng);
+        if (!Number.isFinite(lat) || !Number.isFinite(lng) || !lat || !lng) {
+          pin.disabled = true;
+          pin.title = 'ประกาศนี้ยังไม่ได้ระบุพิกัด';
+          return;
+        }
+        const marker = L.marker([lat, lng]).addTo(map).bindPopup('<strong>' + pin.dataset.mapName + '</strong><br><a href="' + pin.dataset.mapUrl + '">ดูรายละเอียด</a>');
+        markers.push(marker);
+        pin.addEventListener('click', () => {
+          pins.forEach((item) => item.classList.remove('is-active'));
+          pin.classList.add('is-active');
+          map.setView([lat, lng], 16);
+          marker.openPopup();
+          actions.classList.remove('hidden');
+          selected.textContent = pin.dataset.mapName;
+          directions.href = 'https://www.openstreetmap.org/?mlat=' + lat + '&mlon=' + lng + '#map=17/' + lat + '/' + lng;
+        });
+      });
+      if (markers.length > 1) map.fitBounds(L.featureGroup(markers).getBounds().pad(0.2));
+      else if (markers.length === 1) map.setView(markers[0].getLatLng(), 15);
+    })();
+  </script>
   </body>
-  </html>
-  }
+</html>

@@ -129,7 +129,7 @@
     .checkbox:focus { border: none; outline: none; }
     .checkbox:checked { right: 10px; }
     .checkbox:checked ~ .mainbox { width: 50px; }
-    .checkbox:checked ~ .mainbox .search_input { width: 0; height: 0px; padding: 0; }
+    .checkbox:checked ~ .mainbox .search_input { width: 0 !important; min-width: 0 !important; height: 0; min-height: 0 !important; padding: 0 !important; border: 0 !important; box-shadow: none !important; }
     .checkbox:checked ~ .mainbox .iconContainer { padding-right: 8px; }
 
     .checkbox {
@@ -148,6 +148,10 @@
     }
 
     .search_input {
+      min-height: 0 !important;
+      border: 0 !important;
+      box-shadow: none !important;
+      border-radius: 0 !important;
       box-sizing: border-box;
       height: 100%;
       width: 170px;
@@ -206,7 +210,7 @@
       <div class="shape-blob shape-3"></div>
   </div>
 
-  <main class="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 py-12">
+  <main class="pp-container-content pp-page mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 py-12">
 
     <header class="mb-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
       <div>

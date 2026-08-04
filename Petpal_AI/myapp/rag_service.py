@@ -480,4 +480,20 @@ class RAGService:
         except Exception as e:
             print(f" Delete Error: {e}")
 
-rag_service = RAGService()
+class LazyRAGService:
+    """Create the embedding model only when an AI feature needs it."""
+    _instance = None
+
+    def _get_instance(self):
+        if self._instance is None:
+            self._instance = RAGService()
+        return self._instance
+
+    def setup_models(self):
+        return self._get_instance()
+
+    def __getattr__(self, name):
+        return getattr(self._get_instance(), name)
+
+
+rag_service = LazyRAGService()

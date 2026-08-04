@@ -162,6 +162,8 @@ class Post(models.Model):
     province = models.CharField(max_length=100, blank=True, null=True, verbose_name="จังหวัด")
     amphoe = models.CharField(max_length=100, blank=True, null=True, verbose_name="อำเภอ/เขต")
     tambon = models.CharField(max_length=100, blank=True, null=True, verbose_name="ตำบล/แขวง")
+    latitude = models.DecimalField(max_digits=9, decimal_places=6, blank=True, null=True, verbose_name="ละติจูด")
+    longitude = models.DecimalField(max_digits=9, decimal_places=6, blank=True, null=True, verbose_name="ลองจิจูด")
     description = models.TextField(blank=True, null=True)
     lost_date = models.DateField(blank=True, null=True)
     lost_location = models.CharField(max_length=255, blank=True)

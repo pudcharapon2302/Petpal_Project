@@ -243,6 +243,18 @@ class PublicPostForm(forms.Form):
         label="ตำบล/แขวง", required=False,
         widget=forms.TextInput(attrs={"class":"form-input", "placeholder":"เช่น ในเมือง, ออเงิน..."})
     )
+    latitude = forms.DecimalField(
+        required=False,
+        widget=forms.HiddenInput(attrs={"id": "id_latitude"})
+    )
+    longitude = forms.DecimalField(
+        required=False,
+        widget=forms.HiddenInput(attrs={"id": "id_longitude"})
+    )
+    location_consent = forms.BooleanField(
+        required=True,
+        label="ยืนยันการเผยแพร่ตำแหน่งโดยประมาณบนแผนที่สาธารณะ",
+    )
 
 class PublicPostEditForm(PublicPostForm):
     # ดึงทุกอย่างมาจาก PublicPostForm แต่แก้ field 'image' ให้เป็น ไม่บังคับ

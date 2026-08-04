@@ -11,6 +11,10 @@ from dotenv import load_dotenv
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(BASE_DIR / ".env")
+# Shared defaults may live in .env; machine-specific values in .env.local
+# are loaded afterwards when Django runs directly on the computer. Docker
+# supplies DB_HOST first, so the mounted local file must not overwrite it.
+load_dotenv(BASE_DIR / ".env.local", override=not bool(os.getenv("DB_HOST")))
 
 # === Security / Core ===
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "!!-dev-only-fallback-change-me-!!")
@@ -141,9 +145,8 @@ EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 
-EMAIL_HOST_USER = 'mr.golf0900@gmail.com'
-
-EMAIL_HOST_PASSWORD = 'eviw mmpc denv wnpf'
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', '')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', '')
 DEFAULT_FROM_EMAIL = 'Petpal AI <noreply@petpal.ai>'
 
 # -------------------------

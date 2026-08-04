@@ -1,5 +1,12 @@
 {% load static %}
 {% load tailwind_tags %}
+<link rel="stylesheet" href="{% static 'css/petpal-design-system.css' %}">
+<style>
+  .page-reveal { opacity: 0; transform: translateY(22px); transition: opacity 600ms ease, transform 600ms cubic-bezier(.2,.75,.25,1); }
+  .page-reveal.is-visible { opacity: 1; transform: translateY(0); }
+  @media (prefers-reduced-motion: reduce) { .page-reveal, .page-reveal.is-visible { opacity: 1; transform: none; transition: none; } }
+</style>
+
 
 <nav x-data="{ mobileOpen: false, chatOpen: false }" class="sticky top-0 z-50 shadow-md" aria-label="Primary">
   <style>[x-cloak]{display:none !important}</style>
@@ -10,7 +17,7 @@
       <div class="flex items-center gap-6">
         <a href="{% url 'landing' %}" class="flex items-center gap-3 group">
           <img src="{% static 'images/logo.png' %}" alt="Petpal AI" 
-               class="h-14 w-14 rounded p-1 transition-transform duration-500 group-hover:rotate-12 group-hover:scale-110">
+               class="brand-mark h-14 w-14 transition-transform duration-300 group-hover:-rotate-3 group-hover:scale-105">
 
           <div class="logo-anim" data-text="Petpal AI">
             <span class="actual-text">&nbsp;Petpal AI&nbsp;</span>
@@ -179,7 +186,7 @@
     <div class="w-full px-4 h-16 flex items-center justify-between">
       
       <a href="{% url 'landing' %}" class="flex items-center gap-2">
-        <img src="{% static 'images/logo.png' %}" alt="Petpal AI" class="h-10 w-10 rounded">
+        <img src="{% static 'images/logo.png' %}" alt="Petpal AI" class="brand-mark h-11 w-11">
         <span class="text-white font-extrabold text-xl tracking-wide uppercase">Petpal AI</span>
       </a>
 
@@ -308,4 +315,16 @@ function chatApp() {
     }
 }
 </script>
-{% endif %}
+{% endif %}<script>
+  (() => {
+    const initPageReveal = () => {
+      const targets = document.querySelectorAll('main > section, main > .container, main > div:not([class*="fixed"]), .container > section');
+      if (!('IntersectionObserver' in window)) { targets.forEach(item => item.classList.add('is-visible')); return; }
+      const observer = new IntersectionObserver(entries => entries.forEach(entry => {
+        if (entry.isIntersecting) { entry.target.classList.add('is-visible'); observer.unobserve(entry.target); }
+      }), { threshold: 0.08, rootMargin: '0px 0px -30px' });
+      targets.forEach((item, index) => { item.classList.add('page-reveal'); item.style.transitionDelay = `${Math.min(index * 45, 180)}ms`; observer.observe(item); });
+    };
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initPageReveal, { once: true }); else initPageReveal();
+  })();
+</script>

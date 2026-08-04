@@ -51,6 +51,9 @@ def Landing_Page(request):
 
     context = {
         'posts_for_adoption': posts_for_adoption, 
+        'active_adoption_count': Post.objects.filter(post_type='ADOPTION', is_active=True).count(),
+        'active_lost_count': Post.objects.filter(post_type='LOST', is_active=True).count(),
+        'foundation_count': Foundation.objects.filter(is_active=True).count(),
         'lost_posts': lost_posts,
         'latest_cat_posts': latest_cat_posts,     
         'latest_dog_posts': latest_dog_posts,           
@@ -370,6 +373,8 @@ def pet_report_create(request, post_type):
                         province=cleaned_data.get('province'),
                         amphoe=cleaned_data.get('amphoe'),
                         tambon=cleaned_data.get('tambon'),
+                        latitude=cleaned_data.get('latitude'),
+                        longitude=cleaned_data.get('longitude'),
                         is_active=True
                     )
                     # เพิ่มเข้า AI Memory พร้อมกับ ngrok URL
@@ -644,6 +649,8 @@ def pet_report_edit(request, pk):
                     post.province = cleaned_data.get('province')
                     post.amphoe = cleaned_data.get('amphoe')
                     post.tambon = cleaned_data.get('tambon')
+                    post.latitude = cleaned_data.get('latitude')
+                    post.longitude = cleaned_data.get('longitude')
                     # (หมายเหตุ: เราไม่เปิดให้แก้ post_type เพราะมันจะยุ่งยากเรื่อง Logic)
                     post.save()
 
@@ -668,6 +675,8 @@ def pet_report_edit(request, pk):
             'province': post.province,
             'amphoe': post.amphoe,
             'tambon': post.tambon,
+            'latitude': post.latitude,
+            'longitude': post.longitude,
         }
         form = PublicPostEditForm(initial=initial_data)
 
